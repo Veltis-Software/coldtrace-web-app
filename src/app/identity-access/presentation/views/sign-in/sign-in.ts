@@ -3,7 +3,6 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { finalize, forkJoin } from 'rxjs';
-import { AuthSessionStore } from '../../../../shared/infrastructure/auth-session.store';
 import { IdentityAccessStore } from '../../../application/identity-access.store';
 import { User } from '../../../domain/model/user.entity';
 import { AuthenticatedUser } from '../../../infrastructure/authentication-response';
@@ -35,7 +34,6 @@ export class SignIn {
   private readonly fb = inject(FormBuilder);
   private readonly identityAccessStore = inject(IdentityAccessStore);
   private readonly identityAccessApi = inject(IdentityAccessApi);
-  private readonly authSession = inject(AuthSessionStore);
   private readonly appleIdentity = inject(AppleIdentityService);
   private readonly googleIdentity = inject(GoogleIdentityService);
   private readonly router = inject(Router);
@@ -184,7 +182,7 @@ export class SignIn {
   }
 
   private completeAuthenticatedSignIn(authenticated: AuthenticatedUser): void {
-    this.authSession.setToken(authenticated.token);
+    this.identityAccessStore.setAuthenticatedSession(authenticated.token, authenticated.user);
 
     forkJoin({
       users: this.identityAccessApi.getUsersForOrganization(authenticated.user.organizationId),
@@ -195,7 +193,6 @@ export class SignIn {
       .subscribe({
         next: ({ users, roles, organizations }) => {
           const usersWithAuthenticated = this.ensureAuthenticatedUser(users, authenticated.user);
-          this.identityAccessStore.setCurrentUser(authenticated.user);
           this.identityAccessStore.setCurrentContextFrom(usersWithAuthenticated, roles, organizations);
           this.feedback.set('success');
           this.submitted.set(false);

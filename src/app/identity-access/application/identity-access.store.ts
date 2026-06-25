@@ -125,7 +125,9 @@ export class IdentityAccessStore {
     private identityAccessApi: IdentityAccessApi,
     private organizationScope: OrganizationScopeStore,
     private authSession: AuthSessionStore,
-  ) {}
+  ) {
+    this.restoreCurrentUserFromSession();
+  }
 
    /**
    * @summary Loads users data into local state.
@@ -219,6 +221,19 @@ export class IdentityAccessStore {
   }
 
   /**
+   * @summary Persists the backend session and activates the authenticated user.
+   */
+  setAuthenticatedSession(token: string, user: User): void {
+    this.authSession.setSession(token, {
+      id: user.id,
+      fullName: user.fullName,
+      organizationId: user.organizationId,
+      roleId: user.roleId,
+    });
+    this.setCurrentUser(user);
+  }
+
+  /**
    * @summary Stores the translation key for the active user role.
    */
   setCurrentRole(role: Role): void {
@@ -279,6 +294,18 @@ export class IdentityAccessStore {
     this.organizationScope.setActiveOrganizationId(null);
     this.usersLoadedForOrganizationId = null;
     this.usersRequestInFlightForOrganizationId = null;
+  }
+
+  private restoreCurrentUserFromSession(): void {
+    const user = this.authSession.user();
+
+    if (!user) {
+      return;
+    }
+
+    this.currentUserIdSignal.set(user.id);
+    this.currentUserNameSignal.set(user.fullName);
+    this.organizationScope.setActiveOrganizationId(user.organizationId);
   }
 
   /**
