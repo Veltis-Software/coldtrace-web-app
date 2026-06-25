@@ -1,15 +1,26 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, NgZone, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { finalize, forkJoin } from 'rxjs';
+import { AuthSessionStore } from '../../../../shared/infrastructure/auth-session.store';
 import { IdentityAccessStore } from '../../../application/identity-access.store';
-import { Organization } from '../../../domain/model/organization.entity';
-import { Role } from '../../../domain/model/role.entity';
 import { User } from '../../../domain/model/user.entity';
+import { AuthenticatedUser } from '../../../infrastructure/authentication-response';
+import { AppleIdentityCredential, AppleIdentityService } from '../../../infrastructure/apple-identity.service';
+import { GoogleIdentityCredential, GoogleIdentityService } from '../../../infrastructure/google-identity.service';
 import { IdentityAccessApi } from '../../../infrastructure/identity-access-api';
-import { OrganizationScopeStore } from '../../../../shared/infrastructure/organization-scope.store';
 
-type SignInFeedback = 'idle' | 'invalid-credentials' | 'revoked-access' | 'success' | 'server-error';
+type SignInFeedback =
+  | 'idle'
+  | 'invalid-credentials'
+  | 'revoked-access'
+  | 'success'
+  | 'server-error'
+  | 'onboarding-required'
+  | 'social-unavailable';
+
+type SocialProviderCode = 'google' | 'apple';
 
 /**
  * @summary Presents the sign in user interface in the identity access bounded context.
@@ -21,18 +32,20 @@ type SignInFeedback = 'idle' | 'invalid-credentials' | 'revoked-access' | 'succe
   styleUrl: './sign-in.css',
 })
 export class SignIn {
-  private readonly validPassword = 'ColdTrace123';
-  private readonly revokedAccessEmail = 'revoked@coldtrace.com';
   private readonly fb = inject(FormBuilder);
   private readonly identityAccessStore = inject(IdentityAccessStore);
   private readonly identityAccessApi = inject(IdentityAccessApi);
-  private readonly organizationScope = inject(OrganizationScopeStore);
+  private readonly authSession = inject(AuthSessionStore);
+  private readonly appleIdentity = inject(AppleIdentityService);
+  private readonly googleIdentity = inject(GoogleIdentityService);
   private readonly router = inject(Router);
+  private readonly zone = inject(NgZone);
 
   protected readonly submitted = signal(false);
   protected readonly signingIn = signal(false);
   protected readonly passwordVisible = signal(false);
   protected readonly feedback = signal<SignInFeedback>('idle');
+  protected readonly pendingSocialOnboardingProvider = signal<SocialProviderCode | null>(null);
 
   protected readonly signInForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -42,6 +55,7 @@ export class SignIn {
   protected submit(): void {
     this.submitted.set(true);
     this.feedback.set('idle');
+    this.pendingSocialOnboardingProvider.set(null);
     this.signInForm.markAllAsTouched();
 
     if (this.signInForm.invalid) {
@@ -52,9 +66,9 @@ export class SignIn {
     const password = this.signInForm.controls.password.value;
 
     this.signingIn.set(true);
-    this.identityAccessApi.getRoles().subscribe({
-      next: (roles) => this.loadOrganizationsForSignIn(roles, email, password),
-      error: () => this.handleServerError(),
+    this.identityAccessApi.signIn({ email, password }).subscribe({
+      next: (authenticated) => this.completeAuthenticatedSignIn(authenticated),
+      error: (error) => this.handleAuthenticationError(error),
     });
   }
 
@@ -67,130 +81,174 @@ export class SignIn {
     return control.invalid && (control.touched || this.submitted());
   }
 
-  private loadOrganizationsForSignIn(
-    roles: Role[],
-    email: string,
-    password: string,
-  ): void {
-    this.identityAccessApi.getOrganizations().subscribe({
-      next: (organizations) => this.loadUsersForSignIn(organizations, roles, email, password),
-      error: () => this.handleServerError(),
+  protected signInWithApple(): void {
+    this.feedback.set('idle');
+    this.pendingSocialOnboardingProvider.set(null);
+    this.appleIdentity.signIn(
+      (credential) => this.zone.run(() => this.signInWithAppleCredential(credential)),
+      () => this.zone.run(() => this.feedback.set('social-unavailable')),
+    );
+  }
+
+  protected signInWithGoogle(): void {
+    this.feedback.set('idle');
+    this.pendingSocialOnboardingProvider.set(null);
+    this.googleIdentity.signIn(
+      (credential) => this.zone.run(() => this.signInWithGoogleCredential(credential)),
+      () => this.zone.run(() => this.feedback.set('social-unavailable')),
+    );
+  }
+
+  protected continueWithSocialSignUp(): void {
+    const provider = this.pendingSocialOnboardingProvider();
+    if (!provider) {
+      return;
+    }
+
+    this.signingIn.set(true);
+
+    if (provider === 'google') {
+      this.googleIdentity.signIn(
+        (credential) => this.zone.run(() => this.openSocialSignUp('google', credential)),
+        () => this.zone.run(() => this.handleSocialAuthorizationUnavailable()),
+      );
+      return;
+    }
+
+    this.appleIdentity.signIn(
+      (credential) => this.zone.run(() => this.openSocialSignUp('apple', credential)),
+      () => this.zone.run(() => this.handleSocialAuthorizationUnavailable()),
+    );
+  }
+
+  protected chooseAnotherSocialAccount(): void {
+    const provider = this.pendingSocialOnboardingProvider();
+    this.feedback.set('idle');
+    this.pendingSocialOnboardingProvider.set(null);
+
+    if (provider === 'google') {
+      this.signInWithGoogle();
+      return;
+    }
+
+    if (provider === 'apple') {
+      this.signInWithApple();
+    }
+  }
+
+  private signInWithGoogleCredential(credential: GoogleIdentityCredential): void {
+    this.feedback.set('idle');
+    this.pendingSocialOnboardingProvider.set(null);
+    this.signingIn.set(true);
+    this.identityAccessApi.signInWithGoogle({
+      ...(credential.idToken ? { idToken: credential.idToken } : {}),
+      ...(credential.authorizationCode ? { authorizationCode: credential.authorizationCode } : {}),
+      ...(credential.redirectUri ? { redirectUri: credential.redirectUri } : {}),
+      ...(credential.nonce ? { nonce: credential.nonce } : {}),
+    }).subscribe({
+      next: (authenticated) => this.completeAuthenticatedSignIn(authenticated),
+      error: (error) => this.handleAuthenticationError(error, 'google'),
     });
   }
 
-  private loadUsersForSignIn(
-    organizations: Organization[],
-    roles: Role[],
-    email: string,
-    password: string,
+  private signInWithAppleCredential(credential: AppleIdentityCredential): void {
+    this.feedback.set('idle');
+    this.pendingSocialOnboardingProvider.set(null);
+    this.signingIn.set(true);
+    this.identityAccessApi.signInWithApple({
+      ...(credential.idToken ? { idToken: credential.idToken } : {}),
+      ...(credential.authorizationCode ? { authorizationCode: credential.authorizationCode } : {}),
+      ...(credential.redirectUri ? { redirectUri: credential.redirectUri } : {}),
+      ...(credential.nonce ? { nonce: credential.nonce } : {}),
+    }).subscribe({
+      next: (authenticated) => this.completeAuthenticatedSignIn(authenticated),
+      error: (error) => this.handleAuthenticationError(error, 'apple'),
+    });
+  }
+
+  private openSocialSignUp(
+    provider: SocialProviderCode,
+    credential: GoogleIdentityCredential | AppleIdentityCredential,
   ): void {
-    if (!organizations.length) {
-      this.signingIn.set(false);
+    this.signingIn.set(false);
+    this.feedback.set('idle');
+    this.pendingSocialOnboardingProvider.set(null);
+    void this.router.navigate(['/identity-access/sign-up'], {
+      state: {
+        socialSignUp: {
+          provider,
+          credential,
+        },
+      },
+    });
+  }
+
+  private completeAuthenticatedSignIn(authenticated: AuthenticatedUser): void {
+    this.authSession.setToken(authenticated.token);
+
+    forkJoin({
+      users: this.identityAccessApi.getUsersForOrganization(authenticated.user.organizationId),
+      roles: this.identityAccessApi.getRoles(),
+      organizations: this.identityAccessApi.getOrganizations(),
+    })
+      .pipe(finalize(() => this.signingIn.set(false)))
+      .subscribe({
+        next: ({ users, roles, organizations }) => {
+          const usersWithAuthenticated = this.ensureAuthenticatedUser(users, authenticated.user);
+          this.identityAccessStore.setCurrentUser(authenticated.user);
+          this.identityAccessStore.setCurrentContextFrom(usersWithAuthenticated, roles, organizations);
+          this.feedback.set('success');
+          this.submitted.set(false);
+          void this.router.navigate(['/identity-access/dashboard'], {
+            queryParams: {
+              organizationId: authenticated.user.organizationId,
+              userId: authenticated.user.id,
+            },
+          });
+        },
+        error: () => this.handleServerError(),
+      });
+  }
+
+  private ensureAuthenticatedUser(users: User[], authenticatedUser: User): User[] {
+    if (users.some((user) => user.id === authenticatedUser.id)) {
+      return users;
+    }
+    return [...users, authenticatedUser];
+  }
+
+  private handleAuthenticationError(
+    error: { status?: number; error?: { code?: string } },
+    provider?: SocialProviderCode,
+  ): void {
+    this.signingIn.set(false);
+
+    if (error.status === 401) {
       this.feedback.set('invalid-credentials');
       return;
     }
 
-    const organization = this.organizationForSignIn(organizations, email);
-    this.loadSignInUsersForOrganization(organization, organizations, roles, email, password);
-  }
-
-  private organizationForSignIn(organizations: Organization[], email: string): Organization {
-    let matchingOrganization: Organization | undefined;
-
-    for (const organization of organizations) {
-      if (organization.contactEmail.toLowerCase() === email) {
-        matchingOrganization = organization;
-      }
+    if (error.status === 422 || error.error?.code === 'SOCIAL_IDENTITY_REQUIRES_ONBOARDING') {
+      this.feedback.set('onboarding-required');
+      this.pendingSocialOnboardingProvider.set(provider ?? null);
+      return;
     }
 
-    if (matchingOrganization) {
-      return matchingOrganization;
+    if (error.status === 503 || error.error?.code === 'SOCIAL_PROVIDER_CONFIGURATION_MISSING') {
+      this.feedback.set('social-unavailable');
+      return;
     }
 
-    const activeOrganizationId = this.organizationScope.activeOrganizationId();
-    const activeOrganization = organizations.find(
-      (organization) => organization.id === activeOrganizationId,
-    );
-
-    return activeOrganization ?? organizations[0];
+    this.feedback.set('server-error');
   }
 
-  private loadSignInUsersForOrganization(
-    organization: Organization,
-    organizations: Organization[],
-    roles: Role[],
-    email: string,
-    password: string,
-    checkedOrganizationIds: number[] = [],
-  ): void {
-    this.identityAccessApi.getUsersForOrganization(organization.id).subscribe({
-      next: (users) => {
-        const userExists = users.some((user) => user.email.toLowerCase() === email);
-
-        if (userExists || checkedOrganizationIds.length + 1 >= organizations.length) {
-          this.organizationScope.setActiveOrganizationId(organization.id);
-          this.signingIn.set(false);
-          this.resolveSignIn(users, roles, organizations, email, password);
-          return;
-        }
-
-        const nextOrganization = organizations.find(
-          (currentOrganization) =>
-            currentOrganization.id !== organization.id &&
-            !checkedOrganizationIds.includes(currentOrganization.id),
-        );
-
-        if (!nextOrganization) {
-          this.organizationScope.setActiveOrganizationId(organization.id);
-          this.signingIn.set(false);
-          this.resolveSignIn(users, roles, organizations, email, password);
-          return;
-        }
-
-        this.loadSignInUsersForOrganization(
-          nextOrganization,
-          organizations,
-          roles,
-          email,
-          password,
-          [...checkedOrganizationIds, organization.id],
-        );
-      },
-      error: () => this.handleServerError(),
-    });
+  private handleSocialAuthorizationUnavailable(): void {
+    this.signingIn.set(false);
+    this.feedback.set('social-unavailable');
   }
 
   private handleServerError(): void {
     this.signingIn.set(false);
     this.feedback.set('server-error');
-  }
-
-  private resolveSignIn(
-    users: User[],
-    roles: Role[],
-    organizations: Organization[],
-    email: string,
-    password: string,
-  ): void {
-    if (email === this.revokedAccessEmail) {
-      this.feedback.set('revoked-access');
-      return;
-    }
-
-    const currentUser = users.find((user) => user.email.toLowerCase() === email);
-    const validCredentials = !!currentUser && password === this.validPassword;
-    this.feedback.set(validCredentials ? 'success' : 'invalid-credentials');
-
-    if (validCredentials && currentUser) {
-      this.identityAccessStore.setCurrentUser(currentUser);
-      this.identityAccessStore.setCurrentContextFrom(users, roles, organizations);
-      this.submitted.set(false);
-      void this.router.navigate(['/identity-access/dashboard'], {
-        queryParams: {
-          organizationId: currentUser.organizationId,
-          userId: currentUser.id,
-        },
-      });
-    }
   }
 }

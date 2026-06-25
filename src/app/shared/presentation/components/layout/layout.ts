@@ -305,10 +305,7 @@ export class Layout implements OnInit {
 
   private loadShellData(): void {
     if (!this.identityAccessStore.currentUserId()) {
-      this.identityAccessStore.loadDemoSession(
-        this.demoSessionContextFromUrl(),
-        () => this.loadShellData(),
-      );
+      this.redirectToSignIn();
       return;
     }
 
@@ -323,13 +320,9 @@ export class Layout implements OnInit {
     return this.showDashboardShell();
   }
 
-  private demoSessionContextFromUrl(): { organizationId?: number; userId?: number } {
-    const queryParams = this.router.parseUrl(this.router.url).queryParams;
-
-    return {
-      organizationId: this.positiveNumberFrom(queryParams['organizationId']),
-      userId: this.positiveNumberFrom(queryParams['userId']),
-    };
+  private redirectToSignIn(): void {
+    this.identityAccessStore.clearCurrentUser();
+    void this.router.navigate(['/identity-access/sign-in'], { replaceUrl: true });
   }
 
   private keepDashboardContextInUrl(): void {
@@ -354,16 +347,6 @@ export class Layout implements OnInit {
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
-  }
-
-  private positiveNumberFrom(value: unknown): number | undefined {
-    const numberValue = Number(value);
-
-    if (!Number.isFinite(numberValue) || numberValue <= 0) {
-      return undefined;
-    }
-
-    return numberValue;
   }
 
   private organizationIdFromCurrentUser(): number | null {

@@ -56,6 +56,19 @@
         </label>
 
         <label class="form-field">
+          <span>{{ 'roles-permissions.form.password' | translate }}</span>
+          <input
+            type="password"
+            formControlName="password"
+            [placeholder]="'roles-permissions.form.password-placeholder' | translate"
+            autocomplete="new-password"
+          />
+          @if (hasControlError('password')) {
+            <small>{{ 'roles-permissions.form.password-error' | translate }}</small>
+          }
+        </label>
+
+        <label class="form-field">
           <span>{{ 'roles-permissions.form.role' | translate }}</span>
           <select formControlName="roleId">
             @for (role of assignableRoles(); track role.id) {

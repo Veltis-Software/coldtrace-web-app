@@ -64,25 +64,50 @@
         <p class="form-feedback error">{{ 'sign-in.error.server-error' | translate }}</p>
       }
 
+      @if (feedback() === 'onboarding-required' && !pendingSocialOnboardingProvider()) {
+        <p class="form-feedback error">{{ 'sign-in.error.onboarding-required' | translate }}</p>
+      }
+
+      @if (feedback() === 'social-unavailable') {
+        <p class="form-feedback error">{{ 'sign-in.error.social-unavailable' | translate }}</p>
+      }
+
       <button class="primary-action" type="submit" [disabled]="signingIn()">
         {{ (signingIn() ? 'sign-in.signing-in' : 'sign-in.login') | translate }}
       </button>
     </form>
 
-    <div class="divider" aria-hidden="true">
-      <span>{{ 'sign-in.social-divider' | translate }}</span>
-    </div>
+    @if (feedback() === 'onboarding-required' && pendingSocialOnboardingProvider()) {
+      <section class="social-onboarding-prompt" aria-live="polite">
+        <p class="form-feedback">{{ 'sign-in.onboarding.title' | translate }}</p>
+        <p class="form-feedback">{{ 'sign-in.onboarding.copy' | translate }}</p>
 
-    <button class="social-action" type="button">
-      <img class="social-icon" src="icons/google.svg" alt="" aria-hidden="true"/>
-      <span>{{ 'sign-in.continue-with-google' | translate }}</span>
-    </button>
+        <div class="prompt-actions">
+          <button class="primary-action" type="button" [disabled]="signingIn()" (click)="continueWithSocialSignUp()">
+            {{ 'sign-in.onboarding.create-account' | translate }}
+          </button>
 
-    <button class="social-action" type="button">
-      <img class="social-icon" src="icons/apple.svg" alt="" aria-hidden="true"/>
-      <span>{{ 'sign-in.continue-with-apple' | translate }}</span>
-    </button>
+          <button class="secondary-link secondary-action" type="button" [disabled]="signingIn()" (click)="chooseAnotherSocialAccount()">
+            {{ 'sign-in.onboarding.choose-another-account' | translate }}
+          </button>
+        </div>
+      </section>
+    } @else {
+      <div class="divider" aria-hidden="true">
+        <span>{{ 'sign-in.social-divider' | translate }}</span>
+      </div>
 
-    <a class="secondary-link" routerLink="/identity-access/sign-up">{{ 'sign-in.create-account' | translate }}</a>
+      <button class="social-action" type="button" [disabled]="signingIn()" (click)="signInWithGoogle()">
+        <img class="social-icon" src="icons/google.svg" alt="" aria-hidden="true"/>
+        <span>{{ 'sign-in.continue-with-google' | translate }}</span>
+      </button>
+
+      <button class="social-action" type="button" [disabled]="signingIn()" (click)="signInWithApple()">
+        <img class="social-icon" src="icons/apple.svg" alt="" aria-hidden="true"/>
+        <span>{{ 'sign-in.continue-with-apple' | translate }}</span>
+      </button>
+
+      <a class="secondary-link" routerLink="/identity-access/sign-up">{{ 'sign-in.create-account' | translate }}</a>
+    }
   </section>
 </main>
