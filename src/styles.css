@@ -155,14 +155,12 @@ body
     app-sanitary-compliance,
     app-compliance-findings,
     app-audit-evidence,
-    app-incident-list,
     app-notification-list
   )
 :is(
     .page,
     .history-page,
     .monitoring-page,
-    .incident-list-view,
     .notification-list-view,
     .daily-log-page
   ) {
@@ -227,21 +225,21 @@ body
   max-width: none !important;
 }
 
-body :is(app-cold-room-list, app-asset-monitoring-dashboard) :is(.assets-toolbar, .search-box) {
+body app-cold-room-list :is(.assets-toolbar, .search-box) {
   margin-top: 0;
 }
 
-body :is(app-cold-room-list, app-asset-monitoring-dashboard, app-user-access-list) .search-box {
+body app-cold-room-list .search-box {
   min-height: 38px;
 }
 
-body :is(app-cold-room-list, app-asset-monitoring-dashboard, app-user-access-list) .search-icon {
+body app-cold-room-list .search-icon {
   color: var(--color-text-subtle);
   opacity: 0.62;
 }
 
 body
-:is(app-cold-room-list, app-asset-monitoring-dashboard, app-user-access-list)
+:is(app-cold-room-list)
 .search-box
 input {
   color: var(--color-text);
@@ -648,13 +646,8 @@ body
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
 }
 
-body app-user-access-list .access-summary {
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-}
-
 body
 :is(
-    app-user-access-list,
     app-safety-range-settings,
     app-operational-parameters-settings,
     app-preventive-maintenance-scheduler,
@@ -670,7 +663,6 @@ body
 
 body
 :is(
-    app-user-access-list,
     app-safety-range-settings,
     app-operational-parameters-settings,
     app-preventive-maintenance-scheduler,
@@ -686,7 +678,6 @@ body
 
 body
 :is(
-    app-user-access-list,
     app-safety-range-settings,
     app-operational-parameters-settings,
     app-preventive-maintenance-scheduler,
@@ -702,7 +693,6 @@ body
 }
 body
 :is(
-    app-user-access-list,
     app-safety-range-settings,
     app-operational-parameters-settings,
     app-preventive-maintenance-scheduler,
@@ -718,7 +708,6 @@ body
 }
 body
 :is(
-    app-user-access-list,
     app-safety-range-settings,
     app-operational-parameters-settings,
     app-preventive-maintenance-scheduler,
@@ -747,33 +736,6 @@ body
 .accent-red {
   --accent-bg: var(--color-danger-soft);
   --accent-text: var(--color-danger);
-}
-
-body app-user-access-list .access-summary article {
-  align-items: center;
-  display: flex;
-  flex-direction: row;
-  gap: 14px;
-  min-height: 96px;
-}
-
-body app-user-access-list .access-summary article mat-icon {
-  align-items: center;
-  background: var(--accent-bg, var(--color-primary-soft));
-  border-radius: 8px;
-  color: var(--accent-text, var(--color-primary));
-  display: inline-flex;
-  flex: 0 0 auto;
-  font-size: 22px;
-  height: 42px;
-  justify-content: center;
-  width: 42px;
-}
-
-body app-user-access-list .access-summary article div {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
 }
 
 body app-safety-range-settings .filter-card {
@@ -806,52 +768,10 @@ body
   width: auto !important;
 }
 
-body app-user-form .form-card {
-  max-width: 1080px !important;
-  width: min(1080px, 100%) !important;
-}
-
-body app-user-form .user-form {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-body app-user-form .form-actions {
-  grid-column: 1 / -1;
-  justify-content: flex-end;
-}
-
-body app-role-permission-form .permission-editor {
-  margin-top: 0;
-}
-
-body app-role-permission-form .role-permission-row {
-  align-items: start;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  padding: 16px;
-}
-
-body app-role-permission-form .permission-list {
-  gap: 8px;
-}
-
-body app-role-permission-form .permission-toggle span {
-  border-color: var(--color-border) !important;
-  min-height: 26px;
-}
-
-body :is(app-operational-parameters-settings, app-role-permission-form) .parameter-option {
+body app-operational-parameters-settings .parameter-option {
   background: var(--color-surface-muted) !important;
   border-color: var(--color-border) !important;
   color: var(--color-text-muted) !important;
-}
-
-@media (max-width: 720px) {
-  body app-user-form .user-form {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 640px) {
@@ -866,136 +786,6 @@ body :is(app-operational-parameters-settings, app-role-permission-form) .paramet
   body app-cold-room-list .form-card {
     max-width: calc(100vw - 24px);
     width: calc(100vw - 24px);
-  }
-}
-
-/* Normalized operational layout */
-body app-incident-list .incident-toolbar {
-  align-items: center;
-  display: flex;
-  gap: 16px;
-  justify-content: space-between;
-  min-height: 40px;
-}
-
-body app-incident-list .search-box {
-  align-items: center;
-  color: #98a2b3;
-  display: flex;
-  gap: 10px;
-  min-width: min(430px, 100%);
-}
-
-body app-incident-list .search-icon {
-  color: #98a2b3;
-  font-size: 24px;
-  height: 24px;
-  opacity: 0.68;
-  width: 24px;
-}
-
-body app-incident-list .search-box input {
-  background: transparent;
-  border: 0;
-  color: #263348;
-  font:
-    800 12px/20px Inter,
-    Arial,
-    sans-serif;
-  outline: 0;
-  width: 100%;
-}
-
-body app-incident-list .incident-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-body app-incident-list .metric-pill,
-body app-incident-list .open-count,
-body app-incident-list .escalated-count,
-body app-incident-list .closure-count {
-  border: 1px solid #e4e7ec;
-  border-radius: 8px;
-  display: inline-flex;
-  font:
-    800 12px/20px Inter,
-    Arial,
-    sans-serif;
-  padding: 5px 10px;
-  white-space: nowrap;
-}
-
-body app-incident-list .metric-open,
-body app-incident-list .open-count {
-  background: #feeceb;
-  color: #b51313;
-}
-
-body app-incident-list .metric-escalated,
-body app-incident-list .escalated-count,
-body app-incident-list .metric-pending {
-  background: #fff8e8;
-  color: #b16f0b;
-}
-
-body app-incident-list .table-card,
-body app-incident-list .closure-card {
-  border-radius: 8px;
-  padding: 22px 28px;
-}
-
-body app-incident-list .premium-table td {
-  color: #263348;
-  font-weight: 600;
-  height: 48px;
-  padding-block: 10px;
-}
-
-body app-incident-list .badge,
-body app-incident-list .condition-pill,
-body app-incident-list .source-pill,
-body app-incident-list .escalation-pill {
-  border: 1px solid rgba(16, 24, 40, 0.06);
-  border-radius: 8px;
-}
-
-body app-incident-list .type-cell.crit,
-body app-incident-list .type-cell.warn {
-  color: #263348;
-}
-
-body app-incident-list .type-cell.crit mat-icon {
-  color: #d92d20;
-}
-
-body app-incident-list .type-cell.warn mat-icon {
-  color: #f59e0b;
-}
-
-body app-incident-list .recognize-btn,
-body app-incident-list .close-shortcut-btn,
-body app-incident-list .review-escalation-btn {
-  border-radius: 8px;
-  font-weight: 800;
-  min-height: 32px;
-}
-
-@media (max-width: 860px) {
-  body app-incident-list .incident-toolbar {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  body app-incident-list .incident-metrics,
-  body app-incident-list .search-box {
-    width: 100%;
-  }
-
-  body app-incident-list .incident-metrics {
-    justify-content: flex-start;
   }
 }
 
@@ -1172,135 +962,6 @@ body app-technical-service-tracker .secondary-action mat-icon {
   }
 }
 
-/* ColdTrace frontend visual refinement pass */
-body app-user-access-list .access-header {
-  margin: 22px 0 16px;
-}
-body app-user-access-list .access-header h1 {
-  color: #0f172a;
-  font:
-    800 28px/34px Inter,
-    Arial,
-    sans-serif;
-}
-body app-user-access-list .search-box {
-  margin: 28px 0 22px;
-  width: min(520px, 100%);
-}
-body app-user-access-list .access-summary {
-  gap: 18px;
-  grid-template-columns: repeat(3, minmax(240px, 1fr));
-}
-body app-user-access-list .access-summary article {
-  align-items: center;
-  flex-direction: row;
-  gap: 16px;
-  min-height: 118px;
-  padding: 20px 22px;
-}
-body app-user-access-list .summary-icon {
-  align-items: center;
-  border-radius: 8px;
-  display: inline-flex;
-  height: 44px;
-  justify-content: center;
-  width: 44px;
-}
-body app-user-access-list .summary-icon mat-icon {
-  font-size: 22px;
-  height: 22px;
-  width: 22px;
-}
-body app-user-access-list .accent-blue .summary-icon {
-  background: #eef2ff;
-  color: #2563eb;
-}
-body app-user-access-list .accent-green .summary-icon {
-  background: #eaf8f0;
-  color: #176900;
-}
-body app-user-access-list .accent-amber .summary-icon {
-  background: #fff6df;
-  color: #9a650d;
-}
-body app-user-access-list .summary-copy {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-}
-body app-user-access-list .summary-copy strong {
-  color: #0f172a;
-  font:
-    800 28px/34px Inter,
-    Arial,
-    sans-serif;
-}
-body app-user-access-list .summary-copy small {
-  color: #98a2b3;
-  font:
-    700 11px/16px Inter,
-    Arial,
-    sans-serif;
-}
-body app-user-access-list .table-card {
-  padding: 28px 30px 30px;
-}
-body app-user-access-list .primary-action,
-body app-user-access-list .secondary-action,
-body app-user-access-list .reload-action,
-body app-user-access-list .save-action,
-body app-user-access-list .delete-action {
-  align-items: center;
-  border-radius: 8px;
-  display: inline-flex;
-  font:
-    800 12px/20px Inter,
-    Arial,
-    sans-serif;
-  gap: 7px;
-  min-height: 34px;
-  padding: 6px 12px;
-}
-body app-user-access-list .primary-action {
-  background: #2563eb !important;
-  border: 1px solid #2563eb !important;
-  color: #fff !important;
-}
-body app-user-access-list .secondary-action,
-body app-user-access-list .reload-action,
-body app-user-access-list .save-action {
-  background: #fff !important;
-  border: 1px solid #d7deea !important;
-  color: #526174 !important;
-}
-body app-user-access-list .delete-action {
-  background: #fff !important;
-  border: 1px solid #f0b8b8 !important;
-  color: #b42318 !important;
-}
-body app-user-access-list .primary-action mat-icon,
-body app-user-access-list .secondary-action mat-icon,
-body app-user-access-list .reload-action mat-icon {
-  font-size: 17px;
-  height: 17px;
-  width: 17px;
-}
-body app-user-access-list .access-table th,
-body app-user-access-list .access-table td {
-  font-family: Inter, Arial, sans-serif;
-}
-body app-user-access-list .access-table th {
-  color: #98a2b3;
-  font-weight: 800;
-}
-body app-user-access-list .access-table td {
-  color: #323c4d;
-  font-size: 12px;
-}
-body app-user-access-list .permission-list span,
-body app-user-access-list .role-pill {
-  border-radius: 7px;
-}
 body
 :is(
     app-safety-range-settings,
@@ -1572,7 +1233,6 @@ body app-preventive-maintenance-scheduler .summary-grid {
 }
 
 @media (max-width: 920px) {
-  body app-user-access-list .access-summary,
   body
   :is(
       app-safety-range-settings,
@@ -1622,7 +1282,7 @@ button.primary-action.mat-mdc-unelevated-button.mdc-button {
 
 /* Work-surface polish pass */
 body
-:is(app-cold-room-list, app-asset-monitoring-dashboard, app-user-access-list, app-incident-list)
+:is(app-cold-room-list)
 .search-box {
   align-items: center !important;
   background: #ffffff;
@@ -1638,7 +1298,7 @@ body
 }
 
 body
-:is(app-cold-room-list, app-asset-monitoring-dashboard, app-user-access-list, app-incident-list)
+:is(app-cold-room-list)
 .search-icon {
   color: #98a2b3 !important;
   font-size: 20px !important;
@@ -1648,7 +1308,7 @@ body
 }
 
 body
-:is(app-cold-room-list, app-asset-monitoring-dashboard, app-user-access-list, app-incident-list)
+:is(app-cold-room-list)
 .search-box
 input {
   color: #263348 !important;
@@ -1656,34 +1316,6 @@ input {
     700 12px/20px Inter,
     Arial,
     sans-serif !important;
-}
-
-body app-user-access-list .access-summary article.summary-card {
-  align-items: center !important;
-  flex-direction: row !important;
-  gap: 16px !important;
-  justify-content: flex-start !important;
-  text-align: left;
-}
-
-body app-user-access-list .access-summary .summary-icon {
-  display: inline-flex !important;
-  flex: 0 0 auto;
-  height: 44px !important;
-  justify-content: center !important;
-  width: 44px !important;
-}
-
-body app-user-access-list .access-summary .summary-copy {
-  align-items: start;
-  display: grid !important;
-  justify-items: start;
-}
-
-body app-user-access-list .access-summary .summary-copy span,
-body app-user-access-list .access-summary .summary-copy strong,
-body app-user-access-list .access-summary .summary-copy small {
-  text-align: left;
 }
 
 body
@@ -2283,356 +1915,7 @@ body
   margin: 3px 0 0 !important;
 }
 
-body app-incident-list .incident-workbar {
-  align-items: center;
-  border-bottom: 1px solid #e4e7ec;
-  display: grid;
-  gap: 18px;
-  grid-template-columns: auto minmax(300px, 460px) minmax(260px, 1fr);
-  min-height: 48px;
-}
-
-body app-incident-list .incident-toolbar {
-  display: contents;
-}
-
-body app-incident-list .incident-toolbar .search-box {
-  margin: 0;
-}
-
-body app-incident-list .incident-metrics {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-body app-incident-list .metric-pill {
-  align-items: center;
-  border: 1px solid #e4e7ec;
-  border-radius: 8px;
-  display: inline-flex;
-  font:
-    800 12px/18px Inter,
-    Arial,
-    sans-serif;
-  min-height: 30px;
-  padding: 0 10px;
-  white-space: nowrap;
-}
-
-body app-incident-list .metric-open {
-  background: #fff5f5;
-  border-color: #fee2e2;
-  color: #b42318;
-}
-
-body app-incident-list .metric-escalated,
-body app-incident-list .metric-pending {
-  background: #fffaf0;
-  border-color: #fdecc8;
-  color: #9a650d;
-}
-
-body app-incident-list .metric-pending {
-  background: #f5f7ff;
-  border-color: #dbe4ff;
-  color: #2563eb;
-}
-
 @media (max-width: 1080px) {
-  body app-incident-list .incident-workbar {
-    grid-template-columns: 1fr;
-    padding-bottom: 12px;
-  }
-
-  body app-incident-list .incident-toolbar {
-    display: grid;
-    gap: 12px;
-  }
-
-  body app-incident-list .incident-metrics {
-    justify-content: flex-start;
-  }
-}
-/* Assets and Monitoring shared work-view rhythm */
-body
-:is(app-cold-room-list, app-asset-monitoring-dashboard)
-:is(.asset-view-header, .monitoring-header) {
-  display: grid;
-  gap: 16px;
-  margin-bottom: 20px !important;
-}
-
-body app-asset-monitoring-dashboard .monitoring-header {
-  gap: 16px !important;
-  margin-bottom: 0 !important;
-}
-
-body app-asset-monitoring-dashboard .header-main {
-  gap: 0 !important;
-}
-
-body
-:is(app-cold-room-list, app-asset-monitoring-dashboard)
-:is(.asset-view-header h1, .page-title) {
-  color: #263348 !important;
-  font:
-    800 24px/30px Inter,
-    Arial,
-    sans-serif !important;
-  margin: 0 !important;
-}
-
-body
-:is(app-cold-room-list, app-asset-monitoring-dashboard)
-:is(.asset-view-header p, .page-subtitle) {
-  color: #98a2b3 !important;
-  font:
-    800 13px/20px Inter,
-    Arial,
-    sans-serif !important;
-  margin: 6px 0 0 !important;
-}
-
-body
-:is(app-cold-room-list, app-asset-monitoring-dashboard)
-:is(.assets-workbar, .monitoring-workbar) {
-  align-items: center !important;
-  display: grid !important;
-  gap: 16px !important;
-  grid-template-columns: minmax(280px, 460px) minmax(0, 1fr) !important;
-  margin: 0 !important;
-  width: 100% !important;
-}
-
-body
-:is(app-cold-room-list, app-asset-monitoring-dashboard)
-:is(.assets-workbar, .monitoring-workbar)
-.search-box {
-  align-items: center !important;
-  background: #ffffff !important;
-  border: 1px solid #e4e7ec !important;
-  border-radius: 8px !important;
-  box-shadow: var(--shadow-soft) !important;
-  color: #98a2b3 !important;
-  display: flex !important;
-  gap: 10px !important;
-  min-height: 42px !important;
-  min-width: 0 !important;
-  padding: 0 14px !important;
-  width: 100% !important;
-}
-
-body
-:is(app-cold-room-list, app-asset-monitoring-dashboard)
-:is(.assets-workbar, .monitoring-workbar)
-.search-icon {
-  color: #b8c0cc !important;
-  font-size: 20px !important;
-  height: 20px !important;
-  opacity: 1 !important;
-  width: 20px !important;
-}
-
-body
-:is(app-cold-room-list, app-asset-monitoring-dashboard)
-:is(.assets-workbar, .monitoring-workbar)
-.search-box
-input {
-  color: #263348 !important;
-  font:
-    800 12px/20px Inter,
-    Arial,
-    sans-serif !important;
-  min-width: 0 !important;
-}
-
-body
-:is(app-cold-room-list, app-asset-monitoring-dashboard)
-:is(.assets-workbar, .monitoring-workbar)
-.search-box
-input::placeholder {
-  color: #98a2b3 !important;
-}
-
-body app-cold-room-list .assets-workbar .primary-action {
-  justify-self: end !important;
-  min-height: 42px !important;
-  padding: 0 16px !important;
-}
-
-body app-asset-monitoring-dashboard .monitoring-workbar .summary-pills {
-  align-items: center !important;
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 8px !important;
-  justify-content: flex-end !important;
-}
-
-body app-asset-monitoring-dashboard .summary-pills span {
-  align-items: center !important;
-  background: #ffffff !important;
-  border: 1px solid #e4e7ec !important;
-  border-radius: 8px !important;
-  box-shadow: var(--shadow-soft) !important;
-  color: #667085 !important;
-  display: inline-flex !important;
-  font:
-    800 12px/18px Inter,
-    Arial,
-    sans-serif !important;
-  min-height: 32px !important;
-  padding: 0 10px !important;
-  white-space: nowrap !important;
-}
-
-body app-asset-monitoring-dashboard .summary-pills .warning {
-  background: #fff8e8 !important;
-  border-color: #fdecc8 !important;
-  color: #9a650d !important;
-}
-
-@media (max-width: 1080px) {
-  body
-  :is(app-cold-room-list, app-asset-monitoring-dashboard)
-  :is(.assets-workbar, .monitoring-workbar) {
-    grid-template-columns: 1fr !important;
-  }
-
-  body app-cold-room-list .assets-workbar .primary-action,
-  body app-asset-monitoring-dashboard .monitoring-workbar .summary-pills {
-    justify-self: start !important;
-    justify-content: flex-start !important;
-  }
-}
-/* Local tab/search workbars for Assets and Monitoring */
-body :is(app-cold-room-list, app-asset-monitoring-dashboard) .work-tabs {
-  align-items: center;
-  display: flex;
-  flex: 0 0 auto;
-  gap: 26px;
-  min-height: 42px;
-  overflow-x: auto;
-}
-
-body :is(app-cold-room-list, app-asset-monitoring-dashboard) .work-tabs button {
-  appearance: none;
-  background: transparent;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  color: #98a2b3;
-  cursor: pointer;
-  font:
-    800 12px/20px Inter,
-    Arial,
-    sans-serif;
-  min-height: 42px;
-  padding: 0;
-  white-space: nowrap;
-}
-
-body :is(app-cold-room-list, app-asset-monitoring-dashboard) .work-tabs button.active,
-body :is(app-cold-room-list, app-asset-monitoring-dashboard) .work-tabs button:hover {
-  border-bottom-color: #2563eb;
-  color: #2563eb;
-}
-
-body
-:is(app-cold-room-list, app-asset-monitoring-dashboard)
-:is(.assets-workbar, .monitoring-workbar) {
-  align-items: center !important;
-  display: grid !important;
-  gap: 18px !important;
-  grid-template-columns: auto minmax(260px, 420px) minmax(150px, 1fr) !important;
-  margin: 2px 0 18px !important;
-}
-
-body
-:is(app-cold-room-list, app-asset-monitoring-dashboard)
-:is(.assets-workbar, .monitoring-workbar)
-.search-box {
-  background: rgba(255, 255, 255, 0.78) !important;
-  border: 1px solid #e4e7ec !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 14px rgba(16, 24, 40, 0.04) !important;
-  min-height: 42px !important;
-  width: 100% !important;
-}
-
-body app-cold-room-list .assets-workbar .primary-action {
-  background: #ffffff !important;
-  border: 1px solid #dbe4ff !important;
-  border-radius: 8px !important;
-  color: #2563eb !important;
-  justify-self: end !important;
-  min-height: 40px !important;
-  min-width: 152px !important;
-  padding: 0 14px !important;
-  white-space: nowrap !important;
-}
-
-body app-cold-room-list .assets-workbar .primary-action mat-icon {
-  color: #2563eb !important;
-  font-size: 18px !important;
-  height: 18px !important;
-  width: 18px !important;
-}
-
-body app-asset-monitoring-dashboard .monitoring-workbar .summary-pills {
-  justify-content: flex-end !important;
-}
-
-body app-cold-room-list .asset-modal-backdrop {
-  background: rgba(15, 23, 42, 0.34) !important;
-  padding: 28px !important;
-}
-
-body app-cold-room-list .asset-modal {
-  max-height: min(760px, calc(100vh - 56px)) !important;
-  max-width: 980px !important;
-  overflow-x: hidden !important;
-  padding: 28px 30px !important;
-  width: min(980px, calc(100vw - 72px)) !important;
-}
-
-body app-cold-room-list .cold-room-form {
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-}
-
-body app-cold-room-list .cold-room-form .full {
-  grid-column: 1 / -1 !important;
-}
-
-body app-cold-room-list .assets-table-wrapper {
-  overflow-x: auto !important;
-  padding-bottom: 10px !important;
-}
-
-body app-cold-room-list .assets-table {
-  min-width: 1120px !important;
-}
-
-body app-cold-room-list .assets-table th:last-child,
-body app-cold-room-list .assets-table td:last-child {
-  min-width: 94px !important;
-  padding-right: 18px !important;
-}
-
-@media (max-width: 1080px) {
-  body
-  :is(app-cold-room-list, app-asset-monitoring-dashboard)
-  :is(.assets-workbar, .monitoring-workbar) {
-    grid-template-columns: 1fr !important;
-  }
-
-  body app-cold-room-list .assets-workbar .primary-action,
-  body app-asset-monitoring-dashboard .monitoring-workbar .summary-pills {
-    justify-self: start !important;
-    justify-content: flex-start !important;
-  }
-
   body app-cold-room-list .cold-room-form {
     grid-template-columns: 1fr !important;
   }
@@ -2664,12 +1947,7 @@ body
   padding: 10px 22px 44px !important;
 }
 
-body
-:is(app-incident-list, app-notification-list)
-:is(.incident-list-view, .notification-list-view),
-body
-:is(app-user-access-list, app-user-form, app-role-permission-form)
-:is(.access-header, .access-view-header),
+body app-notification-list .notification-list-view,
 body
 :is(
     app-safety-range-settings,
@@ -2687,28 +1965,12 @@ body
   box-sizing: border-box !important;
 }
 
-body
-:is(app-incident-list, app-notification-list)
-:is(.incident-list-view, .notification-list-view) {
+body app-notification-list .notification-list-view {
   gap: 18px !important;
   padding: 0 !important;
 }
 
-body
-:is(app-user-access-list, app-user-form, app-role-permission-form)
-:is(.access-header, .access-view-header) {
-  align-items: flex-start !important;
-  display: flex !important;
-  justify-content: space-between !important;
-  margin: 0 0 16px !important;
-  padding: 0 !important;
-}
-
-body
-:is(app-user-access-list, app-user-form, app-role-permission-form)
-:is(.access-header, .access-view-header)
-h1,
-body :is(app-incident-list, app-notification-list) .view-title,
+body app-notification-list .view-title,
 body
 :is(
     app-safety-range-settings,
@@ -2732,11 +1994,7 @@ h1 {
   margin: 0 !important;
 }
 
-body
-:is(app-user-access-list, app-user-form, app-role-permission-form)
-:is(.access-header, .access-view-header)
-p,
-body :is(app-incident-list, app-notification-list) .view-subtitle,
+body app-notification-list .view-subtitle,
 body
 :is(
     app-safety-range-settings,
@@ -2760,8 +2018,7 @@ p {
   margin: 6px 0 0 !important;
 }
 
-body .work-tabs,
-body app-incident-list .incident-section-tabs {
+body .work-tabs {
   align-items: center !important;
   display: flex !important;
   gap: 26px !important;
@@ -2770,8 +2027,7 @@ body app-incident-list .incident-section-tabs {
 }
 
 body .work-tabs a,
-body .work-tabs button,
-body app-incident-list .incident-section-tabs button {
+body .work-tabs button {
   align-items: center !important;
   appearance: none !important;
   background: transparent !important;
@@ -2796,35 +2052,12 @@ body app-incident-list .incident-section-tabs button {
 body .work-tabs a.active,
 body .work-tabs a:hover,
 body .work-tabs button.active,
-body .work-tabs button:hover,
-body app-incident-list .incident-section-tabs button.active,
-body app-incident-list .incident-section-tabs button:hover {
+body .work-tabs button:hover {
   border-bottom-color: #2563eb !important;
   color: #2563eb !important;
 }
 
-body app-incident-list .incident-section-tabs mat-icon {
-  display: none !important;
-}
-
-body app-incident-list .incident-section-tabs strong {
-  align-items: center !important;
-  background: #eef2ff !important;
-  border-radius: 999px !important;
-  color: #3b66f5 !important;
-  display: inline-flex !important;
-  font:
-    800 11px/18px Inter,
-    Arial,
-    sans-serif !important;
-  height: 22px !important;
-  justify-content: center !important;
-  min-width: 22px !important;
-  padding: 0 7px !important;
-}
-
-body :is(app-incident-list, app-notification-list) :is(.incident-workbar, .notification-toolbar),
-body app-user-access-list .access-workbar {
+body app-notification-list .notification-toolbar {
   align-items: center !important;
   border-bottom: 0 !important;
   display: grid !important;
@@ -2835,16 +2068,7 @@ body app-user-access-list .access-workbar {
   padding: 0 !important;
 }
 
-body app-notification-list .notification-toolbar,
-body app-user-access-list .access-workbar {
-  grid-template-columns: minmax(260px, 420px) minmax(150px, 1fr) !important;
-}
-
-body app-incident-list .incident-toolbar {
-  display: contents !important;
-}
-
-body :is(app-incident-list, app-notification-list, app-user-access-list) .search-box {
+body app-notification-list .search-box {
   align-items: center !important;
   background: rgba(255, 255, 255, 0.78) !important;
   border: 1px solid #e4e7ec !important;
@@ -2859,14 +2083,14 @@ body :is(app-incident-list, app-notification-list, app-user-access-list) .search
   width: 100% !important;
 }
 
-body :is(app-incident-list, app-notification-list, app-user-access-list) .search-icon {
+body app-notification-list .search-icon {
   color: #b8c0cc !important;
   font-size: 20px !important;
   height: 20px !important;
   width: 20px !important;
 }
 
-body :is(app-incident-list, app-notification-list, app-user-access-list) .search-box input {
+body app-notification-list .search-box input {
   color: #263348 !important;
   font:
     800 12px/20px Inter,
@@ -2875,14 +2099,11 @@ body :is(app-incident-list, app-notification-list, app-user-access-list) .search
   min-width: 0 !important;
 }
 
-body
-:is(app-incident-list, app-notification-list, app-user-access-list)
-.search-box
-input::placeholder {
+body app-notification-list .search-box input::placeholder {
   color: #98a2b3 !important;
 }
 
-body :is(app-incident-list, app-notification-list) :is(.incident-metrics, .toolbar-summary) {
+body app-notification-list .toolbar-summary {
   align-items: center !important;
   display: flex !important;
   flex-wrap: wrap !important;
@@ -2890,7 +2111,7 @@ body :is(app-incident-list, app-notification-list) :is(.incident-metrics, .toolb
   justify-content: flex-end !important;
 }
 
-body :is(app-incident-list, app-notification-list) :is(.metric-pill, .notification-count) {
+body app-notification-list .notification-count {
   align-items: center !important;
   border: 1px solid #e4e7ec !important;
   border-radius: 8px !important;
@@ -2906,10 +2127,6 @@ body :is(app-incident-list, app-notification-list) :is(.metric-pill, .notificati
 }
 
 body .section-tabs {
-  margin: -2px 0 18px !important;
-}
-
-body :is(app-user-access-list, app-user-form, app-role-permission-form) .section-tabs {
   margin: -2px 0 18px !important;
 }
 
@@ -2931,12 +2148,11 @@ body
 }
 
 @media (max-width: 1080px) {
-  body :is(app-incident-list, app-notification-list) :is(.incident-workbar, .notification-toolbar),
-  body app-user-access-list .access-workbar {
+  body app-notification-list .notification-toolbar {
     grid-template-columns: 1fr !important;
   }
 
-  body :is(app-incident-list, app-notification-list) :is(.incident-metrics, .toolbar-summary) {
+  body app-notification-list .toolbar-summary {
     justify-content: flex-start !important;
   }
 }
@@ -2959,89 +2175,7 @@ body
   padding: 0 !important;
 }
 
-body
-:is(app-incident-list, app-user-access-list)
-:is(.incident-section-tabs, .access-workbar .section-tabs) {
-  margin: 0 !important;
-}
-
-body app-user-access-list .access-workbar {
-  align-items: center !important;
-}
-
-body app-user-access-list .access-workbar .search-box {
-  align-self: center !important;
-}
-
 /* Section parity pass: match Assets/Monitoring rhythm */
-body app-incident-list .incident-list-view {
-  gap: 16px !important;
-}
-
-body app-incident-list .incident-section-tabs {
-  gap: 26px !important;
-  margin: 0 !important;
-  min-height: 42px !important;
-}
-
-body app-incident-list .incident-section-tabs button {
-  font:
-    800 12px/20px Inter,
-    Arial,
-    sans-serif !important;
-  min-height: 42px !important;
-  padding: 0 !important;
-}
-
-body app-incident-list .incident-workbar {
-  margin: 2px 0 18px !important;
-}
-
-body
-:is(app-user-access-list, app-user-form, app-role-permission-form)
-:is(.access-header, .access-view-header) {
-  display: grid !important;
-  gap: 0 !important;
-  justify-content: start !important;
-  margin: 0 0 16px !important;
-}
-
-body app-user-access-list .access-workbar {
-  grid-template-columns: auto minmax(260px, 1fr) !important;
-  margin: 2px 0 18px !important;
-}
-
-body app-user-access-list .access-workbar .search-box {
-  justify-self: stretch !important;
-  margin: 0 !important;
-  width: 100% !important;
-}
-
-body app-user-access-list .access-summary {
-  margin-top: 0 !important;
-}
-
-body app-user-form .form-actions {
-  align-items: center !important;
-  display: flex !important;
-  gap: 12px !important;
-  justify-content: flex-end !important;
-}
-
-body app-user-form .form-actions :is(.secondary-action, .primary-form-action) {
-  border-radius: 8px !important;
-  min-height: 40px !important;
-  padding: 0 16px !important;
-}
-
-body app-user-form .form-actions .secondary-action {
-  min-width: 112px !important;
-}
-
-body app-user-form .form-actions .primary-form-action {
-  min-width: 136px !important;
-}
-
 body
 :is(
     app-safety-range-settings,
@@ -3119,135 +2253,6 @@ body app-operational-history .history-page {
   padding: 0 !important;
 }
 
-/* Section parity final polish: Assets remains the visual reference */
-body app-incident-list .incident-list-view {
-  gap: 14px !important;
-}
-
-body app-incident-list .view-header {
-  margin: 0 !important;
-}
-
-body app-incident-list .incident-workbar {
-  align-items: center !important;
-  display: grid !important;
-  gap: 18px !important;
-  grid-template-columns: auto minmax(260px, 420px) minmax(150px, 1fr) !important;
-  margin: 2px 0 18px !important;
-  min-height: 42px !important;
-}
-
-body app-incident-list .incident-section-tabs {
-  gap: 26px !important;
-  min-height: 42px !important;
-}
-
-body app-incident-list .incident-section-tabs button {
-  font:
-    800 12px/20px Inter,
-    Arial,
-    sans-serif !important;
-  min-height: 42px !important;
-}
-
-body app-incident-list .incident-section-tabs :is(mat-icon, strong) {
-  display: none !important;
-}
-
-body app-incident-list .incident-toolbar {
-  display: contents !important;
-}
-
-body app-incident-list .incident-metrics {
-  justify-self: end !important;
-}
-
-body
-:is(app-user-access-list, app-user-form, app-role-permission-form)
-:is(.access-header, .access-view-header) {
-  align-items: flex-start !important;
-  display: grid !important;
-  gap: 0 !important;
-  justify-content: start !important;
-  margin: 0 0 14px !important;
-  padding: 0 !important;
-}
-
-body
-:is(app-user-access-list, app-user-form, app-role-permission-form)
-:is(.access-header, .access-view-header)
-> div {
-  display: grid !important;
-  gap: 0 !important;
-}
-
-body
-:is(app-user-access-list, app-user-form, app-role-permission-form)
-:is(.access-header, .access-view-header)
-p {
-  max-width: 720px !important;
-  position: static !important;
-  white-space: normal !important;
-}
-
-body app-user-access-list .access-workbar {
-  align-items: center !important;
-  display: grid !important;
-  gap: 18px !important;
-  grid-template-columns: auto minmax(260px, 420px) minmax(150px, 1fr) !important;
-  margin: 2px 0 18px !important;
-  min-height: 42px !important;
-}
-
-body app-user-access-list .access-workbar .section-tabs {
-  margin: 0 !important;
-}
-
-body app-user-access-list .access-workbar .search-box {
-  justify-self: stretch !important;
-  margin: 0 !important;
-  width: 100% !important;
-}
-
-body :is(app-user-form, app-role-permission-form) .section-tabs {
-  margin: 0 0 18px !important;
-}
-
-body app-user-form .form-card {
-  margin-top: 0 !important;
-}
-
-body app-user-form .form-actions {
-  align-items: center !important;
-  display: flex !important;
-  gap: 14px !important;
-  justify-content: flex-end !important;
-}
-
-body app-user-form .form-actions :is(.secondary-action, .primary-form-action) {
-  align-items: center !important;
-  border-radius: 8px !important;
-  display: inline-flex !important;
-  font:
-    800 12px/20px Inter,
-    Arial,
-    sans-serif !important;
-  gap: 7px !important;
-  height: 40px !important;
-  justify-content: center !important;
-  line-height: 20px !important;
-  padding: 0 16px !important;
-  white-space: nowrap !important;
-}
-
-body app-user-form .form-actions .secondary-action {
-  min-width: 110px !important;
-}
-
-body app-user-form .form-actions .primary-form-action {
-  min-width: 136px !important;
-}
-
 body
 :is(
     app-safety-range-settings,
@@ -3316,17 +2321,6 @@ app-operational-history
   width: 100% !important;
 }
 
-@media (max-width: 1080px) {
-  body app-incident-list .incident-workbar,
-  body app-user-access-list .access-workbar {
-    grid-template-columns: 1fr !important;
-  }
-
-  body app-incident-list .incident-metrics {
-    justify-self: start !important;
-  }
-}
-
 body
 .content-scroll
 > :is(
@@ -3350,25 +2344,6 @@ body
   ) {
   padding-left: 18px !important;
   padding-right: 18px !important;
-}
-
-body app-incident-list .incident-section-tabs button,
-body app-incident-list .incident-section-tabs button span {
-  color: inherit !important;
-  font:
-    800 12px/20px Inter,
-    Arial,
-    sans-serif !important;
-  letter-spacing: 0 !important;
-}
-
-body app-incident-list .incident-section-tabs button:not(.active) span {
-  color: #98a2b3 !important;
-}
-
-body app-incident-list .incident-section-tabs button.active span,
-body app-incident-list .incident-section-tabs button:hover span {
-  color: #2563eb !important;
 }
 
 body :is(app-operational-parameters-settings, app-safety-range-settings) .feedback.error,
@@ -3413,9 +2388,9 @@ body
   margin-top: 0 !important;
 }
 
-body :is(app-incident-list, app-notification-list) .view-header,
+body app-notification-list .view-header,
 body
-:is(app-user-access-list, app-user-form, app-role-permission-form)
+:is(app-role-permission-form)
 :is(.access-header, .access-view-header),
 body
 :is(
@@ -3435,19 +2410,14 @@ body
 }
 
 body
-:is(app-cold-room-list, app-asset-monitoring-dashboard, app-incident-list, app-notification-list)
-:is(.assets-workbar, .monitoring-workbar, .incident-workbar, .notification-workbar),
-body app-user-access-list .access-workbar {
+:is(app-cold-room-list, app-notification-list)
+:is(.assets-workbar, .notification-workbar) {
   align-items: center !important;
   display: grid !important;
   gap: 18px !important;
   grid-template-columns: auto minmax(260px, 420px) minmax(150px, 1fr) !important;
   margin: 2px 0 18px !important;
   min-height: 42px !important;
-}
-
-body app-notification-list .notification-workbar {
-  grid-template-columns: auto minmax(260px, 420px) minmax(150px, 1fr) !important;
 }
 
 body
@@ -3617,12 +2587,9 @@ body
   body
   :is(
       app-cold-room-list,
-      app-asset-monitoring-dashboard,
-      app-incident-list,
       app-notification-list
     )
-  :is(.assets-workbar, .monitoring-workbar, .incident-workbar, .notification-workbar),
-  body app-user-access-list .access-workbar {
+  :is(.assets-workbar, .notification-workbar) {
     grid-template-columns: 1fr !important;
   }
 
@@ -3662,64 +2629,20 @@ body
   }
 }
 /* Alerts and notifications workbar alignment fix */
-body
-:is(app-incident-list, app-notification-list)
-:is(.incident-list-view, .notification-list-view) {
+body app-notification-list .notification-list-view {
   gap: 10px !important;
 }
 
-body :is(app-incident-list, app-notification-list) .view-header {
+body app-notification-list .view-header {
   margin: 0 !important;
 }
 /* Alerts and notifications card rhythm alignment */
-body
-:is(app-incident-list, app-notification-list)
-:is(.incident-list-view, .notification-list-view) {
+body app-notification-list .notification-list-view {
   gap: 0 !important;
 }
 
-body :is(app-incident-list, app-notification-list) .view-header {
+body app-notification-list .view-header {
   margin: 0 0 10px !important;
-}
-/* Monitoring exact rhythm parity with Assets */
-body app-asset-monitoring-dashboard .monitoring-page {
-  gap: 0 !important;
-}
-
-body app-asset-monitoring-dashboard .monitoring-header {
-  gap: 10px !important;
-  margin: 0 0 18px !important;
-}
-
-body app-asset-monitoring-dashboard .header-main {
-  gap: 0 !important;
-}
-
-body app-asset-monitoring-dashboard .monitoring-workbar {
-  margin: 2px 0 18px !important;
-  transform: translateY(-4px);
-}
-
-body app-asset-monitoring-dashboard .monitoring-list {
-  margin-top: -4px !important;
-}
-/* Monitoring measured alignment correction */
-body app-asset-monitoring-dashboard .monitoring-header {
-  gap: 12px !important;
-  margin: 0 0 18px !important;
-}
-
-body app-asset-monitoring-dashboard .monitoring-workbar {
-  margin: 2px 0 6px !important;
-  transform: none !important;
-}
-
-body app-asset-monitoring-dashboard .monitoring-list {
-  margin-top: -4px !important;
-}
-/* Monitoring content gap final nudge */
-body app-asset-monitoring-dashboard .monitoring-list {
-  margin-top: -6px !important;
 }
 /* Cross-view header typography parity */
 body
@@ -3782,224 +2705,21 @@ body
   margin: 6px 0 0 !important;
 }
 
-body
-:is(app-asset-monitoring-dashboard, app-incident-list, app-notification-list)
-:is(.monitoring-page, .incident-list-view, .notification-list-view) {
+body app-notification-list .notification-list-view {
   padding-top: 0 !important;
 }
 
-/* Keep Monitoring workbar single-line at desktop widths */
-body app-asset-monitoring-dashboard .monitoring-workbar {
-  grid-template-columns: auto minmax(240px, 400px) minmax(245px, 1fr) !important;
-  margin: 2px 0 6px !important;
-  min-height: 42px !important;
-}
-
-body app-asset-monitoring-dashboard .monitoring-workbar .search-box {
-  width: 100% !important;
-}
-
-body app-asset-monitoring-dashboard .monitoring-workbar .summary-pills {
-  flex-wrap: nowrap !important;
-  gap: 6px !important;
-  justify-self: end !important;
-  min-width: 0 !important;
-}
-
-body app-asset-monitoring-dashboard .monitoring-workbar .summary-pills span {
-  font:
-    800 11px/16px Inter,
-    Arial,
-    sans-serif !important;
-  min-height: 30px !important;
-  padding: 0 8px !important;
-  white-space: nowrap !important;
-}
 /* Header copy gap parity final adjustment */
-body :is(app-incident-list, app-notification-list) .header-text,
-body app-asset-monitoring-dashboard .header-main {
+body app-notification-list .header-text {
   gap: 0 !important;
 }
 
-body :is(app-incident-list, app-notification-list) .view-header {
+body app-notification-list .view-header {
   margin: 0 0 14px !important;
 }
 
-body app-asset-monitoring-dashboard .monitoring-header {
-  gap: 14px !important;
-}
-/* Main page workspace normalization */
-body app-operational-dashboard .dashboard-content {
-  padding: 8px 10px 40px !important;
-}
-body app-operational-dashboard .dashboard-hero {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 16px !important;
-  margin: 0 0 18px !important;
-  max-width: 1368px !important;
-  padding-right: 340px !important;
-}
-body app-operational-dashboard .dashboard-title-block h1 {
-  color: #263348 !important;
-  font:
-    800 24px/30px Inter,
-    Arial,
-    sans-serif !important;
-  letter-spacing: 0 !important;
-  margin: 0 !important;
-}
-body app-operational-dashboard .dashboard-title-block p {
-  color: #98a2b3 !important;
-  font:
-    800 13px/20px Inter,
-    Arial,
-    sans-serif !important;
-  margin: 6px 0 0 !important;
-}
-body app-operational-dashboard .dashboard-workbar {
-  align-items: center !important;
-  display: grid !important;
-  gap: 34px !important;
-  grid-template-columns: auto minmax(280px, 420px) !important;
-  min-height: 42px !important;
-}
-body app-operational-dashboard .work-tabs {
-  align-items: center !important;
-  display: flex !important;
-  gap: 26px !important;
-  min-width: 0 !important;
-}
-body app-operational-dashboard .work-tabs :is(button, a) {
-  align-items: center !important;
-  appearance: none !important;
-  background: transparent !important;
-  border: 0 !important;
-  color: #98a2b3 !important;
-  cursor: pointer !important;
-  display: inline-flex !important;
-  font:
-    800 12px/18px Inter,
-    Arial,
-    sans-serif !important;
-  height: 32px !important;
-  justify-content: center !important;
-  padding: 0 !important;
-  position: relative !important;
-  text-decoration: none !important;
-  white-space: nowrap !important;
-}
-body app-operational-dashboard .work-tabs :is(button, a).active,
-body app-operational-dashboard .work-tabs :is(button, a):hover {
-  color: #2563eb !important;
-}
-body app-operational-dashboard .work-tabs :is(button, a).active::after {
-  background: #2563eb !important;
-  border-radius: 999px !important;
-  bottom: -4px !important;
-  content: '' !important;
-  height: 2px !important;
-  left: 0 !important;
-  position: absolute !important;
-  right: 0 !important;
-}
-body app-operational-dashboard .search-box {
-  align-items: center !important;
-  background: #fff !important;
-  border: 1px solid #e4e7ec !important;
-  border-radius: 8px !important;
-  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.05) !important;
-  box-sizing: border-box !important;
-  color: #b8c0ce !important;
-  display: flex !important;
-  gap: 12px !important;
-  height: 42px !important;
-  padding: 0 16px !important;
-  width: 100% !important;
-}
-body app-operational-dashboard .search-box .search-icon {
-  color: #b8c0ce !important;
-  font-size: 20px !important;
-  height: 20px !important;
-  width: 20px !important;
-}
-body app-operational-dashboard .search-box input {
-  background: transparent !important;
-  border: 0 !important;
-  color: #263348 !important;
-  flex: 1 !important;
-  font:
-    800 12px/18px Inter,
-    Arial,
-    sans-serif !important;
-  min-width: 0 !important;
-  outline: none !important;
-}
-body app-operational-dashboard .search-box input::placeholder {
-  color: #98a2b3 !important;
-  opacity: 1 !important;
-}
-body app-operational-dashboard .dashboard-board {
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.58fr) !important;
-  max-width: 1368px !important;
-}
-body app-operational-dashboard .lower-grid {
-  grid-template-columns: minmax(0, 1.42fr) minmax(300px, 1.08fr) !important;
-}
-body
-app-operational-dashboard
-:is(app-storage-distribution, app-maintenance-list, app-recent-alerts, app-incidents-chart)
-:is(.card-title, .chart-title) {
-  color: #111827 !important;
-  font:
-    800 17px/22px Inter,
-    Arial,
-    sans-serif !important;
-  letter-spacing: 0 !important;
-}
-body
-app-operational-dashboard
-:is(app-storage-distribution, app-recent-alerts, app-maintenance-list)
-.more-btn {
-  align-items: center !important;
-  background: #fff !important;
-  border: 1px solid #edf0f4 !important;
-  border-radius: 10px !important;
-  color: #9ca3af !important;
-  display: inline-flex !important;
-  height: 32px !important;
-  justify-content: center !important;
-  padding: 0 !important;
-  width: 32px !important;
-}
-body
-app-operational-dashboard
-:is(app-storage-distribution, app-recent-alerts, app-maintenance-list)
-.more-btn
-mat-icon {
-  font-size: 20px !important;
-  height: 20px !important;
-  width: 20px !important;
-}
-body app-operational-dashboard app-incidents-chart .card-header {
-  align-items: center !important;
-  flex-direction: row !important;
-  justify-content: space-between !important;
-  margin-bottom: 18px !important;
-}
-body app-operational-dashboard app-incidents-chart .controls {
-  margin-left: auto !important;
-}
 body .notification-shortcut {
   box-shadow: none !important;
-}
-@media (max-width: 1240px) {
-  body app-operational-dashboard .dashboard-hero {
-    padding-right: 0 !important;
-  }
-  body app-operational-dashboard .dashboard-workbar {
-    grid-template-columns: 1fr !important;
-  }
 }
 
 /* Main page final card rhythm */
@@ -4008,51 +2728,7 @@ body .topbar-actions {
   right: 20px !important;
   z-index: 1 !important;
 }
-body app-operational-dashboard .dashboard-hero {
-  gap: 0 !important;
-  margin: 0 0 20px !important;
-  padding-right: 340px !important;
-}
-body app-operational-dashboard .dashboard-workbar {
-  display: none !important;
-}
-body app-operational-dashboard app-incidents-chart .card-title {
-  color: #667388 !important;
-  font:
-    800 16px/22px Inter,
-    Arial,
-    sans-serif !important;
-}
-body app-operational-dashboard app-incidents-chart .chart-wrapper {
-  background:
-    linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px), #fbfcfe !important;
-  background-size:
-    100% 18px,
-    72px 100%,
-    auto !important;
-  border: 1px solid rgba(0, 0, 0, 0.025) !important;
-  border-radius: 10px !important;
-  padding: 10px 12px !important;
-}
-body app-operational-dashboard app-recent-alerts .premium-table td {
-  height: 34px !important;
-  padding-bottom: 8px !important;
-  padding-top: 8px !important;
-}
-body app-operational-dashboard app-recent-alerts .table-container {
-  overflow-y: auto !important;
-}
-body app-operational-dashboard app-maintenance-list .task-column {
-  gap: 13px !important;
-}
-body app-operational-dashboard app-maintenance-list .device-name {
-  line-height: 16px !important;
-}
 @media (max-width: 1240px) {
-  body app-operational-dashboard .dashboard-hero {
-    padding-right: 0 !important;
-  }
   body .topbar-actions {
     right: 12px !important;
   }
@@ -4070,20 +2746,6 @@ body .topbar-actions {
   align-self: flex-start !important;
   z-index: auto !important;
 }
-body app-operational-dashboard .dashboard-hero {
-  margin-top: -8px !important;
-  padding-right: 0 !important;
-}
-body app-operational-dashboard .dashboard-board {
-  margin-top: 0 !important;
-}
-body app-operational-dashboard app-incidents-chart .card-header {
-  margin-bottom: 6px !important;
-}
-body app-operational-dashboard app-incidents-chart .metric-container {
-  margin-bottom: 8px !important;
-}
-
 /* Non-sticky page actions alignment correction */
 body .workspace {
   overflow: auto !important;
@@ -4140,14 +2802,7 @@ body
   ) {
   padding-top: 8px !important;
 }
-body app-operational-dashboard .dashboard-hero {
-  margin-top: 0 !important;
-  padding-right: 360px !important;
-}
 @media (max-width: 1240px) {
-  body app-operational-dashboard .dashboard-hero {
-    padding-right: 0 !important;
-  }
   body .topbar-actions {
     right: 12px !important;
     top: 8px !important;
@@ -4182,22 +2837,6 @@ body
 body .topbar-actions {
   top: 18px !important;
 }
-body app-operational-dashboard .dashboard-hero {
-  margin-top: 0 !important;
-}
-body app-operational-dashboard app-incidents-chart :is(.nav-btn, .today-btn) {
-  box-shadow: none !important;
-}
-body app-operational-dashboard app-incidents-chart .chart-wrapper {
-  background:
-    linear-gradient(rgba(148, 163, 184, 0.075) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.075) 1px, transparent 1px), #fbfcfe !important;
-  background-size:
-    100% 36px,
-    72px 100%,
-    auto !important;
-}
-
 /* Final generous top rhythm */
 body
 .content-scroll
@@ -4226,35 +2865,6 @@ body
 body .topbar-actions {
   top: 30px !important;
 }
-body app-operational-dashboard app-incidents-chart .chart-wrapper {
-  background:
-    linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.065) 1px, transparent 1px), #fbfcfe !important;
-  background-size:
-    100% 42px,
-    104px 100%,
-    auto !important;
-}
-body app-operational-dashboard app-incidents-chart .mini-timeline {
-  background-size:
-    100% 42px,
-    104px 100%,
-    auto !important;
-}
-
-body .content-scroll > app-operational-dashboard {
-  padding-top: 30px !important;
-}
-body app-operational-dashboard .dashboard-content {
-  padding-top: 30px !important;
-}
-body app-operational-dashboard app-incidents-chart .mini-timeline {
-  background-size:
-    100% 18px,
-    72px 100%,
-    auto !important;
-}
-
 body
 :is(
     app-safety-range-settings,
@@ -4317,22 +2927,6 @@ body app-cold-room-list td:last-child {
   white-space: nowrap !important;
 }
 
-/* Final main dashboard vertical alignment recovery. */
-body .content-scroll > app-operational-dashboard {
-  margin-top: -42px !important;
-  padding-top: 0 !important;
-}
-
-body app-operational-dashboard .dashboard-hero {
-  margin-top: 0 !important;
-}
-
-/* Main dashboard only: avoid double vertical recovery after the shell content offset. */
-body .content-scroll > app-operational-dashboard {
-  margin-top: 0 !important;
-}
-
-/* Final shell normalization: equal page top and tighter workspace gutters. */
 body .workspace {
   width: calc(100vw - 318px) !important;
 }
@@ -4364,12 +2958,6 @@ body
     app-audit-evidence,
     app-operational-dashboard
   ) {
-  padding-top: 4px !important;
-}
-
-body .content-scroll > app-operational-dashboard,
-body app-operational-dashboard .dashboard-content {
-  margin-top: 0 !important;
   padding-top: 4px !important;
 }
 

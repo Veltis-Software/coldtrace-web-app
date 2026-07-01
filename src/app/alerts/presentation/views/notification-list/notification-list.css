@@ -2,35 +2,47 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 0 !important;
   min-height: 100%;
-  padding: 28px 32px;
+  padding: 0 0 44px !important;
+}
+
+.alerts-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 0 18px;
 }
 
 .view-header {
   align-items: flex-start;
   display: flex;
   justify-content: space-between;
+  margin: 0 !important;
 }
 
 .header-text {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0 !important;
 }
 
 .view-title {
-  color: #111827;
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0;
+  color: #263348;
+  font:
+    800 24px/30px Inter,
+    Arial,
+    sans-serif;
+  margin: 0 !important;
 }
 
-.view-subtitle,
-.notification-subtitle {
-  color: #6b7280;
-  font-size: 13px;
-  margin: 0;
+.view-subtitle {
+  color: #98a2b3;
+  font:
+    800 13px/20px Inter,
+    Arial,
+    sans-serif;
+  margin: 6px 0 0 !important;
 }
 
 .premium-card {
@@ -62,8 +74,9 @@
 }
 
 .notification-subtitle {
+  color: #6b7280;
   font-size: 12px;
-  margin-top: 4px;
+  margin: 4px 0 0;
 }
 
 .notification-summary {
@@ -309,26 +322,75 @@
 
 .notification-toolbar {
   align-items: center;
+  border-bottom: 0;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: auto minmax(260px, 420px) minmax(260px, 1fr) !important;
+  justify-content: initial;
+  margin: 0 !important;
+  min-height: 42px !important;
+}
+
+.notification-filter-tabs {
+  align-items: center;
   display: flex;
-  gap: 16px;
-  justify-content: space-between;
-  min-height: 40px;
+  flex-wrap: nowrap;
+  gap: 26px;
+  margin: 0 !important;
+  min-height: 42px !important;
+  min-width: max-content;
+  overflow-x: auto;
+}
+
+.notification-filter-tabs button {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
+  color: #98a2b3;
+  cursor: pointer;
+  display: inline-flex;
+  font:
+    800 12px/20px Inter,
+    Arial,
+    sans-serif;
+  letter-spacing: 0;
+  min-height: 42px !important;
+  padding: 0;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.notification-filter-tabs button.active,
+.notification-filter-tabs button:hover {
+  border-bottom-color: #2563eb;
+  color: #2563eb;
 }
 
 .search-box {
   align-items: center;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(16, 24, 40, 0.04);
   color: #98a2b3;
   display: flex;
   gap: 10px;
-  min-width: min(460px, 100%);
+  margin: 0 !important;
+  min-height: 42px;
+  min-width: 0;
+  padding: 0 14px;
+  width: 100%;
 }
 
 .search-icon {
-  color: #98a2b3;
-  font-size: 24px;
-  height: 24px;
-  opacity: 0.68;
-  width: 24px;
+  color: #b8c0cc;
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
 }
 
 .search-box input {
@@ -339,8 +401,13 @@
     800 12px/20px Inter,
     Arial,
     sans-serif;
+  min-width: 0;
   outline: 0;
   width: 100%;
+}
+
+.search-box input::placeholder {
+  color: #98a2b3;
 }
 
 .toolbar-summary {
@@ -370,12 +437,16 @@
 
 @media (max-width: 900px) {
   .notification-toolbar {
-    align-items: flex-start;
-    flex-direction: column;
+    grid-template-columns: 1fr !important;
+    padding-bottom: 12px;
   }
 
-  .search-box,
-  .toolbar-summary {
+  .notification-filter-tabs {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  .search-box {
     width: 100%;
   }
 
@@ -384,7 +455,6 @@
   }
 }
 
-/* Notification list visual recovery: centered channel icons and consistent action buttons. */
 .notification-row {
   align-items: center !important;
   grid-template-columns: 42px minmax(0, 1fr) auto !important;
@@ -435,7 +505,6 @@
   width: 16px !important;
 }
 
-/* Final notification polish: active alerts is the default list and action buttons breathe like the rest of the dashboard. */
 .attend-action {
   gap: 8px !important;
   min-width: 128px !important;
@@ -446,8 +515,15 @@
   flex: 0 0 16px !important;
 }
 
-/* Give notification actions the same side breathing room as dashboard toolbar buttons. */
 .attend-action {
   min-width: 140px !important;
   padding: 0 18px !important;
+}
+
+.notification-toolbar {
+  grid-template-columns: auto minmax(260px, 420px) minmax(260px, 1fr) !important;
+}
+
+.notification-workbar {
+  grid-template-columns: auto minmax(260px, 420px) minmax(260px, 1fr) !important;
 }

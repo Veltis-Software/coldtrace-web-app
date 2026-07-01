@@ -1,46 +1,48 @@
 <div class="notification-list-view">
-  <div class="view-header">
-    <div class="header-text">
-      <h1 class="view-title">{{ 'alerts.notification-list.title' | translate }}</h1>
-      <p class="view-subtitle">{{ 'alerts.notification-list.subtitle' | translate }}</p>
+  <header class="alerts-header">
+    <div class="view-header">
+      <div class="header-text">
+        <h1 class="view-title">{{ 'alerts.notification-list.title' | translate }}</h1>
+        <p class="view-subtitle">{{ 'alerts.notification-list.subtitle' | translate }}</p>
+      </div>
     </div>
-  </div>
 
-  <div class="notification-toolbar notification-workbar">
-    <nav class="work-tabs notification-filter-tabs" aria-label="Notification filters">
-      <button
-        type="button"
-        [class.active]="selectedNotificationFilter() === 'active'"
-        (click)="selectNotificationFilter('active')"
-      >
-        {{ 'alerts.notification-list.filter-active' | translate }}
-      </button>
-      <button
-        type="button"
-        [class.active]="selectedNotificationFilter() === 'pending'"
-        (click)="selectNotificationFilter('pending')"
-      >
-        {{ 'alerts.notification-list.filter-pending' | translate }}
-      </button>
-      <button
-        type="button"
-        [class.active]="selectedNotificationFilter() === 'failed'"
-        (click)="selectNotificationFilter('failed')"
-      >
-        {{ 'alerts.notification-list.filter-failed' | translate }}
-      </button>
-    </nav>
+    <div class="notification-toolbar notification-workbar">
+      <nav class="work-tabs notification-filter-tabs" aria-label="Notification filters">
+        <button
+          type="button"
+          [class.active]="selectedNotificationFilter() === 'active'"
+          (click)="selectNotificationFilter('active')"
+        >
+          {{ 'alerts.notification-list.filter-active' | translate }}
+        </button>
+        <button
+          type="button"
+          [class.active]="selectedNotificationFilter() === 'pending'"
+          (click)="selectNotificationFilter('pending')"
+        >
+          {{ 'alerts.notification-list.filter-pending' | translate }}
+        </button>
+        <button
+          type="button"
+          [class.active]="selectedNotificationFilter() === 'failed'"
+          (click)="selectNotificationFilter('failed')"
+        >
+          {{ 'alerts.notification-list.filter-failed' | translate }}
+        </button>
+      </nav>
 
-    <label class="search-box">
-      <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
-      <input
-        type="search"
-        [value]="searchTerm()"
-        placeholder="Search notifications by asset, recipient, status or channel..."
-        (input)="updateSearchTerm($any($event.target).value)"
-      />
-    </label>
-  </div>
+      <label class="search-box">
+        <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
+        <input
+          type="search"
+          [value]="searchTerm()"
+          placeholder="Search notifications by asset, recipient, status or channel..."
+          (input)="updateSearchTerm($any($event.target).value)"
+        />
+      </label>
+    </div>
+  </header>
 
   @if (alertsStore.loading()) {
     <div class="loading-container">

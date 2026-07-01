@@ -1,72 +1,75 @@
 <div class="incident-list-view">
-  <div class="view-header">
-    <div class="header-text">
-      <h1 class="view-title">{{ 'dashboard-shell.nav-alerts' | translate }}</h1>
-      <p class="view-subtitle">{{ 'alerts.incident-list.subtitle' | translate }}</p>
+  <header class="alerts-header">
+    <div class="view-header">
+      <div class="header-text">
+        <h1 class="view-title">{{ 'dashboard-shell.nav-alerts' | translate }}</h1>
+        <p class="view-subtitle">{{ 'alerts.incident-list.subtitle' | translate }}</p>
+      </div>
+
+      @if (alertsStore.feedback()) {
+        <div
+          class="feedback-banner"
+          [class.feedback-success]="isSuccessFeedback(alertsStore.feedback()!)"
+          [class.feedback-error]="!isSuccessFeedback(alertsStore.feedback()!)"
+        >
+          <mat-icon>{{
+            isSuccessFeedback(alertsStore.feedback()!) ? 'check_circle' : 'error_outline'
+          }}</mat-icon>
+          <span>{{ alertsStore.feedback()! | translate }}</span>
+        </div>
+      }
     </div>
 
-    @if (alertsStore.feedback()) {
-      <div
-        class="feedback-banner"
-        [class.feedback-success]="isSuccessFeedback(alertsStore.feedback()!)"
-        [class.feedback-error]="!isSuccessFeedback(alertsStore.feedback()!)"
-      >
-        <mat-icon>{{
-          isSuccessFeedback(alertsStore.feedback()!) ? 'check_circle' : 'error_outline'
-        }}</mat-icon>
-        <span>{{ alertsStore.feedback()! | translate }}</span>
-      </div>
-    }
-  </div>
-
-  <div class="incident-workbar">
-    <nav class="incident-section-tabs" aria-label="Incident workflow sections">
-      <button
-        type="button"
-        [class.active]="selectedIncidentPanel() === 'incidents'"
-        (click)="selectIncidentPanel('incidents')"
-      >
-        <span>{{ 'alerts.incident-list.title' | translate }}</span>
-      </button>
-
-      @if (canResolveAlerts()) {
+    <div class="incident-workbar">
+      <nav class="incident-section-tabs" aria-label="Incident workflow sections">
         <button
           type="button"
-          [class.active]="selectedIncidentPanel() === 'closure'"
-          (click)="selectIncidentPanel('closure')"
+          [class.active]="selectedIncidentPanel() === 'incidents'"
+          (click)="selectIncidentPanel('incidents')"
         >
-          <span>{{ 'alerts.incident-list.closure-title' | translate }}</span>
+          <span>{{ 'alerts.incident-list.title' | translate }}</span>
         </button>
-      }
-    </nav>
 
-    <div class="incident-toolbar">
-      <label class="search-box">
-        <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
-        <input
-          type="search"
-          [value]="searchTerm()"
-          placeholder="Search incidents by asset, type, value or status..."
-          (input)="updateSearchTerm($any($event.target).value)"
-        />
-      </label>
+        @if (canResolveAlerts()) {
+          <button
+            type="button"
+            [class.active]="selectedIncidentPanel() === 'closure'"
+            (click)="selectIncidentPanel('closure')"
+          >
+            <span>{{ 'alerts.incident-list.closure-title' | translate }}</span>
+          </button>
+        }
+      </nav>
 
-      <div class="incident-metrics" aria-label="Incident summary">
-        <span class="metric-pill metric-open">
-          {{ alertsStore.openIncidentsCount() }}
-          {{ 'alerts.incident-list.status-open' | translate }}
-        </span>
-        <span class="metric-pill metric-escalated">
-          {{ alertsStore.escalatedIncidentsCount() }}
-          {{ 'alerts.incident-list.escalated-count' | translate }}
-        </span>
-        <span class="metric-pill metric-pending">
-          {{ pendingClosureIncidents().length }}
-          {{ 'alerts.incident-list.closure-pending' | translate }}
-        </span>
+      <div class="incident-toolbar">
+        <label class="search-box">
+          <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
+          <input
+            type="search"
+            [value]="searchTerm()"
+            placeholder="Search incidents by asset, type, value or status..."
+            (input)="updateSearchTerm($any($event.target).value)"
+          />
+        </label>
+
+        <div class="incident-metrics" aria-label="Incident summary">
+          <span class="metric-pill metric-open">
+            {{ alertsStore.openIncidentsCount() }}
+            {{ 'alerts.incident-list.status-open' | translate }}
+          </span>
+          <span class="metric-pill metric-escalated">
+            {{ alertsStore.escalatedIncidentsCount() }}
+            {{ 'alerts.incident-list.escalated-count' | translate }}
+          </span>
+          <span class="metric-pill metric-pending">
+            {{ pendingClosureIncidents().length }}
+            {{ 'alerts.incident-list.closure-pending' | translate }}
+          </span>
+        </div>
       </div>
     </div>
-  </div>
+  </header>
+
   @if (alertsStore.loading()) {
     <div class="loading-container">
       <mat-spinner diameter="40" />

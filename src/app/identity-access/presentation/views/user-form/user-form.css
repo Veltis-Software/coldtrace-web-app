@@ -1,5 +1,75 @@
 :host {
+  box-sizing: border-box;
   display: block;
+  min-height: 100%;
+  padding: 18px 0 44px;
+}
+
+.access-view-header {
+  align-items: flex-start !important;
+  display: grid !important;
+  gap: 0 !important;
+  justify-content: start !important;
+  margin: 0 0 14px !important;
+  padding: 0 !important;
+}
+
+.access-view-header h1 {
+  color: #263348 !important;
+  font:
+    800 24px/30px Inter,
+    Arial,
+    sans-serif !important;
+  margin: 0 !important;
+}
+
+.access-view-header p {
+  color: #98a2b3 !important;
+  font:
+    800 13px/20px Inter,
+    Arial,
+    sans-serif !important;
+  margin: 6px 0 0 !important;
+  max-width: 720px !important;
+  position: static !important;
+  white-space: normal !important;
+}
+
+.work-tabs {
+  align-items: center !important;
+  display: flex !important;
+  gap: 26px !important;
+  margin: 0 0 18px !important;
+  min-height: 42px !important;
+  overflow-x: auto !important;
+}
+
+.work-tabs a {
+  align-items: center !important;
+  appearance: none !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: #98a2b3 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  font:
+    800 12px/20px Inter,
+    Arial,
+    sans-serif !important;
+  gap: 8px !important;
+  min-height: 42px !important;
+  padding: 0 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+
+.work-tabs a.active,
+.work-tabs a:hover {
+  border-bottom-color: #2563eb !important;
+  color: #2563eb !important;
 }
 
 .table-heading,
@@ -15,11 +85,15 @@
 
 .form-card {
   background: #ffffff;
+  border: 1px solid #e4e7ec;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(96, 108, 128, 0.05), 0 4px 4px rgba(0, 0, 0, 0.16);
-  margin-top: 30px;
-  max-width: 760px;
-  padding: 26px;
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.04),
+    0 8px 18px rgba(16, 24, 40, 0.06);
+  margin-top: 0 !important;
+  max-width: 1080px !important;
+  padding: 28px 30px 30px;
+  width: min(1080px, 100%) !important;
 }
 
 .table-heading {
@@ -28,24 +102,27 @@
 }
 
 .table-heading h2 {
-  color: #323c4d;
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 20px;
+  color: #0f172a;
+  font:
+    800 18px/24px Inter,
+    Arial,
+    sans-serif;
   margin: 0;
 }
 
 .table-heading p {
-  color: #98a2b3;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 20px;
+  color: #697386;
+  font:
+    700 13px/20px Inter,
+    Arial,
+    sans-serif;
   margin: 4px 0 0;
 }
 
 .user-form {
   display: grid;
-  gap: 18px;
+  gap: 18px 20px;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
 }
 
 .form-field {
@@ -159,33 +236,6 @@
   }
 }
 
-/* Wider creation surface */
-.form-card {
-  border: 1px solid #e4e7ec;
-  box-shadow:
-    0 1px 2px rgba(16, 24, 40, 0.04),
-    0 8px 18px rgba(16, 24, 40, 0.06);
-  margin-top: 34px;
-  max-width: 1080px;
-  padding: 28px 30px 30px;
-  width: min(1080px, 100%);
-}
-
-.table-heading h2 {
-  color: #0f172a;
-  font: 800 18px/24px Inter, Arial, sans-serif;
-}
-
-.table-heading p {
-  color: #697386;
-  font: 700 13px/20px Inter, Arial, sans-serif;
-}
-
-.user-form {
-  gap: 18px 20px;
-  grid-template-columns: repeat(2, minmax(260px, 1fr));
-}
-
 .form-field:nth-child(3) {
   max-width: 420px;
 }
@@ -225,16 +275,40 @@
 }
 
 .form-actions {
+  align-items: center !important;
+  display: flex !important;
+  gap: 16px !important;
   grid-column: 1 / -1;
-  justify-content: flex-end;
+  justify-content: flex-end !important;
+}
+
+.form-actions > * + * {
+  margin-left: 2px !important;
 }
 
 .primary-form-action,
 .secondary-action {
-  align-items: center;
-  display: inline-flex;
-  gap: 7px;
-  min-height: 36px;
+  align-items: center !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  font:
+    800 12px/20px Inter,
+    Arial,
+    sans-serif !important;
+  gap: 7px !important;
+  height: 40px !important;
+  justify-content: center !important;
+  line-height: 20px !important;
+  padding: 0 16px !important;
+  white-space: nowrap !important;
+}
+
+.secondary-action {
+  min-width: 110px !important;
+}
+
+.primary-form-action {
+  min-width: 136px !important;
 }
 
 .primary-form-action mat-icon,

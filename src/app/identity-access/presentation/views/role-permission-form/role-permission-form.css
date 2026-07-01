@@ -1,0 +1,240 @@
+:host {
+  box-sizing: border-box;
+  display: block;
+  min-height: 100%;
+  padding: 18px 0 44px;
+}
+
+.access-view-header {
+  align-items: flex-start !important;
+  display: grid !important;
+  gap: 0 !important;
+  justify-content: start !important;
+  margin: 0 0 14px !important;
+  padding: 0 !important;
+}
+
+.access-view-header h1 {
+  color: #263348 !important;
+  font:
+    800 24px/30px Inter,
+    Arial,
+    sans-serif !important;
+  margin: 0 !important;
+}
+
+.access-view-header p {
+  color: #98a2b3 !important;
+  font:
+    800 13px/20px Inter,
+    Arial,
+    sans-serif !important;
+  margin: 6px 0 0 !important;
+  max-width: 720px !important;
+  white-space: normal !important;
+}
+
+.work-tabs {
+  align-items: center !important;
+  display: flex !important;
+  gap: 26px !important;
+  margin: 0 0 18px !important;
+  min-height: 42px !important;
+  overflow-x: auto !important;
+}
+
+.work-tabs a {
+  align-items: center !important;
+  appearance: none !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  color: #98a2b3 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  font:
+    800 12px/20px Inter,
+    Arial,
+    sans-serif !important;
+  min-height: 42px !important;
+  padding: 0 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+
+.work-tabs a.active,
+.work-tabs a:hover {
+  border-bottom-color: #2563eb !important;
+  color: #2563eb !important;
+}
+
+.table-card {
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.04),
+    0 8px 18px rgba(16, 24, 40, 0.06);
+  padding: 28px 30px 30px;
+}
+
+.permission-editor {
+  margin: 0 0 18px;
+}
+
+.table-heading {
+  align-items: center;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.table-heading h2 {
+  color: #0f172a;
+  font:
+    800 18px/24px Inter,
+    Arial,
+    sans-serif;
+  margin: 0;
+}
+
+.table-heading p {
+  color: #697386;
+  font:
+    700 13px/20px Inter,
+    Arial,
+    sans-serif;
+  margin: 4px 0 0;
+}
+
+.reload-action,
+.reload-action.mat-mdc-outlined-button {
+  align-items: center !important;
+  background: #ffffff !important;
+  border: 1px solid #d7deea !important;
+  border-radius: 8px !important;
+  color: #526174 !important;
+  display: inline-flex !important;
+  font:
+    800 12px/20px Inter,
+    Arial,
+    sans-serif !important;
+  gap: 7px !important;
+  height: 40px !important;
+  justify-content: center !important;
+  min-width: 110px !important;
+  padding: 0 16px !important;
+  white-space: nowrap !important;
+}
+
+.reload-action mat-icon {
+  font-size: 17px;
+  height: 17px;
+  width: 17px;
+}
+
+.feedback {
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+}
+
+.feedback.success {
+  background: #eaf8f0;
+  color: #176900;
+}
+
+.feedback.error {
+  background: #feeceb;
+  color: #b51313;
+}
+
+.feedback.neutral {
+  background: #f0f2f5;
+  color: #606c80;
+}
+
+.role-permission-list {
+  display: grid;
+  gap: 12px;
+}
+
+.role-permission-row {
+  align-items: start;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 150px 1fr;
+  padding: 16px;
+}
+
+.role-pill {
+  background: #f0f2f5;
+  border-radius: 7px;
+  color: #606c80 !important;
+  display: inline-block !important;
+  font:
+    800 10px/16px Inter,
+    Arial,
+    sans-serif;
+  max-width: 128px;
+  overflow: hidden;
+  padding: 4px 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.permission-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: none;
+  overflow: visible;
+}
+
+.permission-toggle {
+  display: inline-flex;
+  min-width: 0;
+}
+
+.permission-toggle input {
+  accent-color: #2563eb;
+  margin: 0;
+}
+
+.permission-toggle span {
+  background: #f7f8fa;
+  border: 1px solid #e4e7ec !important;
+  border-radius: 7px;
+  color: #606c80 !important;
+  display: inline-flex !important;
+  font:
+    700 10px/16px Inter,
+    Arial,
+    sans-serif;
+  margin: 0 !important;
+  min-height: 26px;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+@media (max-width: 840px) {
+  .table-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .reload-action {
+    width: 100%;
+  }
+
+  .role-permission-row {
+    grid-template-columns: 1fr;
+  }
+}

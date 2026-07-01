@@ -3,7 +3,8 @@
   box-sizing: border-box;
   container-type: inline-size;
   min-height: 100%;
-  padding: 8px 18px 40px;
+  margin-top: 0 !important;
+  padding: 4px 10px 40px !important;
 }
 
 .loading-overlay {
@@ -19,10 +20,38 @@
 .dashboard-board {
   display: grid;
   gap: 24px;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.58fr);
-  margin: 0;
-  max-width: 1352px;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.58fr) !important;
+  margin: 0 !important;
+  max-width: 1368px !important;
   width: 100%;
+}
+
+.dashboard-hero {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  margin: 0 0 20px !important;
+  max-width: 1368px !important;
+  padding-right: 360px !important;
+}
+
+.dashboard-title-block h1 {
+  color: #263348 !important;
+  font:
+    800 24px/30px Inter,
+    Arial,
+    sans-serif !important;
+  letter-spacing: 0 !important;
+  margin: 0 !important;
+}
+
+.dashboard-title-block p {
+  color: #98a2b3 !important;
+  font:
+    800 13px/20px Inter,
+    Arial,
+    sans-serif !important;
+  margin: 6px 0 0 !important;
 }
 
 .primary-column,
@@ -65,7 +94,7 @@
 .lower-grid {
   display: grid;
   gap: 24px;
-  grid-template-columns: minmax(0, 1.62fr) minmax(260px, 0.95fr);
+  grid-template-columns: minmax(0, 1.42fr) minmax(300px, 1.08fr) !important;
 }
 
 .storage-box,
@@ -145,7 +174,101 @@
   transform: translateY(-3px);
 }
 
+:host ::ng-deep :is(app-storage-distribution, app-maintenance-list, app-recent-alerts, app-incidents-chart)
+:is(.card-title, .chart-title) {
+  color: #111827 !important;
+  font:
+    800 17px/22px Inter,
+    Arial,
+    sans-serif !important;
+  letter-spacing: 0 !important;
+}
+
+:host ::ng-deep :is(app-storage-distribution, app-recent-alerts, app-maintenance-list) .more-btn {
+  align-items: center !important;
+  background: #fff !important;
+  border: 1px solid #edf0f4 !important;
+  border-radius: 10px !important;
+  color: #9ca3af !important;
+  display: inline-flex !important;
+  height: 32px !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  width: 32px !important;
+}
+
+:host ::ng-deep :is(app-storage-distribution, app-recent-alerts, app-maintenance-list) .more-btn mat-icon {
+  font-size: 20px !important;
+  height: 20px !important;
+  width: 20px !important;
+}
+
+:host ::ng-deep app-incidents-chart .card-header {
+  align-items: center !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  margin-bottom: 6px !important;
+}
+
+:host ::ng-deep app-incidents-chart .controls {
+  margin-left: auto !important;
+}
+
+:host ::ng-deep app-incidents-chart .card-title {
+  color: #667388 !important;
+  font:
+    800 16px/22px Inter,
+    Arial,
+    sans-serif !important;
+}
+
+:host ::ng-deep app-incidents-chart .chart-wrapper {
+  background:
+    linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.065) 1px, transparent 1px), #fbfcfe !important;
+  background-size:
+    100% 42px,
+    104px 100%,
+    auto !important;
+  border: 1px solid rgba(0, 0, 0, 0.025) !important;
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+}
+
+:host ::ng-deep app-incidents-chart :is(.nav-btn, .today-btn) {
+  box-shadow: none !important;
+}
+
+:host ::ng-deep app-incidents-chart .mini-timeline {
+  background-size:
+    100% 18px,
+    72px 100%,
+    auto !important;
+}
+
+:host ::ng-deep app-recent-alerts .premium-table td {
+  height: 34px !important;
+  padding-bottom: 8px !important;
+  padding-top: 8px !important;
+}
+
+:host ::ng-deep app-recent-alerts .table-container {
+  overflow-y: auto !important;
+}
+
+:host ::ng-deep app-maintenance-list .task-column {
+  gap: 13px !important;
+}
+
+:host ::ng-deep app-maintenance-list .device-name {
+  line-height: 16px !important;
+}
+
 @media (max-width: 1180px) {
+  .dashboard-hero {
+    padding-right: 0 !important;
+  }
+
   .dashboard-board {
     grid-template-columns: 1fr;
     margin-inline: auto;
@@ -166,6 +289,10 @@
 }
 
 @container (max-width: 1210px) {
+  .dashboard-hero {
+    padding-right: 0 !important;
+  }
+
   .dashboard-board {
     grid-template-columns: 1fr;
     margin-inline: auto;

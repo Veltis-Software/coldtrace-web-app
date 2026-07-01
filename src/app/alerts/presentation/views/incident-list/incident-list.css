@@ -1,28 +1,36 @@
 .incident-list-view {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 0 !important;
   min-height: 100%;
-  padding: 2px 22px 44px;
+  padding: 0 0 44px !important;
   box-sizing: border-box;
 }
 
 /* Header */
+.alerts-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 0 18px;
+}
+
 .view-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
+  margin: 0 !important;
 }
 
 .header-text {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0 !important;
 }
 
 .view-title {
-  margin: 0;
+  margin: 0 !important;
   color: #263348;
   font:
     800 24px/30px Inter,
@@ -31,10 +39,10 @@
 }
 
 .view-subtitle {
-  margin: 0;
-  color: #697386;
+  margin: 6px 0 0 !important;
+  color: #98a2b3;
   font:
-    700 13px/20px Inter,
+    800 13px/20px Inter,
     Arial,
     sans-serif;
 }
@@ -78,7 +86,7 @@
 .table-card {
   display: flex;
   flex-direction: column;
-  padding: 24px 28px 20px;
+  padding: 22px 28px;
 }
 
 .card-header {
@@ -133,9 +141,11 @@
 }
 
 .premium-table td {
-  padding: 8px 12px;
+  height: 48px;
+  padding: 10px 12px;
   font-size: 12px;
-  color: #4b5563;
+  color: #263348;
+  font-weight: 600;
   border-bottom: 1px solid rgba(0, 0, 0, 0.035);
 }
 
@@ -170,17 +180,15 @@
   height: 16px;
 }
 
-.crit {
-  color: #dc2626;
+.crit,
+.warn {
+  color: #263348;
 }
 .crit mat-icon {
-  color: #ef4444;
-}
-.warn {
-  color: #d97706;
+  color: #d92d20;
 }
 .warn mat-icon {
-  color: #fbbf24;
+  color: #f59e0b;
 }
 
 .value {
@@ -205,9 +213,10 @@
 
 /* Badges */
 .badge {
+  border: 1px solid rgba(16, 24, 40, 0.06);
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 10px;
   font-weight: 600;
   white-space: nowrap;
@@ -229,9 +238,10 @@
 }
 
 .condition-pill {
+  border: 1px solid rgba(16, 24, 40, 0.06);
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 10px;
   font-weight: 600;
   white-space: nowrap;
@@ -248,9 +258,10 @@
 }
 
 .source-pill {
+  border: 1px solid rgba(16, 24, 40, 0.06);
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 10px;
   font-weight: 600;
   white-space: nowrap;
@@ -288,7 +299,8 @@
 }
 
 .escalation-pill {
-  border-radius: 5px;
+  border: 1px solid rgba(16, 24, 40, 0.06);
+  border-radius: 8px;
   display: inline-block;
   font-size: 10px;
   font-weight: 700;
@@ -326,12 +338,13 @@
   gap: 4px;
   padding: 5px 14px;
   border: 1px solid #d7deea;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   color: #526174;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 800;
   cursor: pointer;
+  min-height: 32px;
   min-width: 90px;
   transition:
     background 0.15s,
@@ -457,6 +470,126 @@
   font-weight: 700;
   padding: 4px 10px;
   white-space: nowrap;
+}
+
+.incident-workbar {
+  align-items: center;
+  border-bottom: 0;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: auto minmax(260px, 420px) minmax(260px, 1fr) !important;
+  margin: 0 !important;
+  min-height: 42px !important;
+}
+
+.incident-toolbar {
+  align-items: center;
+  display: contents !important;
+  gap: 16px;
+  justify-content: space-between;
+  min-height: 40px;
+}
+
+.incident-toolbar .search-box {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(16, 24, 40, 0.04);
+  color: #98a2b3;
+  display: flex;
+  gap: 10px;
+  margin: 0 !important;
+  min-height: 42px;
+  min-width: 0;
+  padding: 0 14px;
+  width: 100%;
+}
+
+.incident-toolbar .search-icon {
+  color: #b8c0cc;
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
+}
+
+.incident-toolbar .search-box input {
+  background: transparent;
+  border: 0;
+  color: #263348;
+  font:
+    800 12px/20px Inter,
+    Arial,
+    sans-serif;
+  min-width: 0;
+  outline: 0;
+  width: 100%;
+}
+
+.incident-toolbar .search-box input::placeholder {
+  color: #98a2b3;
+}
+
+.incident-metrics {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  justify-content: flex-end !important;
+  justify-self: end !important;
+  min-width: 0;
+}
+
+.metric-pill {
+  align-items: center;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(16, 24, 40, 0.04);
+  display: inline-flex;
+  font:
+    800 12px/18px Inter,
+    Arial,
+    sans-serif;
+  min-height: 32px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.metric-open {
+  background: #fff5f5;
+  border-color: #fee2e2;
+  color: #b42318;
+}
+
+.metric-escalated,
+.metric-pending {
+  background: #fffaf0;
+  border-color: #fdecc8;
+  color: #9a650d;
+}
+
+.metric-pending {
+  background: #f5f7ff;
+  border-color: #dbe4ff;
+  color: #2563eb;
+}
+
+@media (max-width: 1080px) {
+  .incident-workbar {
+    grid-template-columns: 1fr !important;
+    padding-bottom: 12px;
+  }
+
+  .incident-toolbar {
+    display: grid;
+    gap: 12px;
+  }
+
+  .incident-metrics {
+    flex-wrap: wrap;
+    justify-content: flex-start !important;
+    justify-self: start !important;
+  }
 }
 
 .closure-form {
@@ -612,8 +745,10 @@ tr:last-child td {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 22px;
-  margin: 0;
+  gap: 26px;
+  margin: 0 !important;
+  min-height: 42px !important;
+  overflow-x: auto;
 }
 
 .incident-section-tabs button {
@@ -625,15 +760,25 @@ tr:last-child td {
   cursor: pointer;
   display: inline-flex;
   font:
-    800 12px/20px 'Inter',
+    800 12px/20px Inter,
     Arial,
     sans-serif;
   gap: 8px;
-  min-height: 34px;
-  padding: 0 2px 8px;
+  letter-spacing: 0;
+  min-height: 42px !important;
+  padding: 0;
 }
 
-.incident-section-tabs button.active {
+.incident-section-tabs button span {
+  color: inherit;
+  font:
+    800 12px/20px Inter,
+    Arial,
+    sans-serif;
+}
+
+.incident-section-tabs button.active,
+.incident-section-tabs button:hover {
   border-bottom-color: #2563eb;
   color: #2563eb;
 }
@@ -654,4 +799,9 @@ tr:last-child td {
   justify-content: center;
   min-width: 24px;
   padding: 2px 7px;
+}
+
+.incident-section-tabs mat-icon,
+.incident-section-tabs strong {
+  display: none;
 }
