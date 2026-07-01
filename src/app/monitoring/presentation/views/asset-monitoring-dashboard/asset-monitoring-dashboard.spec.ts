@@ -1,11 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
 import { AssetManagementStore } from '../../../../asset-management/application/asset-management.store';
 import { IdentityAccessStore } from '../../../../identity-access/application/identity-access.store';
 import { MonitoringStore } from '../../../application/monitoring.store';
-import { of } from 'rxjs';
 import { AssetMonitoringDashboard } from './asset-monitoring-dashboard';
 
 class IdentityAccessStoreStub {
@@ -61,11 +59,6 @@ describe('AssetMonitoringDashboard', () => {
         { provide: IdentityAccessStore, useClass: IdentityAccessStoreStub },
         { provide: AssetManagementStore, useClass: AssetManagementStoreStub },
         { provide: MonitoringStore, useClass: MonitoringStoreStub },
-        {
-          provide: ActivatedRoute,
-          useValue: { queryParamMap: of(convertToParamMap({})) },
-        },
-        { provide: Router, useValue: { navigate: () => Promise.resolve(true) } },
       ],
     }).compileComponents();
 

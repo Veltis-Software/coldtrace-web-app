@@ -7,10 +7,20 @@ import { ReportType } from '../domain/model/report-type.enum';
 export interface ReportResource extends BaseResource {
   organizationId: number;
   uuid: string;
-  type: ReportType;
+  type: ReportType | string;
   title: string;
-  periodDate: string;
+  periodDate?: string;
+  periodStart?: string;
+  periodEnd?: string;
   generatedAt: string;
+  assetCount?: number;
+  readingCount?: number;
+  outOfRangeReadingCount?: number;
+  incidentCount?: number;
+  openIncidentCount?: number;
+  averageTemperature?: number | null;
+  averageHumidity?: number | null;
+  compliancePercentage?: number | null;
 }
 
 /**
@@ -18,4 +28,14 @@ export interface ReportResource extends BaseResource {
  */
 export interface ReportsResponse extends BaseResponse {
   reports: ReportResource[];
+}
+
+/**
+ * @summary Request payload for backend-owned report generation.
+ */
+export interface GenerateReportRequest {
+  type: string;
+  title: string;
+  periodStart: string;
+  periodEnd: string;
 }

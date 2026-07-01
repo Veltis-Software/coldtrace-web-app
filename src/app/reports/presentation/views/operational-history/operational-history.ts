@@ -3,7 +3,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { finalize, forkJoin } from 'rxjs';
 import { AssetManagementStore } from '../../../../asset-management/application/asset-management.store';
@@ -25,7 +25,7 @@ import { ReportsStore } from '../../../application/reports.store';
  */
 @Component({
   selector: 'app-operational-history',
-  imports: [RouterLink, RouterLinkActive,
+  imports: [
     FormsModule,
     MatIcon,
     MatProgressSpinner,

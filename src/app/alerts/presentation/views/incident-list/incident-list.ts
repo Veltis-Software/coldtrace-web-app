@@ -1,22 +1,15 @@
-import {
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  inject,
-  OnInit,
-  signal,
-  ViewChild,
-} from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule } from '@ngx-translate/core';
+import { finalize } from 'rxjs';
 import { IdentityAccessStore } from '../../../../identity-access/application/identity-access.store';
 import { ListPagination } from '../../../../shared/presentation/components/list-pagination/list-pagination';
 import { AlertsStore } from '../../../application/alerts.store';
 import { Incident } from '../../../domain/model/incident.entity';
+import { Notification } from '../../../domain/model/notification.entity';
 
 type IncidentPanel = 'incidents' | 'closure';
 
@@ -42,6 +35,9 @@ export class IncidentList implements OnInit {
   private readonly fb = inject(FormBuilder);
   @ViewChild('closureCard') private closureCard?: ElementRef<HTMLElement>;
   protected readonly closureSubmitted = signal(false);
+  protected readonly selectedNotificationIncident = signal<Incident | null>(null);
+  protected readonly incidentNotifications = signal<Notification[]>([]);
+  protected readonly loadingIncidentNotifications = signal(false);
   protected readonly pageSize = 10;
   protected readonly currentPage = signal(1);
   protected readonly searchTerm = signal('');
@@ -54,27 +50,23 @@ export class IncidentList implements OnInit {
     this.alertsStore.incidents().filter((incident) => !incident.isClosed),
   );
   protected readonly filteredIncidents = computed(() => {
-    const normalizedSearch = this.searchTerm().trim().toLowerCase();
+    const searchValue = this.searchTerm().trim().toLowerCase();
+    const incidents = this.activeIncidents();
 
-    if (!normalizedSearch) {
-      return this.activeIncidents();
+    if (!searchValue) {
+      return incidents;
     }
 
-    return this.activeIncidents().filter((incident) => {
-      return [
-        incident.assetName,
-        incident.type,
-        incident.value,
-        incident.status,
-        incident.conditionKey ?? '',
-        incident.severity,
-        incident.recognizedBy ?? '',
-        incident.escalationStatus,
-      ]
-        .join(' ')
-        .toLowerCase()
-        .includes(normalizedSearch);
-    });
+    return incidents.filter((incident) => [
+      incident.assetName,
+      incident.type,
+      incident.value,
+      incident.status,
+      incident.conditionKey,
+      incident.severity,
+      incident.recognizedBy ?? '',
+      incident.escalationStatus,
+    ].some((value) => String(value ?? '').toLowerCase().includes(searchValue)));
   });
   protected readonly paginatedIncidents = computed(() =>
     this.paginate(this.filteredIncidents(), this.currentPage()),
@@ -111,7 +103,7 @@ export class IncidentList implements OnInit {
    * @summary Initializes the incident list view state.
    */
   ngOnInit(): void {
-    this.alertsStore.loadIncidents();
+    this.alertsStore.loadIncidents({ evaluateReadings: true });
   }
 
   protected recognize(incident: Incident): void {
@@ -130,11 +122,8 @@ export class IncidentList implements OnInit {
   }
 
   protected selectIncidentPanel(panel: IncidentPanel): void {
-    if (panel === 'closure' && !this.canResolveAlerts()) {
-      return;
-    }
-
     this.selectedIncidentPanel.set(panel);
+    this.currentPage.set(1);
   }
 
   protected updatePage(page: number): void {
@@ -189,10 +178,24 @@ export class IncidentList implements OnInit {
       });
   }
 
+  protected selectIncidentForClosure(incident: Incident): void {
+    if (!incident.isRecognized) {
+      return;
+    }
+
+    this.selectedIncidentPanel.set('closure');
+    this.closureForm.controls.incidentId.setValue(incident.id);
+    this.alertsStore.clearFeedback();
+    queueMicrotask(() => this.closureCard?.nativeElement.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    }));
+  }
+
   protected reviewEscalation(incident: Incident): void {
     if (
-      this.alertsStore.reviewingEscalationId() === incident.id ||
-      (!incident.isEscalated && !incident.isPendingEscalationConfiguration)
+      (!incident.isEscalated && !incident.isPendingEscalationConfiguration) ||
+      this.alertsStore.reviewingEscalationId() === incident.id
     ) {
       return;
     }
@@ -202,30 +205,24 @@ export class IncidentList implements OnInit {
     });
   }
 
-  protected selectIncidentForClosure(incident: Incident): void {
-    if (!incident.isRecognized) {
-      return;
-    }
+  protected reviewIncidentNotifications(incident: Incident): void {
+    this.selectedNotificationIncident.set(incident);
+    this.incidentNotifications.set([]);
+    this.loadingIncidentNotifications.set(true);
 
-    this.closureForm.controls.incidentId.setValue(incident.id);
-    this.selectedIncidentPanel.set('closure');
-    this.alertsStore.clearFeedback();
-    queueMicrotask(() =>
-      this.closureCard?.nativeElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      }),
-    );
+    this.alertsStore
+      .notificationsForIncident(incident.id)
+      .pipe(finalize(() => this.loadingIncidentNotifications.set(false)))
+      .subscribe({
+        next: (notifications) => this.incidentNotifications.set(notifications),
+        error: () => this.alertsStore.setFeedback('alerts.incident-list.feedback-error'),
+      });
   }
 
   protected stabilizeSelectedIncident(): void {
     const incident = this.selectedClosureIncident();
 
-    if (
-      !incident ||
-      incident.isConditionStable ||
-      this.alertsStore.stabilizingId() === incident.id
-    ) {
+    if (!incident || incident.isConditionStable || this.alertsStore.stabilizingId() === incident.id) {
       return;
     }
 
@@ -234,19 +231,18 @@ export class IncidentList implements OnInit {
     });
   }
 
-  protected hasClosureControlError(controlName: keyof typeof this.closureForm.controls): boolean {
+  protected hasClosureControlError(
+    controlName: keyof typeof this.closureForm.controls,
+  ): boolean {
     const control = this.closureForm.controls[controlName];
     return control.invalid && (control.touched || this.closureSubmitted());
   }
 
   protected statusLabelKey(incident: Incident): string {
     switch (incident.status) {
-      case 'recognized':
-        return 'alerts.incident-list.status-recognized';
-      case 'closed':
-        return 'alerts.incident-list.status-closed';
-      default:
-        return 'alerts.incident-list.status-open';
+      case 'recognized': return 'alerts.incident-list.status-recognized';
+      case 'closed': return 'alerts.incident-list.status-closed';
+      default: return 'alerts.incident-list.status-open';
     }
   }
 
@@ -264,7 +260,7 @@ export class IncidentList implements OnInit {
     return [
       'alerts.incident-list.feedback-recognized',
       'alerts.incident-list.feedback-closed',
-      'alerts.incident-list.feedback-escalation-reviewed',
+      'alerts.incident-list.feedback-stabilized',
     ].includes(feedback);
   }
 
@@ -294,6 +290,14 @@ export class IncidentList implements OnInit {
     return `alerts.incident-list.type-${incident.type}`;
   }
 
+  protected notificationChannelLabelKey(notification: Notification): string {
+    return `alerts.notification-list.channel-${notification.channel}`;
+  }
+
+  protected notificationStatusLabelKey(notification: Notification): string {
+    return `alerts.notification-list.status-${notification.status}`;
+  }
+
   protected formatDate(isoDate: string): string {
     return new Intl.DateTimeFormat('en-GB', {
       day: '2-digit',
@@ -312,5 +316,3 @@ export class IncidentList implements OnInit {
     return items.slice(startIndex, startIndex + this.pageSize);
   }
 }
-
-

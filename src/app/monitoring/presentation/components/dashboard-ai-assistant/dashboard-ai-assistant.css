@@ -1,0 +1,257 @@
+.ai-launcher {
+  align-items: center;
+  background: #263348;
+  border: 0;
+  border-radius: 999px;
+  bottom: 28px;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.18);
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  gap: 9px;
+  padding: 12px 15px;
+  position: fixed;
+  right: 28px;
+  z-index: 150;
+}
+
+.ai-launcher span,
+.ai-launcher strong {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.ai-launcher strong {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 5px 8px;
+}
+
+.ai-backdrop {
+  background: rgba(15, 23, 42, 0.28);
+  inset: 0;
+  position: fixed;
+  z-index: 200;
+}
+
+.ai-panel {
+  background: #ffffff;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  border-radius: 8px;
+  bottom: 24px;
+  box-shadow:
+    0 14px 34px rgba(15, 23, 42, 0.16),
+    0 28px 56px rgba(15, 23, 42, 0.14);
+  box-sizing: border-box;
+  max-width: 640px;
+  overflow: auto;
+  padding: 22px;
+  position: fixed;
+  right: 24px;
+  top: 24px;
+  width: 100%;
+  z-index: 210;
+}
+
+.ai-header,
+.ai-grid,
+.ai-signals,
+.ai-question-row {
+  display: grid;
+  gap: 16px;
+}
+
+.ai-header {
+  align-items: center;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.ai-mark {
+  align-items: center;
+  background: #eef4ff;
+  border-radius: 8px;
+  color: #2f64ed;
+  display: flex;
+  height: 46px;
+  justify-content: center;
+  width: 46px;
+}
+
+.ai-heading span,
+.ai-answer span,
+.ai-signal span,
+.ai-question span {
+  color: #667085;
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ai-heading h2,
+.ai-summary h3,
+.ai-qa h3 {
+  color: #263348;
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.ai-heading p,
+.ai-summary > p,
+.ai-answer p,
+.ai-signal p {
+  color: #98a2b3;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 6px 0 0;
+}
+
+.ai-close {
+  align-items: center;
+  background: #f1f5f9;
+  border: 0;
+  border-radius: 8px;
+  color: #667085;
+  cursor: pointer;
+  display: inline-flex;
+  height: 36px;
+  justify-content: center;
+  width: 36px;
+}
+
+.ai-status {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 900;
+  margin-top: 16px;
+  padding: 9px 13px;
+  white-space: nowrap;
+}
+
+.ai-status.ok {
+  background: #e6f9eb;
+  color: #0f8f57;
+}
+
+.ai-status.warning {
+  background: #fff7e6;
+  color: #b7791f;
+}
+
+.ai-status.critical {
+  background: #fff0f0;
+  color: #c2410c;
+}
+
+.ai-grid {
+  margin-top: 20px;
+}
+
+.ai-signals {
+  margin-top: 18px;
+}
+
+.ai-signal {
+  border: 1px solid #e5eaf2;
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 14px;
+}
+
+.ai-signal mat-icon {
+  color: #3b66f5;
+}
+
+.ai-signal.warning mat-icon {
+  color: #b7791f;
+}
+
+.ai-signal.critical mat-icon {
+  color: #c2410c;
+}
+
+.ai-signal strong {
+  color: #263348;
+  display: block;
+  font-size: 22px;
+  font-weight: 900;
+  margin-top: 4px;
+}
+
+.ai-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 14px;
+}
+
+.ai-prompts button,
+.ai-question-row button {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.ai-prompts button {
+  background: #eef4ff;
+  border-radius: 999px;
+  color: #315fcb;
+  padding: 8px 11px;
+}
+
+.ai-question-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-top: 8px;
+}
+
+.ai-question-row input {
+  border: 1px solid #d9e1ec;
+  border-radius: 8px;
+  color: #263348;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  min-height: 42px;
+  padding: 0 12px;
+}
+
+.ai-question-row button {
+  align-items: center;
+  background: #2f64ed;
+  border-radius: 8px;
+  color: #ffffff;
+  display: inline-flex;
+  height: 42px;
+  justify-content: center;
+  width: 46px;
+}
+
+.ai-answer {
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-top: 14px;
+  padding: 14px;
+}
+
+@media (max-width: 1020px) {
+  .ai-panel {
+    bottom: 16px;
+    max-width: none;
+    right: 16px;
+    top: 16px;
+    width: calc(100vw - 32px);
+  }
+
+  .ai-launcher {
+    bottom: 18px;
+    left: 16px;
+    justify-content: center;
+    right: 16px;
+  }
+}

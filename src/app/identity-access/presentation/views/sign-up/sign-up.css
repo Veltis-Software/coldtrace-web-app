@@ -7,9 +7,9 @@
   background: #f7f8fa;
   box-sizing: border-box;
   display: flex;
-  height: calc(100dvh - 72px);
+  height: 100dvh;
   justify-content: center;
-  min-height: calc(100dvh - 72px);
+  min-height: 100dvh;
   overflow-y: auto;
   padding: clamp(56px, 11vh, 132px) 24px 64px;
   scrollbar-gutter: stable;
@@ -99,10 +99,18 @@
 }
 
 .password-control input {
+  appearance: none;
+  background: transparent;
   border: 0;
   box-shadow: none;
   flex: 1;
   min-width: 0;
+  outline: none;
+}
+
+.password-control input::-ms-clear,
+.password-control input::-ms-reveal {
+  display: none;
 }
 
 .icon-button {
@@ -145,6 +153,13 @@
   height: 20px;
   margin: 0;
   width: 20px;
+}
+
+.social-account {
+  color: #404040;
+  font-family: 'Inter', Arial, sans-serif;
+  overflow-wrap: anywhere;
+  text-align: center;
 }
 
 .primary-action,
@@ -194,6 +209,11 @@
   color: #2f3b52;
 }
 
+.social-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
 .social-icon {
   display: block;
   height: 30px;
@@ -241,16 +261,28 @@
   color: #52784b;
 }
 
-.secondary-link {
+.secondary-link,
+.secondary-action {
   color: #9aaee7;
   font-family: 'Varela Round', Arial, sans-serif;
   font-size: 16px;
   line-height: 19px;
   text-align: center;
+}
+
+.secondary-link {
   text-decoration: none;
 }
 
-.secondary-link:hover {
+.secondary-action {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.secondary-link:hover,
+.secondary-action:hover:not(:disabled) {
   text-decoration: underline;
 }
 
@@ -262,22 +294,4 @@
   .brand-logo {
     width: 210px;
   }
-}
-
-/* Restored password-field fixes for browsers that inject their own reveal button. */
-.password-control input {
-  appearance: none;
-  background: transparent;
-  outline: none;
-}
-
-.password-control input:focus {
-  border: 0;
-  box-shadow: none;
-  outline: none;
-}
-
-.password-control input::-ms-clear,
-.password-control input::-ms-reveal {
-  display: none;
 }

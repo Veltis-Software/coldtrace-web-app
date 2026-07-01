@@ -13,7 +13,6 @@ export class Gateway implements BaseEntity {
     private readonly _name: string,
     private readonly _network: string,
     private readonly _status: GatewayStatus,
-    private readonly _locationName: string | null = null,
   ) {}
 
   get id(): number {
@@ -43,9 +42,4 @@ export class Gateway implements BaseEntity {
   get status(): GatewayStatus {
     return this._status;
   }
-
-  get locationName(): string | null {
-    return this._locationName;
-  }
 }
-

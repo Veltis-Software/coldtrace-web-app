@@ -165,7 +165,6 @@ class AlertsStore {
   +loadAlerts(): void
   +recognizeIncident(incident, responsibleUserName)
   +closeIncident(incident, correctiveAction, closureEvidence, responsibleUserName)
-  +reviewEscalation(incident, responsibleUserName)
 }
 
 class AlertsApi {
@@ -173,7 +172,6 @@ class AlertsApi {
   +createIncident(incident)
   +updateIncident(incident)
   +getNotifications()
-  +createNotification(notification)
 }
 
 ' Reports

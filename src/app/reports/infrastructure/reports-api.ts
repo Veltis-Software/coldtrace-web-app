@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BaseApi } from '../../shared/infrastructure/base-api';
+import { OrganizationScopeStore } from '../../shared/infrastructure/organization-scope.store';
 import { Report } from '../domain/model/report.entity';
 import { ReportsApiEndpoint } from './reports-api-endpoint';
 
@@ -12,9 +13,9 @@ import { ReportsApiEndpoint } from './reports-api-endpoint';
 export class ReportsApi extends BaseApi {
   private readonly reportsEndpoint: ReportsApiEndpoint;
 
-  constructor(httpClient: HttpClient) {
+  constructor(httpClient: HttpClient, organizationScope: OrganizationScopeStore) {
     super();
-    this.reportsEndpoint = new ReportsApiEndpoint(httpClient);
+    this.reportsEndpoint = new ReportsApiEndpoint(httpClient, organizationScope);
   }
 
   /**

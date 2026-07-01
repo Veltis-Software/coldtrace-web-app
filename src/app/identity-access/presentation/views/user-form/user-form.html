@@ -1,105 +1,93 @@
-<section class="access-view-header" aria-labelledby="access-view-title">
-  <h1 id="access-view-title">{{ 'dashboard-shell.nav-access' | translate }}</h1>
-  <p>{{ 'roles-permissions.create-user-subtitle' | translate }}</p>
-</section>
-
-  <nav class="work-tabs section-tabs" aria-label="Access sections">
-    <a routerLink="/identity-access/roles-permissions" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'dashboard-shell.nav-users' | translate }}</a>
-    <a routerLink="/identity-access/roles-permissions/users/new" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'dashboard-shell.nav-new-user' | translate }}</a>
-    <a routerLink="/identity-access/roles-permissions/permissions" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'dashboard-shell.nav-permissions' | translate }}</a>
-  </nav>
-
 <section class="form-card" aria-labelledby="create-user-title">
-  <div class="table-heading">
-    <div>
-      <h2 id="create-user-title">{{ 'roles-permissions.create-user-title' | translate }}</h2>
-      <p>{{ 'roles-permissions.create-user-subtitle' | translate }}</p>
-    </div>
-    <a class="secondary-action" routerLink="/identity-access/users">
-      <mat-icon aria-hidden="true">arrow_back</mat-icon>
-      {{ 'roles-permissions.form.cancel' | translate }}
-    </a>
-  </div>
-
-  @if (feedback() === 'success') {
-    <p class="feedback success">{{ 'roles-permissions.feedback.user-created' | translate }}</p>
-  }
-
-  @if (feedback() === 'duplicate-email') {
-    <p class="feedback error">{{ 'roles-permissions.feedback.duplicate-email' | translate }}</p>
-  }
-
-  @if (feedback() === 'invalid-role') {
-    <p class="feedback error">{{ 'roles-permissions.feedback.invalid-role' | translate }}</p>
-  }
-
-  @if (feedback() === 'server-error') {
-    <p class="feedback error">{{ 'roles-permissions.feedback.server-error' | translate }}</p>
-  }
-
-  @if (loading()) {
-    <p class="feedback neutral">{{ 'roles-permissions.feedback.loading' | translate }}</p>
-  } @else if (!canManageAccess()) {
-    <p class="feedback error">{{ 'roles-permissions.denied.message' | translate }}</p>
-  } @else {
-    <form class="user-form" [formGroup]="userForm" (ngSubmit)="submit()">
-      <label class="form-field">
-        <span>{{ 'roles-permissions.form.full-name' | translate }}</span>
-        <input
-          type="text"
-          formControlName="fullName"
-          [placeholder]="'roles-permissions.form.full-name-placeholder' | translate"
-        />
-        @if (hasControlError('fullName')) {
-          <small>{{ 'roles-permissions.form.full-name-error' | translate }}</small>
-        }
-      </label>
-
-      <label class="form-field">
-        <span>{{ 'roles-permissions.form.email' | translate }}</span>
-        <input
-          type="email"
-          formControlName="email"
-          [placeholder]="'roles-permissions.form.email-placeholder' | translate"
-        />
-        @if (hasControlError('email')) {
-          <small>{{ 'roles-permissions.form.email-error' | translate }}</small>
-        }
-      </label>
-
-      <label class="form-field">
-        <span>{{ 'roles-permissions.form.role' | translate }}</span>
-        <select formControlName="roleId">
-          @for (role of assignableRoles(); track role.id) {
-            <option [value]="role.id">{{ roleLabelKey(role) | translate }}</option>
-          }
-        </select>
-        @if (hasControlError('roleId')) {
-          <small>{{ 'roles-permissions.form.role-error' | translate }}</small>
-        }
-      </label>
-
-      <aside class="form-guidance">
-        <mat-icon aria-hidden="true">verified_user</mat-icon>
-        <div>
-          <strong>Role assignment</strong>
-          <span>The selected role defines what this user can review or update inside the active organization.</span>
-        </div>
-      </aside>
-
-      <div class="form-actions">
-        <a class="secondary-action" routerLink="/identity-access/users">
-          <mat-icon aria-hidden="true">arrow_back</mat-icon>
-          {{ 'roles-permissions.form.cancel' | translate }}
-        </a>
-        <button type="submit" class="primary-form-action" [disabled]="creating()">
-          <mat-icon aria-hidden="true">person_add</mat-icon>
-          {{
-            (creating() ? 'roles-permissions.form.creating' : 'roles-permissions.form.create')
-              | translate
-          }}
-        </button>
+    <div class="table-heading">
+      <div>
+        <h2 id="create-user-title">{{ 'roles-permissions.create-user-title' | translate }}</h2>
+        <p>{{ 'roles-permissions.create-user-subtitle' | translate }}</p>
       </div>
-    </form>
-  }
+      <a class="secondary-action" routerLink="/identity-access/roles-permissions">
+        {{ 'roles-permissions.form.cancel' | translate }}
+      </a>
+    </div>
+
+    @if (feedback() === 'success') {
+      <p class="feedback success">{{ 'roles-permissions.feedback.user-created' | translate }}</p>
+    }
+
+    @if (feedback() === 'duplicate-email') {
+      <p class="feedback error">{{ 'roles-permissions.feedback.duplicate-email' | translate }}</p>
+    }
+
+    @if (feedback() === 'invalid-role') {
+      <p class="feedback error">{{ 'roles-permissions.feedback.invalid-role' | translate }}</p>
+    }
+
+    @if (feedback() === 'server-error') {
+      <p class="feedback error">{{ 'roles-permissions.feedback.server-error' | translate }}</p>
+    }
+
+    @if (loading()) {
+      <p class="feedback neutral">{{ 'roles-permissions.feedback.loading' | translate }}</p>
+    } @else if (!canManageAccess()) {
+      <p class="feedback error">{{ 'roles-permissions.denied.message' | translate }}</p>
+    } @else {
+      <form class="user-form" [formGroup]="userForm" (ngSubmit)="submit()">
+        <label class="form-field">
+          <span>{{ 'roles-permissions.form.full-name' | translate }}</span>
+          <input
+            type="text"
+            formControlName="fullName"
+            [placeholder]="'roles-permissions.form.full-name-placeholder' | translate"
+          />
+          @if (hasControlError('fullName')) {
+            <small>{{ 'roles-permissions.form.full-name-error' | translate }}</small>
+          }
+        </label>
+
+        <label class="form-field">
+          <span>{{ 'roles-permissions.form.email' | translate }}</span>
+          <input
+            type="email"
+            formControlName="email"
+            [placeholder]="'roles-permissions.form.email-placeholder' | translate"
+          />
+          @if (hasControlError('email')) {
+            <small>{{ 'roles-permissions.form.email-error' | translate }}</small>
+          }
+        </label>
+
+        <label class="form-field">
+          <span>{{ 'roles-permissions.form.password' | translate }}</span>
+          <input
+            type="password"
+            formControlName="password"
+            [placeholder]="'roles-permissions.form.password-placeholder' | translate"
+            autocomplete="new-password"
+          />
+          @if (hasControlError('password')) {
+            <small>{{ 'roles-permissions.form.password-error' | translate }}</small>
+          }
+        </label>
+
+        <label class="form-field">
+          <span>{{ 'roles-permissions.form.role' | translate }}</span>
+          <select formControlName="roleId">
+            @for (role of assignableRoles(); track role.id) {
+              <option [value]="role.id">{{ roleLabelKey(role) | translate }}</option>
+            }
+          </select>
+          @if (hasControlError('roleId')) {
+            <small>{{ 'roles-permissions.form.role-error' | translate }}</small>
+          }
+        </label>
+
+        <div class="form-actions">
+          <a class="secondary-action" routerLink="/identity-access/roles-permissions">
+            {{ 'roles-permissions.form.cancel' | translate }}
+          </a>
+          <button type="submit" class="primary-form-action" [disabled]="creating()">
+            {{ (creating() ? 'roles-permissions.form.creating' : 'roles-permissions.form.create') | translate }}
+          </button>
+        </div>
+      </form>
+    }
 </section>

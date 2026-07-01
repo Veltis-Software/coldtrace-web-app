@@ -27,3 +27,26 @@ export interface IoTDeviceResource extends BaseResource {
 export interface IoTDevicesResponse extends BaseResponse {
   iotDevices: IoTDeviceResource[];
 }
+
+/**
+ * @summary Request payload for creating an IoT device through the backend.
+ */
+export interface CreateIoTDeviceRequest {
+  gatewayId: number;
+  uuid: string;
+  deviceType: string;
+  model: string;
+  measurementType: string;
+  measurementParameters?: string[];
+  readingFrequencySeconds?: number;
+  assetId: number | null;
+  status: IoTDeviceStatus;
+  calibrationStatus: CalibrationStatus;
+  lastCalibrationDate: string;
+  nextCalibrationDate: string;
+}
+
+/**
+ * @summary Request payload for updating an IoT device through the backend.
+ */
+export interface UpdateIoTDeviceRequest extends CreateIoTDeviceRequest {}

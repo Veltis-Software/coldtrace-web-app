@@ -22,7 +22,7 @@
   align-items: start;
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(3, minmax(170px, 1fr)) minmax(140px, auto);
+  grid-template-columns: repeat(4, minmax(150px, 1fr)) minmax(140px, auto);
 }
 
 .filter-field small {

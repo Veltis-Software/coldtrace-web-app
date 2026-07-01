@@ -1,9 +1,8 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { forkJoin, Observable, of, switchMap, tap } from 'rxjs';
+import { forkJoin, Observable, tap } from 'rxjs';
 import { Asset } from '../domain/model/asset.entity';
 import { AssetSettings } from '../domain/model/asset-settings.entity';
 import { AssetStatus } from '../domain/model/asset-status.enum';
-import { CalibrationStatus } from '../domain/model/calibration-status.enum';
 import { ConnectivityStatus } from '../domain/model/connectivity-status.enum';
 import { Gateway } from '../domain/model/gateway.entity';
 import { GatewayStatus } from '../domain/model/gateway-status.enum';
@@ -11,6 +10,11 @@ import { IoTDevice } from '../domain/model/iot-device.entity';
 import { IoTDeviceStatus } from '../domain/model/iot-device-status.enum';
 import { Location } from '../domain/model/location.entity';
 import { AssetManagementApi } from '../infrastructure/asset-management-api';
+import { OrganizationScopeStore } from '../../shared/infrastructure/organization-scope.store';
+
+interface LoadOptions {
+  force?: boolean;
+}
 
 /**
  * @summary Defines operational metrics derived from assets, devices, and gateways.
@@ -37,6 +41,16 @@ export class AssetManagementStore {
   private readonly assetSettingsSignal = signal<AssetSettings[]>([]);
   private readonly loadingSignal = signal<boolean>(false);
   private readonly errorSignal = signal<string | null>(null);
+  private locationsLoadedForOrganizationId: number | null = null;
+  private locationsRequestInFlightForOrganizationId: number | null = null;
+  private assetsLoadedForOrganizationId: number | null = null;
+  private assetsRequestInFlightForOrganizationId: number | null = null;
+  private iotDevicesLoadedForOrganizationId: number | null = null;
+  private iotDevicesRequestInFlightForOrganizationId: number | null = null;
+  private gatewaysLoadedForOrganizationId: number | null = null;
+  private gatewaysRequestInFlightForOrganizationId: number | null = null;
+  private assetSettingsLoadedForOrganizationId: number | null = null;
+  private assetSettingsRequestInFlightForOrganizationId: number | null = null;
 
   readonly locations = this.locationsSignal.asReadonly();
   readonly assets = this.assetsSignal.asReadonly();
@@ -46,9 +60,11 @@ export class AssetManagementStore {
   readonly loading = this.loadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
   readonly assetCount = computed(() => this.assets().length);
-  private telemetryUpdateStep = 0;
 
-  constructor(private assetManagementApi: AssetManagementApi) {}
+  constructor(
+    private assetManagementApi: AssetManagementApi,
+    private organizationScope: OrganizationScopeStore,
+  ) {}
 
   /**
    * @summary Returns locations scoped to one organization.
@@ -72,8 +88,11 @@ export class AssetManagementStore {
       return 0;
     }
 
+    const iotDevices = this.iotDevicesForOrganization(organizationId);
+    const gateways = this.gatewaysForOrganization(organizationId);
+
     return this.assets().filter((asset) => {
-      return asset.organizationId === organizationId && this.hasAssetIssue(asset);
+      return asset.organizationId === organizationId && this.hasAssetIssue(asset, iotDevices, gateways);
     }).length;
   }
 
@@ -140,31 +159,25 @@ export class AssetManagementStore {
    * @summary Resolves an asset location from the location catalog.
    */
   locationForAsset(asset: Asset, locations: Location[] = this.locations()): string {
-    return this.locationNameById(asset.locationId, locations, asset.locationName);
+    return this.locationNameById(asset.locationId, locations);
   }
 
   /**
    * @summary Resolves a gateway location by identifier.
    */
   locationForGateway(gateway: Gateway, locations: Location[] = this.locations()): string {
-    return this.locationNameById(gateway.locationId, locations, gateway.locationName);
+    return this.locationNameById(gateway.locationId, locations);
   }
 
   /**
    * @summary Resolves a readable location name by identifier.
    */
-  locationNameById(
-    locationId: number | null,
-    locations: Location[] = this.locations(),
-    fallback: string | null = null,
-  ): string {
-    const fallbackName = fallback?.trim() || 'N/A';
-
+  locationNameById(locationId: number | null, locations: Location[] = this.locations()): string {
     if (!locationId) {
-      return fallbackName;
+      return 'N/A';
     }
 
-    return locations.find((location) => location.id === locationId)?.name ?? fallbackName;
+    return locations.find((location) => location.id === locationId)?.name ?? 'N/A';
   }
 
   /**
@@ -175,10 +188,57 @@ export class AssetManagementStore {
     iotDevices: IoTDevice[] = this.iotDevices(),
     gateways: Gateway[] = this.gateways(),
   ): Gateway | null {
-    const iotDevice = iotDevices.find((device) => device.assetId === asset.id);
-    return iotDevice
-      ? gateways.find((gateway) => gateway.id === iotDevice.gatewayId) ?? null
-      : null;
+    const assignedGatewayIds = iotDevices
+      .filter((device) => device.assetId === asset.id)
+      .map((device) => device.gatewayId);
+
+    return (
+      gateways.find(
+        (gateway) =>
+          assignedGatewayIds.includes(gateway.id) && gateway.locationId === asset.locationId,
+      ) ?? null
+    );
+  }
+
+  /**
+   * @summary Resolves live asset connectivity from assigned devices and gateways.
+   */
+  connectivityForAsset(
+    asset: Asset,
+    iotDevices: IoTDevice[] = this.iotDevices(),
+    gateways: Gateway[] = this.gateways(),
+  ): ConnectivityStatus {
+    const linkedDevices = iotDevices.filter(
+      (iotDevice) =>
+        iotDevice.assetId === asset.id && iotDevice.status === IoTDeviceStatus.Linked,
+    );
+
+    if (!linkedDevices.length) {
+      return ConnectivityStatus.Offline;
+    }
+
+    const assignedGateways = linkedDevices
+      .map((iotDevice) =>
+        gateways.find(
+          (gateway) =>
+            gateway.id === iotDevice.gatewayId && gateway.locationId === asset.locationId,
+        ),
+      )
+      .filter((gateway): gateway is Gateway => !!gateway);
+
+    if (!assignedGateways.length) {
+      return ConnectivityStatus.Offline;
+    }
+
+    if (assignedGateways.some((gateway) => gateway.status === GatewayStatus.Active)) {
+      return ConnectivityStatus.Online;
+    }
+
+    if (assignedGateways.some((gateway) => gateway.status === GatewayStatus.Maintenance)) {
+      return ConnectivityStatus.Unstable;
+    }
+
+    return ConnectivityStatus.Offline;
   }
 
   /**
@@ -258,26 +318,48 @@ export class AssetManagementStore {
       totalDevices: iotDevices.length,
       connectedGateways: gateways.filter((gateway) => gateway.status === GatewayStatus.Active)
         .length,
-      assetsWithIssues: assets.filter((asset) => this.hasAssetIssue(asset)).length,
-      connectivityIssues: assets.filter((asset) => asset.connectivity !== ConnectivityStatus.Online)
+      assetsWithIssues: assets.filter((asset) => this.hasAssetIssue(asset, iotDevices, gateways))
         .length,
+      connectivityIssues: assets.filter(
+        (asset) =>
+          this.connectivityForAsset(asset, iotDevices, gateways) !== ConnectivityStatus.Online,
+      ).length,
     };
   }
 
   /**
    * @summary Loads assets data into local state.
    */
-  loadAssets(): void {
+  loadAssets(options: LoadOptions = {}): void {
+    const organizationId = this.activeOrganizationId();
+
+    if (!organizationId) {
+      this.assetsSignal.set([]);
+      return;
+    }
+
+    if (
+      !options.force &&
+      (this.assetsLoadedForOrganizationId === organizationId ||
+        this.assetsRequestInFlightForOrganizationId === organizationId)
+    ) {
+      return;
+    }
+
+    this.assetsRequestInFlightForOrganizationId = organizationId;
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
     this.assetManagementApi.getAssets().subscribe({
       next: (assets) => {
         this.assetsSignal.set(assets);
+        this.assetsLoadedForOrganizationId = organizationId;
+        this.assetsRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
       error: (error) => {
         this.errorSignal.set(error.message);
+        this.assetsRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
     });
@@ -286,20 +368,67 @@ export class AssetManagementStore {
   /**
    * @summary Loads locations data into local state.
    */
-  loadLocations(): void {
+  loadLocations(options: LoadOptions = {}): void {
+    const organizationId = this.activeOrganizationId();
+
+    if (!organizationId) {
+      this.locationsSignal.set([]);
+      return;
+    }
+
+    if (
+      !options.force &&
+      (this.locationsLoadedForOrganizationId === organizationId ||
+        this.locationsRequestInFlightForOrganizationId === organizationId)
+    ) {
+      return;
+    }
+
+    this.locationsRequestInFlightForOrganizationId = organizationId;
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
     this.assetManagementApi.getLocations().subscribe({
       next: (locations) => {
         this.locationsSignal.set(locations);
+        this.locationsLoadedForOrganizationId = organizationId;
+        this.locationsRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
-      error: () => {
-        this.locationsSignal.set([]);
+      error: (error) => {
+        this.errorSignal.set(error.message);
+        this.locationsRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
     });
+  }
+
+  /**
+   * @summary Persists a location and appends it to local state.
+   */
+  createLocation(location: Location): Observable<Location> {
+    return this.assetManagementApi.createLocation(location).pipe(
+      tap((createdLocation) => {
+        this.locationsSignal.update((locations) => [...locations, createdLocation]);
+        this.locationsLoadedForOrganizationId = this.activeOrganizationId();
+      }),
+    );
+  }
+
+  /**
+   * @summary Persists location changes and replaces the local entry.
+   */
+  updateLocation(location: Location): Observable<Location> {
+    return this.assetManagementApi.updateLocation(location).pipe(
+      tap((updatedLocation) => {
+        this.locationsSignal.update((locations) =>
+          locations.map((currentLocation) =>
+            currentLocation.id === updatedLocation.id ? updatedLocation : currentLocation,
+          ),
+        );
+        this.locationsLoadedForOrganizationId = this.activeOrganizationId();
+      }),
+    );
   }
 
   /**
@@ -309,6 +438,7 @@ export class AssetManagementStore {
     return this.assetManagementApi.createAsset(asset).pipe(
       tap((createdAsset) => {
         this.assetsSignal.update((assets) => [...assets, createdAsset]);
+        this.assetsLoadedForOrganizationId = this.activeOrganizationId();
       }),
     );
   }
@@ -324,43 +454,7 @@ export class AssetManagementStore {
             currentAsset.id === updatedAsset.id ? updatedAsset : currentAsset,
           ),
         );
-      }),
-    );
-  }
-
-  /**
-   * @summary Deletes an asset and detaches dependent local resources first.
-   */
-  deleteAsset(asset: Asset): Observable<void> {
-    const linkedDevices = this.iotDevices().filter((iotDevice) => iotDevice.assetId === asset.id);
-    const linkedSettings = this.assetSettings().filter((settings) => settings.assetId === asset.id);
-    const preparationRequests = [
-      ...linkedDevices.map((iotDevice) =>
-        this.updateIoTDevice(
-          this.nextIoTDevice(iotDevice, {
-            assetId: null,
-            status: IoTDeviceStatus.Available,
-          }),
-        ),
-      ),
-      ...linkedSettings.map((settings) =>
-        this.assetManagementApi.deleteAssetSettings(settings.id).pipe(
-          tap(() => {
-            this.assetSettingsSignal.update((currentSettings) =>
-              currentSettings.filter((assetSettings) => assetSettings.id !== settings.id),
-            );
-          }),
-        ),
-      ),
-    ];
-    const preparation = preparationRequests.length ? forkJoin(preparationRequests) : of([]);
-
-    return preparation.pipe(
-      switchMap(() => this.assetManagementApi.deleteAsset(asset.id)),
-      tap(() => {
-        this.assetsSignal.update((assets) =>
-          assets.filter((currentAsset) => currentAsset.id !== asset.id),
-        );
+        this.assetsLoadedForOrganizationId = this.activeOrganizationId();
       }),
     );
   }
@@ -368,17 +462,36 @@ export class AssetManagementStore {
   /**
    * @summary Loads IoT devices data into local state.
    */
-  loadIoTDevices(): void {
+  loadIoTDevices(options: LoadOptions = {}): void {
+    const organizationId = this.activeOrganizationId();
+
+    if (!organizationId) {
+      this.iotDevicesSignal.set([]);
+      return;
+    }
+
+    if (
+      !options.force &&
+      (this.iotDevicesLoadedForOrganizationId === organizationId ||
+        this.iotDevicesRequestInFlightForOrganizationId === organizationId)
+    ) {
+      return;
+    }
+
+    this.iotDevicesRequestInFlightForOrganizationId = organizationId;
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
     this.assetManagementApi.getIoTDevices().subscribe({
       next: (iotDevices) => {
         this.iotDevicesSignal.set(iotDevices);
+        this.iotDevicesLoadedForOrganizationId = organizationId;
+        this.iotDevicesRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
       error: (error) => {
         this.errorSignal.set(error.message);
+        this.iotDevicesRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
     });
@@ -391,6 +504,7 @@ export class AssetManagementStore {
     return this.assetManagementApi.createIoTDevice(iotDevice).pipe(
       tap((createdIoTDevice) => {
         this.iotDevicesSignal.update((iotDevices) => [...iotDevices, createdIoTDevice]);
+        this.iotDevicesLoadedForOrganizationId = this.activeOrganizationId();
       }),
     );
   }
@@ -406,19 +520,7 @@ export class AssetManagementStore {
             currentIoTDevice.id === updatedIoTDevice.id ? updatedIoTDevice : currentIoTDevice,
           ),
         );
-      }),
-    );
-  }
-
-  /**
-   * @summary Deletes an IoT device and removes it from local state.
-   */
-  deleteIoTDevice(iotDevice: IoTDevice): Observable<void> {
-    return this.assetManagementApi.deleteIoTDevice(iotDevice.id).pipe(
-      tap(() => {
-        this.iotDevicesSignal.update((iotDevices) =>
-          iotDevices.filter((currentIoTDevice) => currentIoTDevice.id !== iotDevice.id),
-        );
+        this.iotDevicesLoadedForOrganizationId = this.activeOrganizationId();
       }),
     );
   }
@@ -426,17 +528,36 @@ export class AssetManagementStore {
   /**
    * @summary Loads gateways data into local state.
    */
-  loadGateways(): void {
+  loadGateways(options: LoadOptions = {}): void {
+    const organizationId = this.activeOrganizationId();
+
+    if (!organizationId) {
+      this.gatewaysSignal.set([]);
+      return;
+    }
+
+    if (
+      !options.force &&
+      (this.gatewaysLoadedForOrganizationId === organizationId ||
+        this.gatewaysRequestInFlightForOrganizationId === organizationId)
+    ) {
+      return;
+    }
+
+    this.gatewaysRequestInFlightForOrganizationId = organizationId;
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
     this.assetManagementApi.getGateways().subscribe({
       next: (gateways) => {
         this.gatewaysSignal.set(gateways);
+        this.gatewaysLoadedForOrganizationId = organizationId;
+        this.gatewaysRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
       error: (error) => {
         this.errorSignal.set(error.message);
+        this.gatewaysRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
     });
@@ -449,6 +570,7 @@ export class AssetManagementStore {
     return this.assetManagementApi.createGateway(gateway).pipe(
       tap((createdGateway) => {
         this.gatewaysSignal.update((gateways) => [...gateways, createdGateway]);
+        this.gatewaysLoadedForOrganizationId = this.activeOrganizationId();
       }),
     );
   }
@@ -464,24 +586,7 @@ export class AssetManagementStore {
             currentGateway.id === updatedGateway.id ? updatedGateway : currentGateway,
           ),
         );
-      }),
-    );
-  }
-
-  /**
-   * @summary Deletes a gateway after removing connected IoT devices.
-   */
-  deleteGateway(gateway: Gateway): Observable<void> {
-    const linkedDevices = this.iotDevices().filter((iotDevice) => iotDevice.gatewayId === gateway.id);
-    const preparationRequests = linkedDevices.map((iotDevice) => this.deleteIoTDevice(iotDevice));
-    const preparation = preparationRequests.length ? forkJoin(preparationRequests) : of([]);
-
-    return preparation.pipe(
-      switchMap(() => this.assetManagementApi.deleteGateway(gateway.id)),
-      tap(() => {
-        this.gatewaysSignal.update((gateways) =>
-          gateways.filter((currentGateway) => currentGateway.id !== gateway.id),
-        );
+        this.gatewaysLoadedForOrganizationId = this.activeOrganizationId();
       }),
     );
   }
@@ -489,17 +594,36 @@ export class AssetManagementStore {
   /**
    * @summary Loads asset settings data into local state.
    */
-  loadAssetSettings(): void {
+  loadAssetSettings(options: LoadOptions = {}): void {
+    const organizationId = this.activeOrganizationId();
+
+    if (!organizationId) {
+      this.assetSettingsSignal.set([]);
+      return;
+    }
+
+    if (
+      !options.force &&
+      (this.assetSettingsLoadedForOrganizationId === organizationId ||
+        this.assetSettingsRequestInFlightForOrganizationId === organizationId)
+    ) {
+      return;
+    }
+
+    this.assetSettingsRequestInFlightForOrganizationId = organizationId;
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
     this.assetManagementApi.getAssetSettings().subscribe({
       next: (assetSettings) => {
         this.assetSettingsSignal.set(assetSettings);
+        this.assetSettingsLoadedForOrganizationId = organizationId;
+        this.assetSettingsRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
       error: (error) => {
         this.errorSignal.set(error.message);
+        this.assetSettingsRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
     });
@@ -512,6 +636,7 @@ export class AssetManagementStore {
     return this.assetManagementApi.createAssetSettings(assetSettings).pipe(
       tap((createdAssetSettings) => {
         this.assetSettingsSignal.update((settings) => [...settings, createdAssetSettings]);
+        this.assetSettingsLoadedForOrganizationId = this.activeOrganizationId();
       }),
     );
   }
@@ -527,290 +652,56 @@ export class AssetManagementStore {
             currentSettings.id === updatedAssetSettings.id ? updatedAssetSettings : currentSettings,
           ),
         );
+        this.assetSettingsLoadedForOrganizationId = this.activeOrganizationId();
       }),
     );
   }
 
   /**
-   * @summary Simulates telemetry status changes for one organization.
+   * @summary Refreshes organization operational state from the backend.
    */
   updateOrganizationTelemetry(organizationId: number | null): void {
     if (!organizationId) {
       return;
     }
 
-    const assets = this.assetsForOrganization(organizationId);
-    const iotDevices = this.iotDevicesForOrganization(organizationId);
-    const gateways = this.gatewaysForOrganization(organizationId);
-    const currentStep = this.telemetryUpdateStep % 3;
-    this.telemetryUpdateStep += 1;
-
-    // Rotate simulated changes so dashboard indicators move without backend jobs.
-    if (currentStep === 0) {
-      const gateway = this.sampleOne(gateways);
-
-      if (gateway) {
-        this.updateGateway(
-          this.nextGateway(gateway, {
-            status: this.randomGatewayStatus(),
-          }),
-        ).subscribe({ error: () => undefined });
-      }
-
-      return;
-    }
-
-    if (currentStep === 1) {
-      const iotDevice = this.sampleOne(iotDevices);
-
-      if (iotDevice) {
-        this.updateIoTDevice(
-          this.nextIoTDevice(iotDevice, {
-            status: this.randomIoTDeviceStatus(iotDevice),
-            calibrationStatus: this.randomCalibrationStatus(),
-          }),
-        ).subscribe({ error: () => undefined });
-      }
-
-      return;
-    }
-
-    const asset = this.sampleOne(assets);
-
-    if (!asset) {
-      return;
-    }
-
-    const gateway = this.gatewayForAsset(asset, iotDevices, gateways);
-    const iotDevice = iotDevices.find((currentIoTDevice) => currentIoTDevice.assetId === asset.id);
-    const settings = this.settingsForAsset(organizationId, asset.id);
-    const connectivity = this.randomConnectivity(gateway ?? null, iotDevice ?? null);
-    const currentTemperature = this.randomTemperature(connectivity, settings);
-
-    this.updateAsset(
-      this.nextAsset(asset, {
-        lastIncident: this.incidentFor(currentTemperature, connectivity, settings),
-        currentTemperature,
-        connectivity,
-      }),
-    ).subscribe({ error: () => undefined });
+    forkJoin({
+      assets: this.assetManagementApi.getAssets(),
+      iotDevices: this.assetManagementApi.getIoTDevices(),
+      gateways: this.assetManagementApi.getGateways(),
+      locations: this.assetManagementApi.getLocations(),
+      assetSettings: this.assetManagementApi.getAssetSettings(),
+    }).subscribe({
+      next: ({ assets, iotDevices, gateways, locations, assetSettings }) => {
+        this.assetsSignal.set(assets);
+        this.iotDevicesSignal.set(iotDevices);
+        this.gatewaysSignal.set(gateways);
+        this.locationsSignal.set(locations);
+        this.assetSettingsSignal.set(assetSettings);
+        this.assetsLoadedForOrganizationId = organizationId;
+        this.iotDevicesLoadedForOrganizationId = organizationId;
+        this.gatewaysLoadedForOrganizationId = organizationId;
+        this.locationsLoadedForOrganizationId = organizationId;
+        this.assetSettingsLoadedForOrganizationId = organizationId;
+      },
+      error: () => undefined,
+    });
   }
 
-  private hasAssetIssue(asset: Asset): boolean {
+  private activeOrganizationId(): number | null {
+    return this.organizationScope.activeOrganizationId();
+  }
+
+  private hasAssetIssue(
+    asset: Asset,
+    iotDevices: IoTDevice[] = this.iotDevices(),
+    gateways: Gateway[] = this.gateways(),
+  ): boolean {
     return (
       asset.lastIncident !== 'none' ||
-      asset.connectivity !== ConnectivityStatus.Online ||
+      this.connectivityForAsset(asset, iotDevices, gateways) !== ConnectivityStatus.Online ||
       asset.status !== AssetStatus.Active
     );
   }
 
-  private nextAsset(
-    asset: Asset,
-    fields: Partial<{      status: AssetStatus;
-      lastIncident: string;
-      currentTemperature: string;
-      connectivity: ConnectivityStatus;
-    }>,
-  ): Asset {
-    return new Asset(
-      asset.id,
-      asset.organizationId,
-      asset.uuid,
-      asset.type,
-      asset.locationId,
-      asset.name,
-      asset.capacity,
-      asset.description,
-      fields.status ?? asset.status,
-      fields.lastIncident ?? asset.lastIncident,
-      fields.currentTemperature ?? asset.currentTemperature,
-      asset.entryDate,
-      fields.connectivity ?? asset.connectivity,
-      asset.locationName,
-    );
-  }
-
-  private nextIoTDevice(
-    iotDevice: IoTDevice,
-    fields: Partial<{
-      assetId: number | null;
-      status: IoTDeviceStatus;
-      calibrationStatus: CalibrationStatus;
-      nextCalibrationDate: string;
-    }>,
-  ): IoTDevice {
-    return new IoTDevice(
-      iotDevice.id,
-      iotDevice.organizationId,
-      iotDevice.gatewayId,
-      iotDevice.uuid,
-      iotDevice.deviceType,
-      iotDevice.model,
-      iotDevice.measurementType,
-      fields.assetId ?? iotDevice.assetId,
-      fields.status ?? iotDevice.status,
-      fields.calibrationStatus ?? iotDevice.calibrationStatus,
-      iotDevice.lastCalibrationDate,
-      fields.nextCalibrationDate ?? iotDevice.nextCalibrationDate,
-      iotDevice.measurementParameters,
-      iotDevice.readingFrequencySeconds,
-    );
-  }
-
-  private nextGateway(
-    gateway: Gateway,
-    fields: Partial<{
-      status: GatewayStatus;
-    }>,
-  ): Gateway {
-    return new Gateway(
-      gateway.id,
-      gateway.organizationId,
-      gateway.locationId,
-      gateway.uuid,
-      gateway.name,
-      gateway.network,
-      fields.status ?? gateway.status,
-      gateway.locationName,
-    );
-  }
-
-  private randomTemperature(
-    connectivity: ConnectivityStatus,
-    settings: AssetSettings | undefined,
-  ): string {
-    if (connectivity === ConnectivityStatus.Offline || !settings) {
-      return '—';
-    }
-
-    const minimum = settings.minimumTemperature;
-    const maximum = settings.maximumTemperature;
-    const anomalyRoll = Math.random();
-    let temperature: number;
-
-    if (anomalyRoll < 0.94) {
-      temperature = this.randomNumber(minimum, maximum);
-    } else if (anomalyRoll < 0.97) {
-      temperature = this.randomNumber(minimum - 2, minimum - 0.2);
-    } else {
-      temperature = this.randomNumber(maximum + 0.2, maximum + 3);
-    }
-
-    return `${temperature.toFixed(1)}${settings.temperatureUnit}`;
-  }
-
-  private incidentFor(
-    currentTemperature: string,
-    connectivity: ConnectivityStatus,
-    settings: AssetSettings | undefined,
-  ): string {
-    if (connectivity === ConnectivityStatus.Offline) {
-      return 'connection-lost';
-    }
-
-    if (!settings) {
-      return 'none';
-    }
-
-    const temperature = Number(currentTemperature.replace(/[^\d.-]/g, ''));
-
-    if (temperature > settings.maximumTemperature) {
-      return 'high-temperature';
-    }
-
-    if (temperature < settings.minimumTemperature) {
-      return 'low-temperature';
-    }
-
-    return 'none';
-  }
-
-  private randomConnectivity(
-    gateway: Gateway | null,
-    iotDevice: IoTDevice | null,
-  ): ConnectivityStatus {
-    if (
-      !iotDevice ||
-      gateway?.status === GatewayStatus.Offline ||
-      iotDevice.status === IoTDeviceStatus.Offline
-    ) {
-      return ConnectivityStatus.Offline;
-    }
-
-    if (gateway?.status === GatewayStatus.Maintenance) {
-      return Math.random() < 0.75 ? ConnectivityStatus.Online : ConnectivityStatus.Unstable;
-    }
-
-    const randomValue = Math.random();
-
-    if (randomValue < 0.92) {
-      return ConnectivityStatus.Online;
-    }
-
-    if (randomValue < 0.98) {
-      return ConnectivityStatus.Unstable;
-    }
-
-    return ConnectivityStatus.Offline;
-  }
-
-  private randomIoTDeviceStatus(iotDevice: IoTDevice): IoTDeviceStatus {
-    if (!iotDevice.assetId) {
-      return Math.random() < 0.96 ? IoTDeviceStatus.Available : IoTDeviceStatus.Offline;
-    }
-
-    return Math.random() < 0.96 ? IoTDeviceStatus.Linked : IoTDeviceStatus.Offline;
-  }
-
-  private randomCalibrationStatus(): CalibrationStatus {
-    const randomValue = Math.random();
-
-    if (randomValue < 0.76) {
-      return CalibrationStatus.Compliant;
-    }
-
-    if (randomValue < 0.93) {
-      return CalibrationStatus.DueSoon;
-    }
-
-    if (randomValue < 0.98) {
-      return CalibrationStatus.Expired;
-    }
-
-    return CalibrationStatus.Unknown;
-  }
-
-  private randomGatewayStatus(): GatewayStatus {
-    const randomValue = Math.random();
-
-    if (randomValue < 0.92) {
-      return GatewayStatus.Active;
-    }
-
-    if (randomValue < 0.98) {
-      return GatewayStatus.Maintenance;
-    }
-
-    return GatewayStatus.Offline;
-  }
-
-  private randomNumber(minimum: number, maximum: number): number {
-    return minimum + Math.random() * (maximum - minimum);
-  }
-
-  private sampleOne<T>(items: T[]): T | null {
-    if (!items.length) {
-      return null;
-    }
-
-    return items[Math.floor(Math.random() * items.length)];
-  }
 }
-
-
-
-
-
-
-
-

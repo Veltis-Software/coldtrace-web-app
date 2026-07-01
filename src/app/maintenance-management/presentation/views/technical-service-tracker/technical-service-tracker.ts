@@ -1,6 +1,5 @@
 import { NgClass } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
@@ -37,7 +36,7 @@ type TechnicalServiceFeedback =
  */
 @Component({
   selector: 'app-technical-service-tracker',
-  imports: [RouterLink, RouterLinkActive,
+  imports: [
     MatIcon,
     MatProgressSpinner,
     NgClass,
@@ -146,8 +145,6 @@ export class TechnicalServiceTracker implements OnInit {
   protected loadPageData(): void {
     this.identityLoading.set(true);
     this.feedback.set('idle');
-    this.assetManagementStore.loadGateways();
-    this.maintenanceStore.loadTechnicalServiceRequests();
 
     forkJoin({
       users: this.identityAccessApi.getUsers(),
@@ -197,6 +194,7 @@ export class TechnicalServiceTracker implements OnInit {
     }
 
     const nextRequestId = this.nextTechnicalServiceRequestId();
+    const requestedBy = this.identityAccessStore.currentUserNameFrom(this.users());
     const technicalServiceRequest = new TechnicalServiceRequest(
       nextRequestId,
       organizationId,
@@ -209,6 +207,11 @@ export class TechnicalServiceTracker implements OnInit {
       null,
       null,
       null,
+      null,
+      asset.locationId,
+      asset.name,
+      null,
+      requestedBy,
       null,
     );
 
@@ -255,6 +258,9 @@ export class TechnicalServiceTracker implements OnInit {
     const nextStatus = functionalTestPassed
       ? TechnicalServiceStatus.Closed
       : TechnicalServiceStatus.PendingReview;
+    const closedBy = functionalTestPassed
+      ? this.identityAccessStore.currentUserNameFrom(this.users())
+      : null;
     const updatedRequest = new TechnicalServiceRequest(
       request.id,
       request.organizationId,
@@ -268,6 +274,11 @@ export class TechnicalServiceTracker implements OnInit {
       this.closureForm.controls.resultNotes.value.trim(),
       functionalTestPassed,
       functionalTestPassed ? this.today : null,
+      request.assetLocationId,
+      request.assetName,
+      request.incidentId,
+      request.requestedBy,
+      closedBy,
     );
 
     this.saving.set(true);

@@ -13,5 +13,13 @@ export class Report implements BaseEntity {
     public title: string,
     public periodDate: string,
     public generatedAt: string,
+    public assetCount: number | null = null,
+    public readingCount: number | null = null,
+    public outOfRangeReadingCount: number | null = null,
+    public incidentCount: number | null = null,
+    public openIncidentCount: number | null = null,
+    public averageTemperature: number | null = null,
+    public averageHumidity: number | null = null,
+    public compliancePercentage: number | null = null,
   ) {}
 }

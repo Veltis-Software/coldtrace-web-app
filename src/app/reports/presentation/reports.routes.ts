@@ -7,6 +7,10 @@ const operationalHistory = () =>
   import('./views/operational-history/operational-history').then((m) => m.OperationalHistory);
 const sanitaryCompliance = () =>
   import('./views/sanitary-compliance/sanitary-compliance').then((m) => m.SanitaryCompliance);
+const aiComplianceSummary = () =>
+  import('./views/ai-compliance-summary/ai-compliance-summary').then(
+    (m) => m.AiComplianceSummary,
+  );
 const complianceFindings = () =>
   import('./views/compliance-findings/compliance-findings').then((m) => m.ComplianceFindings);
 const auditEvidence = () =>
@@ -35,6 +39,11 @@ export const reportsRoutes: Routes = [
     path: 'compliance',
     loadComponent: sanitaryCompliance,
     title: 'ColdTrace - Sanitary Compliance',
+  },
+  {
+    path: 'ai-summary',
+    loadComponent: aiComplianceSummary,
+    title: 'ColdTrace - AI Compliance Summary',
   },
   {
     path: 'findings',

@@ -15,10 +15,8 @@
           <div class="category">
             <span class="dot" [style.background]="item.color"></span>
             <div class="text-group">
-              <span class="cat-name">{{ item.label | translate }}</span>
-              <span class="cat-assets">
-                {{ item.assetCount }} {{ 'monitoring.operational.unit-assets' | translate }}
-              </span>
+            <span class="cat-name">{{ item.label | translate }}</span>
+              <span class="cat-assets">{{ item.assetCount }} {{ 'monitoring.operational.unit-assets' | translate }}</span>
             </div>
           </div>
           <span class="percentage">{{ item.percentage }}%</span>

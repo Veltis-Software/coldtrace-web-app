@@ -20,12 +20,15 @@ export class SensorReadingAssembler implements BaseAssembler<
       resource.iotDeviceId,
       resource.temperature,
       resource.humidity,
-      resource.isOutOfRange,
+      resource.isOutOfRange ?? resource.outOfRange ?? false,
       resource.recordedAt,
       resource.motionDetected ?? null,
       resource.imageCaptured ?? null,
       resource.batteryLevel ?? null,
       resource.signalStrength ?? null,
+      resource.organizationId ?? null,
+      resource.gatewayId ?? null,
+      resource.locationId ?? null,
     );
   }
 
@@ -35,8 +38,11 @@ export class SensorReadingAssembler implements BaseAssembler<
   toResourceFromEntity(entity: SensorReading): SensorReadingResource {
     return {
       id: entity.id,
+      organizationId: entity.organizationId ?? undefined,
       assetId: entity.assetId,
       iotDeviceId: entity.iotDeviceId,
+      gatewayId: entity.gatewayId,
+      locationId: entity.locationId,
       temperature: entity.temperature,
       humidity: entity.humidity,
       isOutOfRange: entity.isOutOfRange,

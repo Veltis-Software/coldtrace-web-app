@@ -323,7 +323,7 @@ so that corrective work can be followed after incidents or operational issues.
 - **Scenario: User updates a technical service request**
   - **Given** a technical service request is open,
   - **When** the user updates its status or service information,
-  - **Then** the application persists the change in the local API.
+  - **Then** the application persists the lifecycle change through the backend technical service endpoint.
 
 ---
 

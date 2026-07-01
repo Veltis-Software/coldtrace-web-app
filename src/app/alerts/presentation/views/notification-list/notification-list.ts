@@ -9,7 +9,7 @@ import { AlertsStore } from '../../../application/alerts.store';
 import { Incident } from '../../../domain/model/incident.entity';
 import { Notification } from '../../../domain/model/notification.entity';
 
-type NotificationFilter = 'all' | 'active' | 'pending' | 'failed';
+type NotificationFilter = 'active' | 'pending' | 'failed';
 
 /**
  * @summary Presents the notification list user interface in the alerts bounded context.
@@ -83,7 +83,7 @@ export class NotificationList implements OnInit {
    */
   ngOnInit(): void {
     this.alertsStore.clearFeedback();
-    this.alertsStore.loadIncidents();
+    this.alertsStore.loadIncidents({ evaluateReadings: true });
   }
 
   protected notificationChannelIcon(notification: Notification): string {
@@ -110,6 +110,10 @@ export class NotificationList implements OnInit {
       this.alertsStore.incidents().find((incident) => incident.id === notification.incidentId) ??
       null
     );
+  }
+
+  protected notificationTitle(notification: Notification): string {
+    return this.incidentForNotification(notification)?.assetName || notification.message;
   }
 
   protected escalationLabelKey(incident: Incident): string {
@@ -198,10 +202,9 @@ export class NotificationList implements OnInit {
         return notification.isPending;
       case 'failed':
         return notification.isFailed;
-      default:
-        return true;
     }
   }
+
   private paginate<T>(items: T[], page: number): T[] {
     const pageCount = Math.max(Math.ceil(items.length / this.pageSize), 1);
     const currentPage = Math.min(Math.max(page, 1), pageCount);

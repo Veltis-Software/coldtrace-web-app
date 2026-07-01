@@ -7,7 +7,7 @@ import { StorageDistributionItem } from '../../../domain/model/storage-distribut
 Chart.register(...registerables);
 
 /**
- * @summary Presents the storage distribution user interface in the monitoring bounded context.
+ * @summary Presents the thermal state distribution user interface in the monitoring bounded context.
  */
 @Component({
   selector: 'app-storage-distribution',

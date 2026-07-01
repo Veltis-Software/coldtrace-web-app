@@ -76,7 +76,7 @@ Main routes:
 - `/asset-management/safety-ranges`
 - `/asset-management/operational-parameters`
 
-Asset management exposes settings used by both the monitoring dashboard and the reports module. Temperature and humidity limits are read from the local API data instead of hard-coded component values.
+Asset management exposes settings used by both the monitoring dashboard and the reports module. Temperature and humidity limits are read from the backend API instead of hard-coded component values.
 
 ---
 
@@ -105,7 +105,7 @@ Main routes:
 - `/monitoring/operational`
 - `/identity-access/dashboard`
 
-The monitoring views read asset, device, gateway, settings, and sensor reading data to present operational status. The store also simulates telemetry updates for demo purposes while still using the local API data as the source of the asset configuration.
+The monitoring views read asset, device, gateway, settings, and sensor reading data from the backend to present operational status. Demo telemetry is requested through the backend-owned generation endpoint, so generated readings are persisted by the API instead of being fabricated in the UI.
 
 ---
 
@@ -160,7 +160,7 @@ Main routes:
 - `/reports/findings`
 - `/reports/audit-evidence`
 
-Reports are generated from local API data and frontend aggregation. CSV export names use the current organization name and selected period.
+Reports use backend operational data and persist report references through the reports endpoint. CSV export names use the current organization name and selected period.
 
 ---
 
@@ -183,7 +183,7 @@ Main routes:
 - `/maintenance/preventive`
 - `/maintenance/technical-service`
 
-Maintenance data is stored through JSON Server collections and is linked to organization and asset records.
+Maintenance data is consumed through organization-scoped backend endpoints and is linked to organization and asset records.
 
 ---
 
@@ -199,7 +199,7 @@ Purpose:
 - Page not found view.
 - Base API endpoint, assembler, response, and entity contracts.
 
-The shared infrastructure keeps the JSON Server integration consistent across contexts. The dashboard shell owns the sidebar navigation, dashboard language switcher, organization label, access shortcuts, reports shortcuts, notifications entry, and current user controls.
+The shared infrastructure keeps backend integration consistent across contexts. The dashboard shell owns the sidebar navigation, dashboard language switcher, organization label, access shortcuts, reports shortcuts, notifications entry, and current user controls.
 
 ---
 
@@ -250,9 +250,9 @@ Product UI text is kept in English by default, with Spanish support where transl
 
 ---
 
-## API Simulation
+## API Integration
 
-Development uses `server/db.json` through JSON Server.
+Development and production builds call the deployed Spring Boot backend directly.
 
 The frontend reads endpoint paths from:
 
@@ -261,16 +261,10 @@ src/environments/environment.development.ts
 src/environments/environment.ts
 ```
 
-The local development URL is:
+The hosted backend URL is:
 
 ```txt
-http://localhost:3000
+https://coldtrace-platform-dtbzbm7bta-uc.a.run.app
 ```
 
-Production is configured to use the hosted JSON Server URL when available:
-
-```txt
-https://coldtrace-json-server.onrender.com
-```
-
-The application still follows the class project constraint of simulating backend behavior with JSON data. Authentication, authorization, email delivery, and report persistence are represented through frontend state and JSON Server records.
+Authentication, authorization enforcement, email delivery, and password recovery remain represented through frontend state until those backend flows are part of the project scope.

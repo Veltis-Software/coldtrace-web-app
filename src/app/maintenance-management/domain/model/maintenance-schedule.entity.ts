@@ -16,6 +16,8 @@ export class MaintenanceSchedule implements BaseEntity {
     private readonly _observations: string,
     private readonly _status: MaintenanceScheduleStatus,
     private readonly _createdAt: string,
+    private readonly _frequencyDays: number | null = null,
+    private readonly _responsibleUserId: number | null = null,
   ) {}
 
   get id(): number {
@@ -56,5 +58,13 @@ export class MaintenanceSchedule implements BaseEntity {
 
   get createdAt(): string {
     return this._createdAt;
+  }
+
+  get frequencyDays(): number | null {
+    return this._frequencyDays;
+  }
+
+  get responsibleUserId(): number | null {
+    return this._responsibleUserId;
   }
 }

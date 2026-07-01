@@ -1,7 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatIcon } from '@angular/material/icon';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { finalize, forkJoin, switchMap, throwError } from 'rxjs';
 import { IdentityAccessStore } from '../../../application/identity-access.store';
@@ -18,7 +17,7 @@ type UserFormFeedback = 'idle' | 'duplicate-email' | 'invalid-role' | 'success' 
  */
 @Component({
   selector: 'app-user-form',
-  imports: [MatIcon, ReactiveFormsModule, RouterLink, RouterLinkActive, TranslatePipe],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
   templateUrl: './user-form.html',
   styleUrl: './user-form.css',
 })
@@ -40,26 +39,23 @@ export class UserForm implements OnInit {
   protected readonly userForm = this.fb.nonNullable.group({
     fullName: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(8)]],
     roleId: [0, [Validators.required, Validators.min(1)]],
   });
 
   protected readonly assignableRoles = computed(() =>
-    this.roles().filter((role) =>
-      this.identityAccessStore.canAssignRole(role, this.users(), this.roles()),
-    ),
+    this.roles().filter((role) => this.identityAccessStore.canAssignRole(role, this.users(), this.roles())),
   );
-  protected readonly canManageAccess = computed(() =>
-    this.identityAccessStore.canManageUsers(this.users(), this.roles()),
+  protected readonly canManageAccess = computed(
+    () => this.identityAccessStore.canManageUsers(this.users(), this.roles())
   );
 
   protected readonly activeOrganizationName = computed(() => {
     return this.identityAccessStore.currentOrganizationNameFrom(this.users(), this.organizations());
   });
-  protected readonly profileUserName = computed(() =>
-    this.identityAccessStore.currentUserNameFrom(this.users()),
-  );
-  protected readonly profileRoleLabelKey = computed(() =>
-    this.identityAccessStore.currentRoleLabelKeyFrom(this.users(), this.roles()),
+  protected readonly profileUserName = computed(() => this.identityAccessStore.currentUserNameFrom(this.users()));
+  protected readonly profileRoleLabelKey = computed(
+    () => this.identityAccessStore.currentRoleLabelKeyFrom(this.users(), this.roles())
   );
   protected readonly assetIssueCount = computed(() => {
     return this.assetManagementStore.assetIssueCountFor(this.activeOrganizationId());
@@ -118,6 +114,7 @@ export class UserForm implements OnInit {
     }
 
     const email = this.userForm.controls.email.value.trim().toLowerCase();
+    const password = this.userForm.controls.password.value;
     const { firstName, lastName } = this.getNameParts(this.userForm.controls.fullName.value);
 
     this.creating.set(true);
@@ -131,13 +128,12 @@ export class UserForm implements OnInit {
           }
 
           const nextId = Math.max(...users.map((user) => Number(user.id)), 0) + 1;
-          const nextOrganizationUserId =
-            Math.max(
-              ...users
-                .filter((user) => user.organizationId === organizationId)
-                .map((user) => Number(user.organizationUserId)),
-              0,
-            ) + 1;
+          const nextOrganizationUserId = Math.max(
+            ...users
+              .filter((user) => user.organizationId === organizationId)
+              .map((user) => Number(user.organizationUserId)),
+            0,
+          ) + 1;
           return this.identityAccessApi.createUser(
             new User(
               nextId,
@@ -149,6 +145,7 @@ export class UserForm implements OnInit {
               `USR-${nextId}`,
               nextOrganizationUserId,
             ),
+            password,
           );
         }),
         finalize(() => this.creating.set(false)),
@@ -161,6 +158,7 @@ export class UserForm implements OnInit {
           this.userForm.reset({
             fullName: '',
             email: '',
+            password: '',
             roleId: this.assignableRoles()[0]?.id ?? 0,
           });
         },

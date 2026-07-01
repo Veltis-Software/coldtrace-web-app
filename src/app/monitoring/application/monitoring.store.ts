@@ -1,17 +1,16 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { AssetManagementStore } from '../../asset-management/application/asset-management.store';
-import { AssetSettings } from '../../asset-management/domain/model/asset-settings.entity';
-import { Asset } from '../../asset-management/domain/model/asset.entity';
-import { ConnectivityStatus } from '../../asset-management/domain/model/connectivity-status.enum';
-import { Gateway } from '../../asset-management/domain/model/gateway.entity';
-import { GatewayStatus } from '../../asset-management/domain/model/gateway-status.enum';
-import { IoTDevice } from '../../asset-management/domain/model/iot-device.entity';
 import { IoTDeviceStatus } from '../../asset-management/domain/model/iot-device-status.enum';
 import { OfflineReading } from '../domain/model/offline-reading.entity';
 import { SensorReading } from '../domain/model/sensor-reading.entity';
 import { SyncStatus } from '../domain/model/sync-status.enum';
 import { MonitoringApi } from '../infrastructure/monitoring-api';
+import { OrganizationScopeStore } from '../../shared/infrastructure/organization-scope.store';
+
+interface LoadOptions {
+  force?: boolean;
+}
 
 /**
  * @summary Manages monitoring state and workflows for presentation components.
@@ -22,6 +21,8 @@ export class MonitoringStore {
   private readonly offlineReadingsSignal = signal<OfflineReading[]>([]);
   private readonly loadingSignal = signal<boolean>(false);
   private readonly errorSignal = signal<string | null>(null);
+  private readingsLoadedForOrganizationId: number | null = null;
+  private readingsRequestInFlightForOrganizationId: number | null = null;
 
   readonly readings = this.readingsSignal.asReadonly();
   readonly offlineReadings = this.offlineReadingsSignal.asReadonly();
@@ -58,22 +59,42 @@ export class MonitoringStore {
   constructor(
     private monitoringApi: MonitoringApi,
     private assetManagementStore: AssetManagementStore,
+    private organizationScope: OrganizationScopeStore,
   ) {}
 
   /**
    * @summary Loads readings data into local state.
    */
-  loadReadings(): void {
+  loadReadings(options: LoadOptions = {}): void {
+    const organizationId = this.organizationScope.activeOrganizationId();
+
+    if (!organizationId) {
+      this.readingsSignal.set([]);
+      return;
+    }
+
+    if (
+      !options.force &&
+      (this.readingsLoadedForOrganizationId === organizationId ||
+        this.readingsRequestInFlightForOrganizationId === organizationId)
+    ) {
+      return;
+    }
+
+    this.readingsRequestInFlightForOrganizationId = organizationId;
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
     this.monitoringApi.getSensorReadings().subscribe({
       next: (readings) => {
         this.readingsSignal.set(readings);
+        this.readingsLoadedForOrganizationId = organizationId;
+        this.readingsRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
         this.initOfflineReadings(readings);
       },
       error: (error) => {
         this.errorSignal.set(this.formatError(error, 'Failed to load sensor readings'));
+        this.readingsRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
     });
@@ -86,6 +107,7 @@ export class MonitoringStore {
     return this.monitoringApi.createSensorReading(sensorReading).pipe(
       tap((createdReading) => {
         this.readingsSignal.update((readings) => [...readings, createdReading]);
+        this.readingsLoadedForOrganizationId = this.organizationScope.activeOrganizationId();
       }),
     );
   }
@@ -207,7 +229,7 @@ export class MonitoringStore {
   }
 
   /**
-   * @summary Simulates telemetry status changes for one organization.
+   * @summary Requests backend-owned telemetry updates for one organization.
    */
   updateOrganizationTelemetry(organizationId: number | null): void {
     if (!organizationId) {
@@ -215,218 +237,69 @@ export class MonitoringStore {
     }
 
     const assets = this.assetManagementStore.assetsForOrganization(organizationId);
-    const iotDevices = this.assetManagementStore.iotDevicesForOrganization(organizationId);
-    const gateways = this.assetManagementStore.gatewaysForOrganization(organizationId);
-
-    // Seed recent readings once so report screens have current-day evidence to process.
-    this.ensureRecentReadingsForOrganization(organizationId, assets, iotDevices);
-
     const monitoredAssets = assets.filter((asset) =>
-      iotDevices.some((iotDevice) => iotDevice.assetId === asset.id),
+      this.assetManagementStore
+        .iotDevicesForAsset(asset.id)
+        .some((device) => device.status !== IoTDeviceStatus.Offline),
     );
-    const asset = this.sampleOne(monitoredAssets.length ? monitoredAssets : assets);
 
-    if (!asset) {
+    if (!monitoredAssets.length) {
       return;
     }
 
-    const iotDevice = iotDevices.find((device) => device.assetId === asset.id) ?? null;
-    const gateway = iotDevice
-      ? gateways.find((currentGateway) => currentGateway.id === iotDevice.gatewayId) ?? null
-      : null;
-    const connectivity = this.randomConnectivity(gateway, iotDevice);
-    const settings = this.assetManagementStore.settingsForAsset(organizationId, asset.id);
-    const reading = this.buildSensorReading(asset, iotDevice, settings, connectivity);
-
-    if (reading) {
-      this.createSensorReading(reading).subscribe({ error: () => undefined });
-    }
-  }
-
-  private buildSensorReading(
-    asset: Asset,
-    iotDevice: IoTDevice | null,
-    settings: AssetSettings | undefined,
-    connectivity: ConnectivityStatus,
-    offset = 0,
-    recordedAt = new Date(),
-  ): SensorReading | null {
-    if (!iotDevice || connectivity === ConnectivityStatus.Offline) {
-      return null;
-    }
-
-    const parameters = iotDevice.measurementParameters;
-    const temperature = parameters.includes('temperature') && settings
-      ? this.randomTemperatureReading(settings.minimumTemperature, settings.maximumTemperature)
-      : null;
-    const humidity = parameters.includes('humidity') && settings
-      ? this.randomHumidityReading(settings.minimumHumidity, settings.maximumHumidity)
-      : null;
-    const motionDetected = parameters.includes('motion') ? Math.random() < 0.18 : null;
-    const imageCaptured = parameters.includes('image') ? Math.random() < 0.35 : null;
-    const batteryLevel = parameters.includes('battery') ? this.randomBatteryLevel() : null;
-    const signalStrength = parameters.includes('signal') ? this.randomSignalStrength() : null;
-    const environmentOutOfRange = settings
-      ? (temperature !== null &&
-          (temperature < settings.minimumTemperature || temperature > settings.maximumTemperature)) ||
-        (humidity !== null &&
-          (humidity < settings.minimumHumidity || humidity > settings.maximumHumidity))
-      : false;
-    // One computed flag keeps charts, alerts, and reports aligned around the same risk rule.
-    const isOutOfRange =
-      environmentOutOfRange ||
-      (batteryLevel !== null && batteryLevel < 15) ||
-      (signalStrength !== null && signalStrength < 35);
-
-    return new SensorReading(
-      this.nextSensorReadingId(offset),
-      asset.id,
-      iotDevice.id,
-      temperature,
-      humidity,
-      isOutOfRange,
-      recordedAt.toISOString(),
-      motionDetected,
-      imageCaptured,
-      batteryLevel,
-      signalStrength,
+    const seededInitialReadings = this.ensureRecentReadingsForOrganization(
+      organizationId,
+      monitoredAssets.map((asset) => asset.id),
     );
+
+    if (seededInitialReadings) {
+      return;
+    }
+
+    this.generateDemoReadings({ count: 1 });
   }
 
   private ensureRecentReadingsForOrganization(
     organizationId: number,
-    assets: Asset[],
-    iotDevices: IoTDevice[],
-  ): void {
+    assetIds: number[],
+  ): boolean {
     if (this.seededOrganizationIds.has(organizationId)) {
-      return;
+      return false;
     }
 
-    const assetIds = assets.map((asset) => asset.id);
     const since = new Date();
     since.setHours(since.getHours() - 24);
 
     if (this.readingsForAssetIdsSince(assetIds, since).length) {
       this.seededOrganizationIds.add(organizationId);
+      return false;
+    }
+
+    this.generateDemoReadings({ count: 8 });
+    this.seededOrganizationIds.add(organizationId);
+    return true;
+  }
+
+  private generateDemoReadings(request: { assetId?: number; count: number }): void {
+    this.monitoringApi.generateDemoSensorReadings(request).subscribe({
+      next: (readings) => this.mergeReadings(readings),
+      error: () => undefined,
+    });
+  }
+
+  private mergeReadings(readings: SensorReading[]): void {
+    if (!readings.length) {
       return;
     }
 
-    iotDevices
-      .filter((iotDevice) => iotDevice.assetId !== null)
-      .slice(0, 8)
-      .forEach((iotDevice, index) => {
-        const asset = assets.find((currentAsset) => currentAsset.id === iotDevice.assetId);
-
-        if (!asset) {
-          return;
-        }
-
-        const recordedAt = new Date();
-        recordedAt.setHours(recordedAt.getHours() - (8 - index));
-        const settings = this.assetManagementStore.settingsForAsset(organizationId, asset.id);
-        const reading = this.buildSensorReading(
-          asset,
-          iotDevice,
-          settings,
-          ConnectivityStatus.Online,
-          index,
-          recordedAt,
-        );
-
-        if (reading) {
-          this.createSensorReading(reading).subscribe({ error: () => undefined });
-        }
-      });
-
-    this.seededOrganizationIds.add(organizationId);
-  }
-
-  private randomConnectivity(
-    gateway: Gateway | null,
-    iotDevice: IoTDevice | null,
-  ): ConnectivityStatus {
-    if (
-      !iotDevice ||
-      gateway?.status === GatewayStatus.Offline ||
-      iotDevice.status === IoTDeviceStatus.Offline
-    ) {
-      return ConnectivityStatus.Offline;
-    }
-
-    if (gateway?.status === GatewayStatus.Maintenance) {
-      return Math.random() < 0.75 ? ConnectivityStatus.Online : ConnectivityStatus.Unstable;
-    }
-
-    const randomValue = Math.random();
-
-    if (randomValue < 0.92) {
-      return ConnectivityStatus.Online;
-    }
-
-    if (randomValue < 0.98) {
-      return ConnectivityStatus.Unstable;
-    }
-
-    return ConnectivityStatus.Offline;
-  }
-
-  private randomTemperatureReading(minimumTemperature: number, maximumTemperature: number): number {
-    const anomalyRoll = Math.random();
-
-    if (anomalyRoll < 0.94) {
-      return Number(this.randomNumber(minimumTemperature, maximumTemperature).toFixed(1));
-    }
-
-    if (anomalyRoll < 0.97) {
-      return Number(this.randomNumber(minimumTemperature - 2, minimumTemperature - 0.2).toFixed(1));
-    }
-
-    return Number(this.randomNumber(maximumTemperature + 0.2, maximumTemperature + 3).toFixed(1));
-  }
-
-  private randomHumidityReading(minimumHumidity: number, maximumHumidity: number): number {
-    const anomalyRoll = Math.random();
-
-    if (anomalyRoll < 0.94) {
-      return Math.round(this.randomNumber(minimumHumidity, maximumHumidity));
-    }
-
-    if (anomalyRoll < 0.97) {
-      const lowMaximum = minimumHumidity - 1;
-      return lowMaximum > 0
-        ? Math.round(this.randomNumber(Math.max(0, minimumHumidity - 8), lowMaximum))
-        : 0;
-    }
-
-    return Math.round(this.randomNumber(maximumHumidity + 1, maximumHumidity + 8));
-  }
-
-  private randomBatteryLevel(): number {
-    if (Math.random() < 0.96) {
-      return Math.round(this.randomNumber(20, 100));
-    }
-
-    return Math.round(this.randomNumber(8, 14));
-  }
-
-  private randomSignalStrength(): number {
-    if (Math.random() < 0.96) {
-      return Math.round(this.randomNumber(40, 100));
-    }
-
-    return Math.round(this.randomNumber(28, 34));
-  }
-
-  private randomNumber(minimum: number, maximum: number): number {
-    return minimum + Math.random() * (maximum - minimum);
-  }
-
-  private sampleOne<T>(items: T[]): T | null {
-    if (!items.length) {
-      return null;
-    }
-
-    return items[Math.floor(Math.random() * items.length)];
+    this.readingsSignal.update((currentReadings) => {
+      const readingsById = new Map(currentReadings.map((reading) => [reading.id, reading]));
+      readings.forEach((reading) => readingsById.set(reading.id, reading));
+      this.readingsLoadedForOrganizationId = this.organizationScope.activeOrganizationId();
+      return [...readingsById.values()].sort(
+        (a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime(),
+      );
+    });
   }
 
   private initOfflineReadings(readings: SensorReading[]): void {

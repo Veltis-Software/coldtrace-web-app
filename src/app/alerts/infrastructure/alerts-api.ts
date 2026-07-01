@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of, switchMap } from 'rxjs';
 import { BaseApi } from '../../shared/infrastructure/base-api';
+import { OrganizationScopeStore } from '../../shared/infrastructure/organization-scope.store';
 import { Incident } from '../domain/model/incident.entity';
 import { Notification } from '../domain/model/notification.entity';
 import { IncidentsApiEndpoint } from './incidents-api-endpoint';
@@ -15,10 +16,10 @@ export class AlertsApi extends BaseApi {
   private readonly incidentsEndpoint: IncidentsApiEndpoint;
   private readonly notificationsEndpoint: NotificationsApiEndpoint;
 
-  constructor(http: HttpClient) {
+  constructor(http: HttpClient, organizationScope: OrganizationScopeStore) {
     super();
-    this.incidentsEndpoint = new IncidentsApiEndpoint(http);
-    this.notificationsEndpoint = new NotificationsApiEndpoint(http);
+    this.incidentsEndpoint = new IncidentsApiEndpoint(http, organizationScope);
+    this.notificationsEndpoint = new NotificationsApiEndpoint(http, organizationScope);
   }
 
   /**
@@ -39,7 +40,25 @@ export class AlertsApi extends BaseApi {
    * @summary Updates an incident through the API endpoint.
    */
   updateIncident(incident: Incident): Observable<Incident> {
-    return this.incidentsEndpoint.update(incident, incident.id);
+    if (incident.isClosed) {
+      const correctiveActionRequest = incident.correctiveAction
+        ? this.incidentsEndpoint.registerCorrectiveAction(incident)
+        : of(incident);
+
+      return correctiveActionRequest.pipe(
+        switchMap(() => this.incidentsEndpoint.resolve(incident)),
+      );
+    }
+
+    if (incident.isEscalated) {
+      return this.incidentsEndpoint.escalate(incident);
+    }
+
+    if (incident.isRecognized) {
+      return this.incidentsEndpoint.acknowledge(incident);
+    }
+
+    return of(incident);
   }
 
   /**
@@ -50,9 +69,9 @@ export class AlertsApi extends BaseApi {
   }
 
   /**
-   * @summary Persists a notification through the API endpoint.
+   * @summary Fetches notifications linked to one incident.
    */
-  createNotification(notification: Notification): Observable<Notification> {
-    return this.notificationsEndpoint.create(notification);
+  getNotificationsByIncidentId(incidentId: number): Observable<Notification[]> {
+    return this.incidentsEndpoint.getNotifications(incidentId);
   }
 }

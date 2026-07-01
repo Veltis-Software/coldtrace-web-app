@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authenticatedCanActivate } from '../../shared/infrastructure/auth.guard';
 
 const passwordRecovery = () =>
   import('./views/password-recovery/password-recovery').then((m) => m.PasswordRecovery);
@@ -22,6 +23,7 @@ const operationalDashboard = () =>
 export const identityAccessRoutes: Routes = [
   {
     path: 'dashboard',
+    canActivate: [authenticatedCanActivate],
     loadComponent: operationalDashboard,
     title: 'ColdTrace - Main',
   },
@@ -53,11 +55,13 @@ export const identityAccessRoutes: Routes = [
   { path: 'reset-password', loadComponent: resetPassword, title: 'ColdTrace - Reset password' },
   {
     path: 'roles-permissions/permissions',
+    canActivate: [authenticatedCanActivate],
     loadComponent: rolePermissionForm,
     title: 'ColdTrace - Role permissions',
   },
   {
     path: 'roles-permissions/users/new',
+    canActivate: [authenticatedCanActivate],
     loadComponent: userForm,
     title: 'ColdTrace - Create user',
   },
@@ -68,6 +72,7 @@ export const identityAccessRoutes: Routes = [
   },
   {
     path: 'roles-permissions',
+    canActivate: [authenticatedCanActivate],
     loadComponent: userAccessList,
     title: 'ColdTrace - Roles and permissions',
   },

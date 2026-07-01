@@ -29,12 +29,14 @@ export class MaintenanceScheduleAssembler implements BaseAssembler<
       resource.organizationId,
       resource.uuid,
       resource.assetId,
-      resource.iotDeviceId,
+      resource.iotDeviceId ?? null,
       resource.scheduledDate,
-      resource.period,
+      resource.period ?? this.periodFrom(resource.scheduledDate),
       resource.observations,
       resource.status,
       resource.createdAt,
+      resource.frequencyDays ?? null,
+      resource.responsibleUserId ?? null,
     );
   }
 
@@ -47,12 +49,17 @@ export class MaintenanceScheduleAssembler implements BaseAssembler<
       organizationId: entity.organizationId,
       uuid: entity.uuid,
       assetId: entity.assetId,
-      iotDeviceId: entity.iotDeviceId,
       scheduledDate: entity.scheduledDate,
       period: entity.period,
+      frequencyDays: entity.frequencyDays,
+      responsibleUserId: entity.responsibleUserId,
       observations: entity.observations,
       status: entity.status,
       createdAt: entity.createdAt,
     };
+  }
+
+  private periodFrom(dateTime: string): string {
+    return dateTime.slice(0, 7);
   }
 }

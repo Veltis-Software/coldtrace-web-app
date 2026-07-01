@@ -8,7 +8,7 @@
   <div class="page-heading">
     <div>
       <span class="section-kicker">{{ activeOrganizationName() }}</span>
-      <h1 id="safety-ranges-title">{{ 'dashboard-shell.nav-settings' | translate }}</h1>
+      <h1 id="safety-ranges-title">{{ 'asset-management.safety-ranges.title' | translate }}</h1>
       <p>{{ 'asset-management.safety-ranges.subtitle' | translate }}</p>
     </div>
 
@@ -19,14 +19,6 @@
       </button>
     </div>
   </div>
-
-
-  <nav class="work-tabs section-tabs" aria-label="Settings sections">
-    <a routerLink="/asset-management/safety-ranges" routerLinkActive="active">{{ 'dashboard-shell.nav-safety-ranges' | translate }}</a>
-    <a routerLink="/asset-management/operational-parameters" routerLinkActive="active">{{ 'dashboard-shell.nav-operational-parameters' | translate }}</a>
-    <a routerLink="/maintenance/preventive" routerLinkActive="active">{{ 'dashboard-shell.nav-preventive-maintenance' | translate }}</a>
-    <a routerLink="/maintenance/technical-service" routerLinkActive="active">{{ 'dashboard-shell.nav-technical-service' | translate }}</a>
-  </nav>
 
   @if (feedback() === 'saved') {
     <p class="feedback success">
@@ -81,32 +73,20 @@
 
   <section class="summary-grid" aria-label="Safety range summary">
     <article class="summary-card accent-blue">
-      <mat-icon aria-hidden="true">inventory_2</mat-icon>
-      <div>
-        <span>{{ 'asset-management.safety-ranges.summary-assets' | translate }}</span>
-        <strong>{{ monitoredAssets().length }}</strong>
-      </div>
+      <span>{{ 'asset-management.safety-ranges.summary-assets' | translate }}</span>
+      <strong>{{ monitoredAssets().length }}</strong>
     </article>
     <article class="summary-card accent-green">
-      <mat-icon aria-hidden="true">tune</mat-icon>
-      <div>
-        <span>{{ 'asset-management.safety-ranges.summary-profiles' | translate }}</span>
-        <strong>{{ assetSpecificSettingsCount() }}</strong>
-      </div>
+      <span>{{ 'asset-management.safety-ranges.summary-profiles' | translate }}</span>
+      <strong>{{ assetSpecificSettingsCount() }}</strong>
     </article>
     <article class="summary-card accent-amber">
-      <mat-icon aria-hidden="true">device_thermostat</mat-icon>
-      <div>
-        <span>{{ 'asset-management.safety-ranges.summary-temperature' | translate }}</span>
-        <strong>{{ selectedRangeLabel() }}</strong>
-      </div>
+      <span>{{ 'asset-management.safety-ranges.summary-temperature' | translate }}</span>
+      <strong>{{ selectedRangeLabel() }}</strong>
     </article>
     <article class="summary-card accent-red">
-      <mat-icon aria-hidden="true">water_drop</mat-icon>
-      <div>
-        <span>{{ 'asset-management.safety-ranges.summary-humidity' | translate }}</span>
-        <strong>{{ selectedHumidityLabel() }}</strong>
-      </div>
+      <span>{{ 'asset-management.safety-ranges.summary-humidity' | translate }}</span>
+      <strong>{{ selectedHumidityLabel() }}</strong>
     </article>
   </section>
 
@@ -167,6 +147,19 @@
         </label>
 
         <label class="filter-field">
+          <span>{{ 'asset-management.safety-ranges.form.minimum-humidity' | translate }}</span>
+          <input
+            type="number"
+            step="1"
+            formControlName="minimumHumidity"
+            (input)="updateMinimumHumidityPreview($any($event.target).value)"
+          />
+          @if (hasRangeControlError('minimumHumidity')) {
+            <small>{{ 'asset-management.safety-ranges.form.humidity-error' | translate }}</small>
+          }
+        </label>
+
+        <label class="filter-field">
           <span>{{ 'asset-management.safety-ranges.form.maximum-humidity' | translate }}</span>
           <input
             type="number"
@@ -174,8 +167,15 @@
             formControlName="maximumHumidity"
             (input)="updateMaximumHumidityPreview($any($event.target).value)"
           />
-          @if (hasRangeControlError('maximumHumidity')) {
-            <small>{{ 'asset-management.safety-ranges.form.humidity-error' | translate }}</small>
+          @if (hasRangeControlError('maximumHumidity') || hasHumidityRangeError()) {
+            <small>
+              {{
+                (hasHumidityRangeError()
+                  ? 'asset-management.safety-ranges.form.humidity-range-error'
+                  : 'asset-management.safety-ranges.form.humidity-error'
+                ) | translate
+              }}
+            </small>
           }
         </label>
 
@@ -244,7 +244,10 @@
                 {{ settings.minimumTemperature }}{{ settings.temperatureUnit }} -
                 {{ settings.maximumTemperature }}{{ settings.temperatureUnit }}
               </td>
-              <td>{{ settings.maximumHumidity }}{{ settings.humidityUnit }}</td>
+              <td>
+                {{ settings.minimumHumidity }}{{ settings.humidityUnit }} -
+                {{ settings.maximumHumidity }}{{ settings.humidityUnit }}
+              </td>
               <td>
                 <span class="status-pill" [ngClass]="settingStatusClass(settings)">
                   {{ settingStatusKey(settings) | translate }}
@@ -269,6 +272,3 @@
     />
   </section>
 </section>
-
-
-

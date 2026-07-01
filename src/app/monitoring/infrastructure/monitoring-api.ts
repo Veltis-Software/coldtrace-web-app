@@ -2,7 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { BaseApi } from '../../shared/infrastructure/base-api';
+import { OrganizationScopeStore } from '../../shared/infrastructure/organization-scope.store';
 import { SensorReading } from '../domain/model/sensor-reading.entity';
+import { GenerateDemoSensorReadingsRequest } from './sensor-readings-response';
 import { SensorReadingsApiEndpoint } from './sensor-readings-api-endpoint';
 
 /**
@@ -12,9 +14,9 @@ import { SensorReadingsApiEndpoint } from './sensor-readings-api-endpoint';
 export class MonitoringApi extends BaseApi {
   private readonly sensorReadingsEndpoint: SensorReadingsApiEndpoint;
 
-  constructor(http: HttpClient) {
+  constructor(http: HttpClient, organizationScope: OrganizationScopeStore) {
     super();
-    this.sensorReadingsEndpoint = new SensorReadingsApiEndpoint(http);
+    this.sensorReadingsEndpoint = new SensorReadingsApiEndpoint(http, organizationScope);
   }
 
   /**
@@ -29,5 +31,14 @@ export class MonitoringApi extends BaseApi {
    */
   createSensorReading(sensorReading: SensorReading): Observable<SensorReading> {
     return this.sensorReadingsEndpoint.create(sensorReading);
+  }
+
+  /**
+   * @summary Requests backend-owned demo readings and returns the persisted resources.
+   */
+  generateDemoSensorReadings(
+    request: GenerateDemoSensorReadingsRequest,
+  ): Observable<SensorReading[]> {
+    return this.sensorReadingsEndpoint.generateDemoReadings(request);
   }
 }

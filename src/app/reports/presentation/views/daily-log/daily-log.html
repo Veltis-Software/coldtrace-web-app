@@ -8,31 +8,10 @@
   <div class="page-heading">
     <div>
       <span class="section-kicker">{{ activeOrganizationName() }}</span>
-      <h1 id="daily-log-title">{{ 'dashboard-shell.nav-reports' | translate }}</h1>
+      <h1 id="daily-log-title">{{ 'reports.daily-log.title' | translate }}</h1>
       <p>{{ 'reports.daily-log.subtitle' | translate }}</p>
     </div>
-
-    <div class="heading-actions">
-      <button mat-stroked-button type="button" class="secondary-action" (click)="loadPageData()">
-        <mat-icon aria-hidden="true">refresh</mat-icon>
-        {{ 'reports.daily-log.reload' | translate }}
-      </button>
-      <button mat-flat-button type="button" class="primary-action" (click)="generateDailyLog()">
-        <mat-icon aria-hidden="true">article</mat-icon>
-        {{ 'reports.daily-log.generate' | translate }}
-      </button>
-    </div>
   </div>
-
-
-  <nav class="work-tabs section-tabs" aria-label="Reports sections">
-    <a routerLink="/reports/daily-log" routerLinkActive="active">{{ 'dashboard-shell.nav-daily-log' | translate }}</a>
-    <a routerLink="/reports/monthly" routerLinkActive="active">{{ 'dashboard-shell.nav-monthly-report' | translate }}</a>
-    <a routerLink="/reports/history" routerLinkActive="active">{{ 'dashboard-shell.nav-history' | translate }}</a>
-    <a routerLink="/reports/compliance" routerLinkActive="active">{{ 'dashboard-shell.nav-compliance' | translate }}</a>
-    <a routerLink="/reports/findings" routerLinkActive="active">{{ 'dashboard-shell.nav-findings' | translate }}</a>
-    <a routerLink="/reports/audit-evidence" routerLinkActive="active">{{ 'dashboard-shell.nav-audit-evidence' | translate }}</a>
-  </nav>
 
   @if (feedback() === 'generated') {
     <p class="feedback success">{{ 'reports.daily-log.feedback-generated' | translate }}</p>
@@ -66,6 +45,17 @@
     <div class="filter-meta">
       <span>{{ 'reports.daily-log.generated-reports' | translate }}</span>
       <strong>{{ generatedReportsCount() }}</strong>
+    </div>
+
+    <div class="report-card-actions">
+      <button mat-stroked-button type="button" class="secondary-action" (click)="loadPageData()">
+        <mat-icon aria-hidden="true">refresh</mat-icon>
+        {{ 'reports.daily-log.reload' | translate }}
+      </button>
+      <button mat-flat-button type="button" class="primary-action" (click)="generateDailyLog()">
+        <mat-icon aria-hidden="true">article</mat-icon>
+        {{ 'reports.daily-log.generate' | translate }}
+      </button>
     </div>
   </section>
 

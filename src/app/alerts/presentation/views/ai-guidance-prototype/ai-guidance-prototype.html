@@ -1,0 +1,130 @@
+<section class="ai-page" aria-labelledby="ai-guidance-title">
+  <div class="page-heading">
+    <div>
+      <span class="section-kicker">Sprint 4 prototype</span>
+      <h1 id="ai-guidance-title">AI Guidance for incident resolution</h1>
+      <p>Generate an advisory plan, edit it, approve it, reject it, and keep an audit trail.</p>
+    </div>
+    <button type="button" class="primary-action" [disabled]="generating()" (click)="generatePlan()">
+      <mat-icon aria-hidden="true">{{ generating() ? 'hourglass_top' : 'auto_awesome' }}</mat-icon>
+      {{ generating() ? 'Generating plan...' : 'Generate AI plan' }}
+    </button>
+  </div>
+
+  <section class="feedback-banner" [class.feedback-approved]="planStatus() === 'approved'" [class.feedback-rejected]="planStatus() === 'rejected'">
+    <mat-icon aria-hidden="true">{{ statusIcon(planStatus()) }}</mat-icon>
+    <span>{{ feedback() }}</span>
+  </section>
+
+  <section class="incident-strip" aria-label="Incident selector">
+    <label class="field">
+      <span>Incident</span>
+      <select [value]="selectedIncidentId()" (change)="selectIncident($any($event.target).value)">
+        @for (incident of incidents; track incident.id) {
+          <option [value]="incident.id">INC-{{ incident.id }} · {{ incident.asset }}</option>
+        }
+      </select>
+    </label>
+
+    <article class="incident-summary">
+      <span>Asset</span>
+      <strong>{{ selectedIncident().asset }}</strong>
+      <small>{{ selectedIncident().location }}</small>
+    </article>
+    <article class="incident-summary">
+      <span>Current reading</span>
+      <strong>{{ selectedIncident().reading }}</strong>
+      <small>Safe range: {{ selectedIncident().safeRange }}</small>
+    </article>
+    <article class="incident-summary">
+      <span>Status</span>
+      <strong>{{ selectedIncident().status }}</strong>
+      <small>Risk: {{ selectedIncident().risk }}</small>
+    </article>
+  </section>
+
+  <section class="ai-grid">
+    <article class="panel plan-panel">
+      <div class="panel-heading">
+        <div>
+          <h2>Generated resolution plan</h2>
+          <p>Structured output returned by the AI service. It is advisory until approval.</p>
+        </div>
+        <span class="status-pill" [class.status-approved]="planStatus() === 'approved'" [class.status-rejected]="planStatus() === 'rejected'">
+          {{ planStatus() }}
+        </span>
+      </div>
+
+      <div class="plan-cause">
+        <mat-icon aria-hidden="true">psychology</mat-icon>
+        <div>
+          <span>Probable cause</span>
+          <strong>Door remained open during receiving and gateway reported delayed recovery.</strong>
+          <p>The pattern matches a short thermal excursion with product exposure risk but recoverable readings.</p>
+        </div>
+      </div>
+
+      <div class="step-list">
+        @for (step of planSteps; track step.title) {
+          <article class="step-card">
+            <div class="step-index">{{ $index + 1 }}</div>
+            <div>
+              <h3>{{ step.title }}</h3>
+              <p>{{ step.detail }}</p>
+              <small>{{ step.owner }}</small>
+            </div>
+          </article>
+        }
+      </div>
+    </article>
+
+    <aside class="panel decision-panel">
+      <h2>Human approval gate</h2>
+      <p>Approval is the point where the backend would update the incident and persist the corrective action.</p>
+
+      <label class="field">
+        <span>Final corrective action</span>
+        <textarea rows="5" [value]="finalAction()" (input)="updateFinalAction($any($event.target).value)"></textarea>
+      </label>
+
+      <div class="decision-actions">
+        <button type="button" class="primary-action" [disabled]="planStatus() === 'approved'" (click)="approvePlan()">
+          <mat-icon aria-hidden="true">assignment_turned_in</mat-icon>
+          Approve and close incident
+        </button>
+      </div>
+
+      <label class="field rejection-field">
+        <span>Rejection reason</span>
+        <textarea rows="3" [value]="rejectionReason()" (input)="updateRejectionReason($any($event.target).value)" placeholder="Explain why the plan does not apply."></textarea>
+      </label>
+
+      <button type="button" class="secondary-action danger-action" [disabled]="planStatus() === 'rejected'" (click)="rejectPlan()">
+        <mat-icon aria-hidden="true">do_not_disturb_on</mat-icon>
+        Reject plan
+      </button>
+    </aside>
+  </section>
+
+  <section class="panel history-panel">
+    <div class="panel-heading">
+      <div>
+        <h2>AI plan history</h2>
+        <p>Generated, approved and rejected decisions remain available for quality review.</p>
+      </div>
+    </div>
+
+    <div class="history-list">
+      @for (item of history(); track item.id) {
+        <article class="history-item" [class.history-approved]="item.status === 'approved'" [class.history-rejected]="item.status === 'rejected'">
+          <mat-icon aria-hidden="true">{{ statusIcon(item.status) }}</mat-icon>
+          <div>
+            <strong>{{ item.title }}</strong>
+            <p>{{ item.note }}</p>
+            <small>{{ item.actor }} · {{ item.date }}</small>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+</section>

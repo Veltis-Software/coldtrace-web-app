@@ -77,6 +77,56 @@
   text-align: center;
 }
 
+.status-warning {
+  background: #fff8e8;
+  color: #b16f0b;
+}
+
+.status-danger {
+  background: #feeceb;
+  color: #b51313;
+}
+
+.status-select-field {
+  align-items: center;
+  border-radius: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 6px;
+  min-height: 26px;
+  padding: 3px 8px;
+  position: relative;
+  white-space: nowrap;
+}
+
+.status-select-field span,
+.status-select-field mat-icon {
+  pointer-events: none;
+}
+
+.status-select-field mat-icon {
+  font-size: 16px;
+  height: 16px;
+  width: 16px;
+}
+
+.status-select-field select {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  inset: 0;
+  opacity: 0;
+  outline: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.status-select-field.disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 @media (max-width: 1080px) {
   .form-grid {
     grid-template-columns: 1fr;

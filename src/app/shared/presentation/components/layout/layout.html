@@ -10,10 +10,17 @@
     [assetIssuesCount]="assetIssueCount()"
     [pendingAlertsCount]="pendingAlertsCount()"
     [organizationMembers]="organizationMembers()"
+    [contextQueryParams]="dashboardContextQueryParams()"
     (signedOut)="logout()"
     (monthlyReportRequested)="downloadCurrentMonthReport()"
   >
-    <router-outlet />
+    @if (dashboardContentReady()) {
+      <router-outlet />
+    } @else {
+      <section class="dashboard-loading-state" aria-live="polite">
+        {{ 'roles-permissions.feedback.loading' | translate }}
+      </section>
+    }
   </app-dashboard-shell>
 } @else {
   @if (showLanguageSwitcher()) {

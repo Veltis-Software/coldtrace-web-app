@@ -1,227 +1,175 @@
 @if (accessDenied()) {
-  <section class="access-denied">
-    <mat-icon class="denied-icon" aria-hidden="true">block</mat-icon>
-    <h2>{{ 'roles-permissions.denied.title' | translate }}</h2>
-    <p>{{ 'roles-permissions.denied.message' | translate }}</p>
-  </section>
-} @else {
-  <section class="access-header" aria-labelledby="access-view-title">
-    <div>
-      <h1 id="access-view-title">{{ 'dashboard-shell.nav-access' | translate }}</h1>
-      <p>{{ 'roles-permissions.table-subtitle' | translate }}</p>
-    </div>
-  </section>
+    <section class="access-denied">
+      <mat-icon class="denied-icon" aria-hidden="true">block</mat-icon>
+      <h2>{{ 'roles-permissions.denied.title' | translate }}</h2>
+      <p>{{ 'roles-permissions.denied.message' | translate }}</p>
+    </section>
+  } @else {
+    <label class="search-box">
+      <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
+      <input
+        type="search"
+        [value]="searchTerm()"
+        [placeholder]="'roles-permissions.search' | translate"
+        (input)="updateSearchTerm($any($event.target).value)"
+      />
+    </label>
 
-  <div class="access-workbar">
-  <nav class="work-tabs section-tabs" aria-label="Access sections">
-    <a routerLink="/identity-access/roles-permissions" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'dashboard-shell.nav-users' | translate }}</a>
-    <a routerLink="/identity-access/roles-permissions/users/new" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'dashboard-shell.nav-new-user' | translate }}</a>
-    <a routerLink="/identity-access/roles-permissions/permissions" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'dashboard-shell.nav-permissions' | translate }}</a>
-  </nav>
-
-  <label class="search-box">
-    <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
-    <input
-      type="search"
-      [value]="searchTerm()"
-      [placeholder]="'roles-permissions.search' | translate"
-      (input)="updateSearchTerm($any($event.target).value)"
-    />
-  </label>
-  </div>
-
-  <section class="summary-grid access-summary" aria-label="Access summary">
-    <article class="summary-card accent-blue">
-      <div class="summary-icon"><mat-icon aria-hidden="true">group</mat-icon></div>
-      <div class="summary-copy">
+    <section class="summary-grid" aria-label="Access summary">
+      <article>
         <span>{{ 'roles-permissions.summary.users' | translate }}</span>
         <strong>{{ organizationUsers().length }}</strong>
-        <small>Active organization accounts</small>
-      </div>
-    </article>
-    <article class="summary-card accent-green">
-      <div class="summary-icon"><mat-icon aria-hidden="true">admin_panel_settings</mat-icon></div>
-      <div class="summary-copy">
+      </article>
+      <article>
         <span>{{ 'roles-permissions.summary.admins' | translate }}</span>
         <strong>{{ administratorCount() }}</strong>
-        <small>Users with elevated access</small>
-      </div>
-    </article>
-    <article class="summary-card accent-amber">
-      <div class="summary-icon"><mat-icon aria-hidden="true">pending_actions</mat-icon></div>
-      <div class="summary-copy">
+      </article>
+      <article>
         <span>{{ 'roles-permissions.summary.pending' | translate }}</span>
         <strong>{{ pendingChangeCount() }}</strong>
-        <small>Unsaved role assignments</small>
-      </div>
-    </article>
-  </section>
+      </article>
+    </section>
 
-  <section class="table-card" aria-labelledby="access-table-title">
-    <div class="table-heading">
-      <div>
-        <h2 id="access-table-title">{{ 'roles-permissions.table-title' | translate }}</h2>
-        <p>{{ 'roles-permissions.table-subtitle' | translate }}</p>
-      </div>
-      <div class="table-actions">
-        @if (canManageAccess()) {
-          <button
-            type="button"
-            class="primary-action"
-            routerLink="/identity-access/roles-permissions/users/new"
-          >
-            <mat-icon aria-hidden="true">person_add</mat-icon>
-            {{ 'roles-permissions.create-user' | translate }}
+    <section class="table-card" aria-labelledby="access-table-title">
+      <div class="table-heading">
+        <div>
+          <h2 id="access-table-title">{{ 'roles-permissions.table-title' | translate }}</h2>
+          <p>{{ 'roles-permissions.table-subtitle' | translate }}</p>
+        </div>
+        <div class="table-actions">
+          @if (canManageAccess()) {
+            <button
+              type="button"
+              class="reload-action"
+              routerLink="/identity-access/roles-permissions/users/new"
+            >
+              {{ 'roles-permissions.create-user' | translate }}
+            </button>
+          }
+          <button type="button" class="reload-action" (click)="loadAccessData()">
+            {{ 'roles-permissions.reload' | translate }}
           </button>
-        }
-        <button type="button" class="secondary-action" (click)="loadAccessData()">
-          <mat-icon aria-hidden="true">refresh</mat-icon>
-          {{ 'roles-permissions.reload' | translate }}
-        </button>
+        </div>
       </div>
-    </div>
 
-    @if (feedback() === 'saved') {
-      <p class="feedback success">{{ 'roles-permissions.feedback.saved' | translate }}</p>
-    }
+      @if (feedback() === 'saved') {
+        <p class="feedback success">{{ 'roles-permissions.feedback.saved' | translate }}</p>
+      }
 
-    @if (feedback() === 'invalid-role') {
-      <p class="feedback error">{{ 'roles-permissions.feedback.invalid-role' | translate }}</p>
-    }
+      @if (feedback() === 'invalid-role') {
+        <p class="feedback error">{{ 'roles-permissions.feedback.invalid-role' | translate }}</p>
+      }
 
-    @if (feedback() === 'delete-forbidden') {
-      <p class="feedback error">
-        {{ 'roles-permissions.feedback.delete-forbidden' | translate }}
-      </p>
-    }
+      @if (feedback() === 'server-error') {
+        <p class="feedback error">{{ 'roles-permissions.feedback.server-error' | translate }}</p>
+      }
 
-    @if (feedback() === 'deleted') {
-      <p class="feedback success">{{ 'roles-permissions.feedback.deleted' | translate }}</p>
-    }
-
-    @if (feedback() === 'server-error') {
-      <p class="feedback error">{{ 'roles-permissions.feedback.server-error' | translate }}</p>
-    }
-
-    @if (loading()) {
-      <p class="feedback neutral">{{ 'roles-permissions.feedback.loading' | translate }}</p>
-    } @else {
-      <div class="access-table-wrapper">
-        <table class="access-table" [class.read-only-table]="!canManageAccess()">
-          <colgroup>
-            <col style="width: 70px" />
-            <col style="width: 230px" />
-            <col style="width: 130px" />
-            @if (canManageAccess()) {
-              <col style="width: 170px" />
-            }
-            <col style="width: 330px" />
-            @if (canManageAccess()) {
-              <col style="width: 150px" />
-            }
-          </colgroup>
-          <thead>
-            <tr>
-              <th>{{ 'roles-permissions.table.id' | translate }}</th>
-              <th>{{ 'roles-permissions.table.user' | translate }}</th>
-              <th>{{ 'roles-permissions.table.current-role' | translate }}</th>
+      @if (loading()) {
+        <p class="feedback neutral">{{ 'roles-permissions.feedback.loading' | translate }}</p>
+      } @else {
+        <div class="access-table-wrapper">
+          <table class="access-table" [class.read-only-table]="!canManageAccess()">
+            <colgroup>
+              <col style="width: 70px" />
+              <col style="width: 230px" />
+              <col style="width: 130px" />
               @if (canManageAccess()) {
-                <th>{{ 'roles-permissions.table.new-role' | translate }}</th>
+                <col style="width: 170px" />
               }
-              <th>{{ 'roles-permissions.table.permissions' | translate }}</th>
+              <col style="width: 330px" />
               @if (canManageAccess()) {
-                <th>{{ 'roles-permissions.table.actions' | translate }}</th>
+                <col style="width: 150px" />
               }
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of paginatedRows(); track row.user.id) {
-              <tr
-                [class.saved-row]="savedUserId() === row.user.id"
-                [class.invalid-row]="invalidUserId() === row.user.id"
-              >
-                <td [attr.data-label]="'roles-permissions.table.id' | translate">
-                  USR-{{ row.user.organizationUserId }}
-                </td>
-                <td [attr.data-label]="'roles-permissions.table.user' | translate">
-                  <strong>{{ row.user.fullName || row.user.email }}</strong>
-                  <span>{{ row.user.email }}</span>
-                </td>
-                <td [attr.data-label]="'roles-permissions.table.current-role' | translate">
-                  <span class="role-pill">{{ roleLabelKey(row.currentRole) | translate }}</span>
-                </td>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>{{ 'roles-permissions.table.id' | translate }}</th>
+                <th>{{ 'roles-permissions.table.user' | translate }}</th>
+                <th>{{ 'roles-permissions.table.current-role' | translate }}</th>
                 @if (canManageAccess()) {
-                  <td [attr.data-label]="'roles-permissions.table.new-role' | translate">
-                    <select
-                      [value]="row.selectedRoleId"
-                      [disabled]="!canManageUserRole(row.user)"
-                      (change)="selectRole(row.user.id, $any($event.target).value)"
-                    >
-                      <option value="0">
-                        {{ 'roles-permissions.roles.unassigned' | translate }}
-                      </option>
-                      @for (role of roles(); track role.id) {
-                        <option [value]="role.id" [disabled]="isRoleOptionDisabled(role)">
-                          {{ roleLabelKey(role) | translate }}
-                        </option>
-                      }
-                    </select>
-                  </td>
+                  <th>{{ 'roles-permissions.table.new-role' | translate }}</th>
                 }
-                <td [attr.data-label]="'roles-permissions.table.permissions' | translate">
-                  <div class="permission-list">
-                    @for (permissionKey of row.permissionKeys; track permissionKey) {
-                      <span>{{ permissionKey | translate }}</span>
-                    }
-                  </div>
-                </td>
+                <th>{{ 'roles-permissions.table.permissions' | translate }}</th>
                 @if (canManageAccess()) {
-                  <td [attr.data-label]="'roles-permissions.table.actions' | translate">
-                    <div class="row-actions">
-                      <button
-                        type="button"
-                        class="save-action"
-                        [disabled]="!row.pending || !canManageUserRole(row.user)"
-                        (click)="saveRole(row.user)"
+                  <th>{{ 'roles-permissions.table.actions' | translate }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of paginatedRows(); track row.user.id) {
+                <tr
+                  [class.saved-row]="savedUserId() === row.user.id"
+                  [class.invalid-row]="invalidUserId() === row.user.id"
+                >
+                  <td [attr.data-label]="'roles-permissions.table.id' | translate">
+                    USR-{{ row.user.organizationUserId }}
+                  </td>
+                  <td [attr.data-label]="'roles-permissions.table.user' | translate">
+                    <strong>{{ row.user.fullName || row.user.email }}</strong>
+                    <span>{{ row.user.email }}</span>
+                  </td>
+                  <td [attr.data-label]="'roles-permissions.table.current-role' | translate">
+                    <span class="role-pill">{{ roleLabelKey(row.currentRole) | translate }}</span>
+                  </td>
+                  @if (canManageAccess()) {
+                    <td [attr.data-label]="'roles-permissions.table.new-role' | translate">
+                      <select
+                        [value]="row.selectedRoleId"
+                        [disabled]="!canManageUserRole(row.user)"
+                        (change)="selectRole(row.user.id, $any($event.target).value)"
                       >
-                        {{
-                          (row.pending ? 'roles-permissions.save' : 'roles-permissions.saved')
-                            | translate
-                        }}
-                      </button>
-                      <button
-                        type="button"
-                        class="delete-action"
-                        [disabled]="deletingUserId() === row.user.id || !canDeleteUser(row.user)"
-                        (click)="deleteUser(row.user)"
-                      >
-                        {{
-                          (deletingUserId() === row.user.id
-                            ? 'roles-permissions.deleting'
-                            : 'roles-permissions.delete'
-                          ) | translate
-                        }}
-                      </button>
+                        <option value="0">
+                          {{ 'roles-permissions.roles.unassigned' | translate }}
+                        </option>
+                        @for (role of roles(); track role.id) {
+                          <option [value]="role.id" [disabled]="isRoleOptionDisabled(role)">
+                            {{ roleLabelKey(role) | translate }}
+                          </option>
+                        }
+                      </select>
+                    </td>
+                  }
+                  <td [attr.data-label]="'roles-permissions.table.permissions' | translate">
+                    <div class="permission-list">
+                      @for (permissionKey of row.permissionKeys; track permissionKey) {
+                        <span>{{ permissionKey | translate }}</span>
+                      }
                     </div>
                   </td>
-                }
-              </tr>
-            } @empty {
-              <tr>
-                <td class="empty-state" [attr.colspan]="canManageAccess() ? 6 : 4">
-                  {{ 'roles-permissions.empty' | translate }}
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-        <app-list-pagination
-          [page]="currentPage()"
-          [total]="rows().length"
-          [pageSize]="pageSize"
-          (pageChange)="updatePage($event)"
-        />
-      </div>
-    }
-  </section>
+                  @if (canManageAccess()) {
+                    <td [attr.data-label]="'roles-permissions.table.actions' | translate">
+                      <div class="row-actions">
+                        <button
+                          type="button"
+                          class="save-action"
+                          [disabled]="!row.pending || !canManageUserRole(row.user)"
+                          (click)="saveRole(row.user)"
+                        >
+                          {{
+                            (row.pending ? 'roles-permissions.save' : 'roles-permissions.saved')
+                              | translate
+                          }}
+                        </button>
+                      </div>
+                    </td>
+                  }
+                </tr>
+              } @empty {
+                <tr>
+                  <td class="empty-state" [attr.colspan]="canManageAccess() ? 6 : 4">
+                    {{ 'roles-permissions.empty' | translate }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <app-list-pagination
+            [page]="currentPage()"
+            [total]="rows().length"
+            [pageSize]="pageSize"
+            (pageChange)="updatePage($event)"
+          />
+        </div>
+      }
+    </section>
 }

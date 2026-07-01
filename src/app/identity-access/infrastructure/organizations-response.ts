@@ -16,3 +16,13 @@ export interface OrganizationResource extends BaseResource {
 export interface OrganizationsResponse extends BaseResponse {
   organizations: OrganizationResource[];
 }
+
+/**
+ * @summary Request payload for creating an organization through the backend.
+ */
+export interface CreateOrganizationRequest {
+  legalName: string;
+  commercialName: string;
+  taxId: string;
+  contactEmail: string;
+}

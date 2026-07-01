@@ -31,12 +31,17 @@ export class TechnicalServiceRequestAssembler implements BaseAssembler<
       resource.assetId,
       resource.priority,
       resource.issueDescription,
-      resource.requestedDate,
+      resource.requestedDate ?? resource.requestedAt ?? '',
       resource.status,
-      resource.interventionNotes,
-      resource.resultNotes,
-      resource.functionalTestPassed,
+      resource.interventionNotes ?? resource.evidence ?? null,
+      resource.resultNotes ?? resource.closureSummary ?? null,
+      resource.functionalTestPassed ?? this.functionalTestStatusFrom(resource),
       resource.closedAt,
+      resource.assetLocationId ?? null,
+      resource.assetName ?? null,
+      resource.incidentId ?? null,
+      resource.requestedBy ?? null,
+      resource.closedBy ?? null,
     );
   }
 
@@ -49,14 +54,36 @@ export class TechnicalServiceRequestAssembler implements BaseAssembler<
       organizationId: entity.organizationId,
       uuid: entity.uuid,
       assetId: entity.assetId,
+      assetLocationId: entity.assetLocationId,
+      assetName: entity.assetName ?? undefined,
+      incidentId: entity.incidentId,
       priority: entity.priority,
       issueDescription: entity.issueDescription,
       requestedDate: entity.requestedDate,
+      requestedAt: entity.requestedDate,
       status: entity.status,
+      requestedBy: entity.requestedBy,
       interventionNotes: entity.interventionNotes,
       resultNotes: entity.resultNotes,
       functionalTestPassed: entity.functionalTestPassed,
+      closureSummary: entity.resultNotes,
+      evidence: entity.interventionNotes,
+      closedBy: entity.closedBy,
       closedAt: entity.closedAt,
     };
+  }
+
+  private functionalTestStatusFrom(
+    resource: TechnicalServiceRequestResource,
+  ): boolean | null {
+    if (resource.status === 'closed') {
+      return true;
+    }
+
+    if (resource.status === 'pending-review' && (resource.closureSummary || resource.evidence)) {
+      return false;
+    }
+
+    return null;
   }
 }

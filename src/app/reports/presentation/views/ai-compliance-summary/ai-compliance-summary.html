@@ -1,0 +1,88 @@
+<section class="summary-page" aria-labelledby="summary-title">
+  <div class="page-heading">
+    <div>
+      <span class="section-kicker">Sprint 4 prototype</span>
+      <h1 id="summary-title">Intelligent compliance summary</h1>
+      <p>Turn an existing compliance report into an executive explanation of risks and actions.</p>
+    </div>
+    <div class="heading-actions">
+      <button type="button" class="secondary-action" (click)="showInsufficientState()">
+        <mat-icon aria-hidden="true">rule</mat-icon>
+        Preview insufficient data
+      </button>
+      <button type="button" class="primary-action" (click)="generateSummary()">
+        <mat-icon aria-hidden="true">auto_awesome</mat-icon>
+        Generate summary
+      </button>
+    </div>
+  </div>
+
+  <section class="filter-card" aria-label="Report selection">
+    <label class="field">
+      <span>Report</span>
+      <select [value]="selectedReport()" (change)="selectReport($any($event.target).value)">
+        <option>June 2026 sanitary compliance</option>
+        <option>May 2026 monthly compliance</option>
+        <option>Daily log - June 21</option>
+      </select>
+    </label>
+    <div class="filter-meta">
+      <span>AI interpretation</span>
+      <strong>{{ state() === 'insufficient' ? 'Blocked' : 'Ready' }}</strong>
+    </div>
+  </section>
+
+  <section class="summary-grid" aria-label="Report metrics">
+    @for (metric of metrics; track metric.label) {
+      <article class="summary-card" [class.accent-blue]="metric.tone === 'blue'" [class.accent-green]="metric.tone === 'green'" [class.accent-amber]="metric.tone === 'amber'" [class.accent-red]="metric.tone === 'red'">
+        <span>{{ metric.label }}</span>
+        <strong>{{ metric.value }}</strong>
+      </article>
+    }
+  </section>
+
+  <section class="insight-layout">
+    <article class="narrative-card" [class.warning-card]="state() === 'insufficient'">
+      <div class="section-heading">
+        <div>
+          <h2>{{ state() === 'insufficient' ? 'Summary unavailable' : 'Generated explanation' }}</h2>
+          <p>Facts remain in the report; this text is the AI-generated interpretation.</p>
+        </div>
+      </div>
+
+      <p class="narrative-text">{{ generatedSummary() }}</p>
+
+      @if (state() !== 'insufficient') {
+        <div class="next-steps">
+          <h3>Recommended follow-up</h3>
+          <ul>
+            <li>Attach verification evidence to the two weak incident closures.</li>
+            <li>Review receiving procedure for Cold Room 03 before the next delivery window.</li>
+            <li>Schedule sensor calibration for Truck 08 and repeat route monitoring.</li>
+          </ul>
+        </div>
+      }
+    </article>
+
+    <aside class="risk-card">
+      <div class="section-heading compact-heading">
+        <div>
+          <h2>Risk highlights</h2>
+          <p>Prioritized from report readings and incident history.</p>
+        </div>
+      </div>
+
+      <div class="risk-list">
+        @for (risk of risks; track risk.title) {
+          <article class="risk-item" [class.high-risk]="risk.severity === 'high'">
+            <mat-icon aria-hidden="true">{{ risk.severity === 'high' ? 'priority_high' : 'report_problem' }}</mat-icon>
+            <div>
+              <strong>{{ risk.title }}</strong>
+              <p>{{ risk.description }}</p>
+            </div>
+          </article>
+        }
+      </div>
+    </aside>
+  </section>
+</section>

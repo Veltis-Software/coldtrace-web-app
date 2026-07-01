@@ -22,3 +22,13 @@
 .language-switcher-bar app-language-switcher {
   pointer-events: auto;
 }
+
+.dashboard-loading-state {
+  align-items: center;
+  color: #98a2b3;
+  display: flex;
+  font-size: 14px;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 360px;
+}

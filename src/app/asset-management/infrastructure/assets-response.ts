@@ -1,25 +1,19 @@
 import { BaseResource, BaseResponse } from '../../shared/infrastructure/base-response';
 import { AssetStatus } from '../domain/model/asset-status.enum';
 import { AssetType } from '../domain/model/asset-type.enum';
-import { ConnectivityStatus } from '../domain/model/connectivity-status.enum';
 
 /**
  * @summary Raw asset resource from the ColdTrace API.
  */
 export interface AssetResource extends BaseResource {
   organizationId: number;
-  locationId?: number;
+  locationId: number;
   uuid: string;
   type: AssetType;
   name: string;
   capacity: number;
   description: string;
   status: AssetStatus;
-  location?: string;
-  lastIncident?: string;
-  currentTemperature?: string;
-  entryDate?: string;
-  connectivity?: ConnectivityStatus;
 }
 
 /**
@@ -29,3 +23,20 @@ export interface AssetsResponse extends BaseResponse {
   assets: AssetResource[];
 }
 
+/**
+ * @summary Request payload for creating an asset through the backend.
+ */
+export interface CreateAssetRequest {
+  locationId: number;
+  uuid: string;
+  type: AssetType;
+  name: string;
+  capacity: number;
+  description: string;
+  status: AssetStatus;
+}
+
+/**
+ * @summary Request payload for updating an asset through the backend.
+ */
+export interface UpdateAssetRequest extends CreateAssetRequest {}

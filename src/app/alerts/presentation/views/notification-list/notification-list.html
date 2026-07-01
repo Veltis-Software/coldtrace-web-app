@@ -37,7 +37,7 @@
         <input
           type="search"
           [value]="searchTerm()"
-          placeholder="Search notifications by asset, recipient, status or channel..."
+          [placeholder]="'alerts.notification-list.search-placeholder' | translate"
           (input)="updateSearchTerm($any($event.target).value)"
         />
       </label>

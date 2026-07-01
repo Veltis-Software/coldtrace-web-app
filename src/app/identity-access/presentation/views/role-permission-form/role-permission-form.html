@@ -1,67 +1,39 @@
-<section class="access-view-header" aria-labelledby="access-view-title">
-  <h1 id="access-view-title">{{ 'dashboard-shell.nav-access' | translate }}</h1>
-  <p>{{ 'roles-permissions.permissions-subtitle' | translate }}</p>
-</section>
-
-  <nav class="work-tabs section-tabs" aria-label="Access sections">
-    <a routerLink="/identity-access/roles-permissions" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'dashboard-shell.nav-users' | translate }}</a>
-    <a routerLink="/identity-access/roles-permissions/users/new" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'dashboard-shell.nav-new-user' | translate }}</a>
-    <a routerLink="/identity-access/roles-permissions/permissions" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'dashboard-shell.nav-permissions' | translate }}</a>
-  </nav>
-
 <section class="table-card permission-editor" aria-labelledby="role-permissions-title">
-  <div class="table-heading">
-    <div>
-      <h2 id="role-permissions-title">{{ 'roles-permissions.permissions-title' | translate }}</h2>
-      <p>{{ 'roles-permissions.permissions-subtitle' | translate }}</p>
+    <div class="table-heading">
+      <div>
+        <h2 id="role-permissions-title">{{ 'roles-permissions.permissions-title' | translate }}</h2>
+        <p>{{ 'roles-permissions.permissions-subtitle' | translate }}</p>
+      </div>
+      <button mat-stroked-button type="button" class="reload-action" (click)="loadRoles()">
+        {{ 'roles-permissions.reload' | translate }}
+      </button>
     </div>
-    <button mat-stroked-button type="button" class="reload-action" (click)="loadRoles()">
-      <mat-icon aria-hidden="true">refresh</mat-icon>
-      {{ 'roles-permissions.reload' | translate }}
-    </button>
-  </div>
 
-  @if (feedback() === 'server-error') {
-    <p class="feedback error">{{ 'roles-permissions.feedback.server-error' | translate }}</p>
-  }
+    @if (feedback() === 'server-error') {
+      <p class="feedback error">{{ 'roles-permissions.feedback.server-error' | translate }}</p>
+    }
 
-  @if (feedback() === 'saved') {
-    <p class="feedback success">{{ 'roles-permissions.feedback.permissions-saved' | translate }}</p>
-  }
-
-  @if (loading()) {
-    <p class="feedback neutral">{{ 'roles-permissions.feedback.loading' | translate }}</p>
-  } @else if (!canManageAccess()) {
-    <p class="feedback error">{{ 'roles-permissions.denied.message' | translate }}</p>
-  } @else {
-    <div class="role-permission-list">
-      @for (role of paginatedRoles(); track role.id) {
-        <article class="role-permission-row">
-          <span class="role-pill">{{ roleLabelKey(role) | translate }}</span>
-          <div class="permission-list">
-            @for (
-              permissionKey of identityAccessStore.availablePermissionKeys;
-              track permissionKey
-            ) {
-              <label class="permission-toggle">
-                <input
-                  type="checkbox"
-                  [checked]="isPermissionSelected(role, permissionKey)"
-                  [disabled]="isPermissionToggleDisabled(role, permissionKey)"
-                  (change)="toggleRolePermission(role, permissionKey, $any($event.target).checked)"
-                />
+    @if (loading()) {
+      <p class="feedback neutral">{{ 'roles-permissions.feedback.loading' | translate }}</p>
+    } @else {
+      <p class="feedback neutral">{{ 'roles-permissions.feedback.roles-read-only' | translate }}</p>
+      <div class="role-permission-list">
+        @for (role of paginatedRoles(); track role.id) {
+          <article class="role-permission-row">
+            <span class="role-pill">{{ roleLabelKey(role) | translate }}</span>
+            <div class="permission-list">
+              @for (permissionKey of identityAccessStore.permissionKeysForRole(role); track permissionKey) {
                 <span>{{ permissionKey | translate }}</span>
-              </label>
-            }
-          </div>
-        </article>
-      }
-      <app-list-pagination
-        [page]="currentPage()"
-        [total]="roles().length"
-        [pageSize]="pageSize"
-        (pageChange)="updatePage($event)"
-      />
-    </div>
-  }
+              }
+            </div>
+          </article>
+        }
+        <app-list-pagination
+          [page]="currentPage()"
+          [total]="roles().length"
+          [pageSize]="pageSize"
+          (pageChange)="updatePage($event)"
+        />
+      </div>
+    }
 </section>

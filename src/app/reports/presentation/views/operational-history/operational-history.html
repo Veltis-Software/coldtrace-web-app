@@ -8,20 +8,10 @@
   <div class="page-heading">
     <div>
       <span class="section-kicker">{{ activeOrganizationName() }}</span>
-      <h1 id="history-title">{{ 'dashboard-shell.nav-reports' | translate }}</h1>
+      <h1 id="history-title">{{ 'reports.history.title' | translate }}</h1>
       <p>{{ 'reports.history.subtitle' | translate }}</p>
     </div>
   </div>
-
-
-  <nav class="work-tabs section-tabs" aria-label="Reports sections">
-    <a routerLink="/reports/daily-log" routerLinkActive="active">{{ 'dashboard-shell.nav-daily-log' | translate }}</a>
-    <a routerLink="/reports/monthly" routerLinkActive="active">{{ 'dashboard-shell.nav-monthly-report' | translate }}</a>
-    <a routerLink="/reports/history" routerLinkActive="active">{{ 'dashboard-shell.nav-history' | translate }}</a>
-    <a routerLink="/reports/compliance" routerLinkActive="active">{{ 'dashboard-shell.nav-compliance' | translate }}</a>
-    <a routerLink="/reports/findings" routerLinkActive="active">{{ 'dashboard-shell.nav-findings' | translate }}</a>
-    <a routerLink="/reports/audit-evidence" routerLinkActive="active">{{ 'dashboard-shell.nav-audit-evidence' | translate }}</a>
-  </nav>
 
   @if (!canViewHistory() && !loading()) {
     <section class="access-banner" aria-live="polite">

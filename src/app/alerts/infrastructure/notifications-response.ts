@@ -8,7 +8,7 @@ import { NotificationStatus } from '../domain/model/notification-status.enum';
 export interface NotificationResource extends BaseResource {
   organizationId: number;
   incidentId: number;
-  assetName: string;
+  assetName?: string;
   channel: NotificationChannel;
   recipient: string;
   message: string;

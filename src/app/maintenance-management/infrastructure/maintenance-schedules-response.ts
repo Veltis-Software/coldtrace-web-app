@@ -8,9 +8,11 @@ export interface MaintenanceScheduleResource extends BaseResource {
   organizationId: number;
   uuid: string;
   assetId: number;
-  iotDeviceId: number | null;
+  iotDeviceId?: number | null;
   scheduledDate: string;
-  period: string;
+  period?: string;
+  frequencyDays?: number | null;
+  responsibleUserId?: number | null;
   observations: string;
   status: MaintenanceScheduleStatus;
   createdAt: string;
@@ -21,4 +23,23 @@ export interface MaintenanceScheduleResource extends BaseResource {
  */
 export interface MaintenanceSchedulesResponse extends BaseResponse {
   maintenanceSchedules: MaintenanceScheduleResource[];
+}
+
+/**
+ * @summary Request payload for scheduling preventive maintenance in the ColdTrace API.
+ */
+export interface CreateMaintenanceScheduleRequest {
+  assetId: number;
+  scheduledDate: string;
+  frequencyDays?: number | null;
+  responsibleUserId?: number | null;
+  observations?: string;
+  status: MaintenanceScheduleStatus;
+}
+
+/**
+ * @summary Request payload for changing maintenance schedule lifecycle status.
+ */
+export interface UpdateMaintenanceScheduleStatusRequest {
+  status: MaintenanceScheduleStatus;
 }

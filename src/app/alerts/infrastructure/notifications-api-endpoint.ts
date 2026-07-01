@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { Observable } from 'rxjs';
 import { BaseApiEndpoint } from '../../shared/infrastructure/base-api-endpoint';
+import { OrganizationScopeStore } from '../../shared/infrastructure/organization-scope.store';
 import { Notification } from '../domain/model/notification.entity';
 import { NotificationAssembler } from './notification-assembler';
 import { NotificationResource, NotificationsResponse } from './notifications-response';
@@ -14,11 +15,15 @@ export class NotificationsApiEndpoint extends BaseApiEndpoint<
   NotificationsResponse,
   NotificationAssembler
 > {
-  constructor(http: HttpClient) {
-    super(
-      http,
-      environment.platformProviderApiBaseUrl + environment.platformProviderNotificationsEndpointPath,
-      new NotificationAssembler(),
-    );
+  constructor(http: HttpClient, private organizationScope: OrganizationScopeStore) {
+    super(http, '', new NotificationAssembler());
+  }
+
+  /**
+   * @summary Fetches notifications for the active organization.
+   */
+  override getAll(): Observable<Notification[]> {
+    this.endpointUrl = this.organizationScope.endpointUrlFor('notifications');
+    return super.getAll();
   }
 }

@@ -7,7 +7,7 @@
 
     @if (canMonitorAssets()) {
       <div class="assets-toolbar monitoring-workbar" aria-label="Monitoring filters and status">
-        <nav class="work-tabs" aria-label="Monitoring asset sections">
+        <nav class="monitoring-tabs" aria-label="Monitoring asset sections">
           @for (tab of tabs; track tab.type) {
             <button
               type="button"
@@ -18,6 +18,7 @@
             </button>
           }
         </nav>
+
         <label class="search-box">
           <mat-icon class="search-icon">search</mat-icon>
           <input
@@ -30,8 +31,7 @@
 
         <div class="summary-pills" aria-label="Monitoring summary">
           <span
-            >{{ 'monitoring.asset-monitoring.summary-assets' | translate }}:
-            {{ totalAssets() }}</span
+            >{{ 'monitoring.asset-monitoring.summary-assets' | translate }}: {{ totalAssets() }}</span
           >
           <span
             >{{ 'monitoring.asset-monitoring.summary-readings' | translate }}:

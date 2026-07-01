@@ -6,14 +6,14 @@ ColdTrace is an Angular frontend application for cold-chain monitoring operation
 
 ## Description
 
-ColdTrace is the frontend web application for ICEQ, a platform focused on cold-chain monitoring for food businesses. The current implementation is an Angular application that consumes the ColdTrace Spring Boot backend during local development.
+ColdTrace is the frontend web application for ICEQ, a platform focused on cold-chain monitoring for food businesses. The current implementation is an Angular application that consumes the ColdTrace Spring Boot backend during local development and the deployed backend in production builds.
 
-The project follows the course style used in the reference applications: bounded contexts, standalone Angular components, route-level lazy loading, simple domain entities, infrastructure assemblers, and a small `server/db.json` data source for development.
+The project follows the course style used in the reference applications: bounded contexts, standalone Angular components, route-level lazy loading, simple domain entities, infrastructure assemblers, and environment-based API endpoints.
 
 ## Current Scope
 
 - Identity and access management: account creation, sign in, password recovery, users, roles, and permissions.
-- Asset management: cold rooms, transport units, IoT devices, gateways, calibration, connectivity, and asset settings.
+- Asset management: locations, cold rooms, transport units, IoT devices, gateways, calibration, connectivity, and asset settings.
 - Operational monitoring: dashboard KPIs, current readings, alerts, connectivity state, offline sync, charts, and maintenance widgets.
 - Reports and audit support: daily log, operational history, sanitary compliance CSV, monthly report CSV, findings, and audit evidence.
 - Local API consumption through the ColdTrace Spring Boot backend.
@@ -23,12 +23,10 @@ The project follows the course style used in the reference applications: bounded
 ```txt
 src/app/
   identity-access/       Account, users, roles, permissions
-  asset-management/      Assets, devices, gateways, calibration
+  asset-management/      Assets, locations, devices, gateways, calibration
   monitoring/            Dashboard, readings, alerts, offline sync
   reports/               Daily log, history, compliance, audit evidence
   shared/                Layout, shell, language switcher, infrastructure base classes
-server/
-  db.json                Legacy mock data source kept for reference
 docs/
   user-stories.md        User stories and acceptance criteria
   class-diagram.puml     PlantUML class diagram
@@ -57,7 +55,7 @@ Run the Spring Boot backend:
 
 ```bash
 cd ../coldtrace-platform
-./mvnw.cmd spring-boot:run
+./mvnw spring-boot:run
 ```
 
 Run the Angular application:
@@ -72,10 +70,16 @@ Open:
 http://localhost:4200
 ```
 
-The development frontend uses:
+During local development, Angular calls the local Spring Boot backend:
 
 ```txt
 http://localhost:8080
+```
+
+Production builds call the deployed backend:
+
+```txt
+https://coldtrace-platform-dtbzbm7bta-uc.a.run.app
 ```
 
 ## Build and Test
@@ -95,5 +99,5 @@ npm test
 ## Notes
 
 - The application keeps the product-facing UI in English.
-- The frontend now targets the local Spring Boot backend. The `server/` folder is retained only as legacy mock data while frontend flows are migrated.
+- The frontend now targets the ColdTrace Spring Boot backend. The `server/` folder is retained only as legacy mock data from the previous local API phase.
 - Real JWT authentication, real email delivery, and production backend authorization are outside the current frontend scope.

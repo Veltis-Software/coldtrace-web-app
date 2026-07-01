@@ -1,128 +1,89 @@
-# ColdTrace Local API
+# ColdTrace API Integration
 
-This document explains how the current frontend consumes the simulated API used for development and demonstrations.
+This document explains how the current frontend consumes the ColdTrace Spring Boot backend for development and demonstrations.
 
 ---
 
 ## API Provider
 
-The project uses JSON Server as a simple local API.
-
-Folder:
+The frontend reads API paths from:
 
 ```txt
-server/
+src/environments/environment.development.ts
+src/environments/environment.ts
 ```
 
-Main data file:
+Development and production builds point to the deployed backend:
 
 ```txt
-server/db.json
+https://coldtrace-platform-dtbzbm7bta-uc.a.run.app
 ```
 
 ---
 
 ## Run Locally
 
-From the server folder:
+Start the Angular application:
 
 ```bash
-cd server
-npm install
-npm run dev
+npm start
 ```
 
-The local API runs at:
+Open:
 
 ```txt
-http://localhost:3000
+http://localhost:4200
 ```
 
 ---
 
-## Main Collections
+## Main Endpoint Groups
 
-The frontend currently expects these collections:
+The frontend consumes these backend endpoint groups:
 
 ```txt
-/users
+/organization-sign-ups
 /organizations
 /roles
-/password-reset-requests
-/assets
-/iot-devices
-/gateways
-/asset-settings
-/sensor-readings
-/reports
-/incidents
-/notifications
-/maintenance-schedules
-/technical-service-requests
+/organizations/{organizationId}/users
+/organizations/{organizationId}/locations
+/organizations/{organizationId}/assets
+/organizations/{organizationId}/iot-devices
+/organizations/{organizationId}/gateways
+/organizations/{organizationId}/asset-settings
+/organizations/{organizationId}/sensor-readings
+/organizations/{organizationId}/reports
+/organizations/{organizationId}/incidents
+/organizations/{organizationId}/notifications
+/organizations/{organizationId}/maintenance-schedules
+/organizations/{organizationId}/technical-service-requests
 ```
 
-Most records include `organizationId` so dashboard, access, reports, alerts, and maintenance views can stay scoped to the active organization.
-
----
-
-## Collection Responsibilities
-
-- `/users`, `/organizations`, `/roles`, and `/password-reset-requests` support the identity and access flows.
-- `/assets`, `/iot-devices`, `/gateways`, and `/asset-settings` support asset registration, device linkage, connectivity state, and configurable safety ranges.
-- `/sensor-readings` supports monitoring dashboards, report generation, alert detection, and offline sync simulation.
-- `/reports` stores generated report references for daily log, compliance, monthly summary, and audit evidence workflows.
-- `/incidents` and `/notifications` support alert recognition, corrective closure, escalation, and notification review.
-- `/maintenance-schedules` and `/technical-service-requests` support preventive maintenance and technical service tracking.
-
----
-
-## Environment Files
-
-Development:
-
-```txt
-src/environments/environment.development.ts
-```
-
-Production:
-
-```txt
-src/environments/environment.ts
-```
-
-The development environment points to `http://localhost:3000`.
-
-The production environment points to the hosted JSON Server service:
-
-```txt
-https://coldtrace-json-server.onrender.com
-```
-
-If the hosted service URL changes, update `platformProviderApiBaseUrl` in `environment.ts`. The hosted service is used so the deployed frontend does not require the local JSON Server process to be running.
+Most operational endpoints are scoped by `organizationId`, keeping dashboard, access, reports, alerts, and maintenance views aligned with the active organization.
 
 ---
 
 ## Frontend Integration Pattern
 
-Each bounded context has infrastructure classes that wrap the endpoint access.
+Each bounded context has infrastructure classes that wrap endpoint access.
 
 Example pattern:
 
 ```txt
-domain entity <-> assembler <-> endpoint/api <-> JSON Server resource
+domain entity <-> assembler <-> endpoint/api <-> Spring Boot resource
 ```
 
-The purpose is to keep presentation components working with domain entities instead of raw JSON resources.
+The presentation layer works with domain entities. Assemblers and endpoint classes translate those entities to the backend request and response contracts.
 
-The shared `BaseApiEndpoint` handles common CRUD operations. Each context still owns its API facade and assembler classes so the project remains close to the professor reference architecture.
+The shared `BaseApiEndpoint` handles common CRUD operations when the backend exposes standard methods. Context-specific endpoints override or add methods for action endpoints such as incident acknowledgements, incident resolutions, telemetry demo generation, role assignment, and maintenance status updates.
 
 ---
 
 ## Current Limitations
 
-- Authentication is simulated in the frontend flow.
-- Password recovery is represented through local data and visual states.
-- Email delivery is not implemented.
-- Authorization is enforced by visible UI behavior and store logic, not by a production backend.
-- Alert escalation, report generation, and maintenance tracking are frontend workflows backed by JSON Server data.
-- Telemetry changes for demo dashboards are simulated by the frontend store while reading asset configuration from the API data.
+- Real JWT authentication and real email delivery are outside the current frontend scope.
+- Sign in, password recovery, and some permission behavior still use frontend state until the backend exposes those flows.
+- Backend demo telemetry generation is requested from the frontend through `/sensor-readings/demo-generations`.
+- Incident notifications are read from the backend as derived read models; the frontend does not persist notification creation directly.
+- Delete operations for assets, devices, gateways, and settings are not exposed in the UI because the current backend exposes create/update/read endpoints but not delete endpoints for those resources.
+- The `server/` folder remains in the repository only as legacy mock data from the earlier frontend phase.

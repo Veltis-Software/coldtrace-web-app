@@ -8,37 +8,10 @@
   <div class="page-heading">
     <div>
       <span class="section-kicker">{{ activeOrganizationName() }}</span>
-      <h1 id="audit-title">{{ 'dashboard-shell.nav-reports' | translate }}</h1>
+      <h1 id="audit-title">{{ 'reports.audit.title' | translate }}</h1>
       <p>{{ 'reports.audit.subtitle' | translate }}</p>
     </div>
-
-    <div class="heading-actions">
-      <button mat-stroked-button type="button" class="secondary-action" (click)="loadPageData()">
-        <mat-icon aria-hidden="true">refresh</mat-icon>
-        {{ 'reports.audit.reload' | translate }}
-      </button>
-      <button
-        mat-flat-button
-        type="button"
-        class="primary-action"
-        [disabled]="!canExportEvidence()"
-        (click)="exportEvidence()"
-      >
-        <mat-icon aria-hidden="true">download</mat-icon>
-        {{ 'reports.audit.export' | translate }}
-      </button>
-    </div>
   </div>
-
-
-  <nav class="work-tabs section-tabs" aria-label="Reports sections">
-    <a routerLink="/reports/daily-log" routerLinkActive="active">{{ 'dashboard-shell.nav-daily-log' | translate }}</a>
-    <a routerLink="/reports/monthly" routerLinkActive="active">{{ 'dashboard-shell.nav-monthly-report' | translate }}</a>
-    <a routerLink="/reports/history" routerLinkActive="active">{{ 'dashboard-shell.nav-history' | translate }}</a>
-    <a routerLink="/reports/compliance" routerLinkActive="active">{{ 'dashboard-shell.nav-compliance' | translate }}</a>
-    <a routerLink="/reports/findings" routerLinkActive="active">{{ 'dashboard-shell.nav-findings' | translate }}</a>
-    <a routerLink="/reports/audit-evidence" routerLinkActive="active">{{ 'dashboard-shell.nav-audit-evidence' | translate }}</a>
-  </nav>
 
   @if (feedback() === 'exported') {
     <p class="feedback success">{{ 'reports.audit.feedback-exported' | translate }}</p>
@@ -91,36 +64,41 @@
           }
         </select>
       </label>
+
+      <div class="report-card-actions">
+        <button mat-stroked-button type="button" class="secondary-action" (click)="loadPageData()">
+          <mat-icon aria-hidden="true">refresh</mat-icon>
+          {{ 'reports.audit.reload' | translate }}
+        </button>
+        <button
+          mat-flat-button
+          type="button"
+          class="primary-action"
+          [disabled]="!canExportEvidence()"
+          (click)="exportEvidence()"
+        >
+          <mat-icon aria-hidden="true">download</mat-icon>
+          {{ 'reports.audit.export' | translate }}
+        </button>
+      </div>
     </section>
 
     <section class="summary-grid" aria-label="Audit evidence summary">
       <article class="summary-card accent-blue">
-        <mat-icon aria-hidden="true">analytics</mat-icon>
-        <div>
-          <span>{{ 'reports.audit.summary-completeness' | translate }}</span>
-          <strong>{{ auditEvidence().completenessRate }}%</strong>
-        </div>
+        <span>{{ 'reports.audit.summary-completeness' | translate }}</span>
+        <strong>{{ auditEvidence().completenessRate }}%</strong>
       </article>
       <article class="summary-card accent-green">
-        <mat-icon aria-hidden="true">sensors</mat-icon>
-        <div>
-          <span>{{ 'reports.audit.summary-readings' | translate }}</span>
-          <strong>{{ auditEvidence().readingsCount }}</strong>
-        </div>
+        <span>{{ 'reports.audit.summary-readings' | translate }}</span>
+        <strong>{{ auditEvidence().readingsCount }}</strong>
       </article>
       <article class="summary-card accent-amber">
-        <mat-icon aria-hidden="true">description</mat-icon>
-        <div>
-          <span>{{ 'reports.audit.summary-reports' | translate }}</span>
-          <strong>{{ auditEvidence().reports.length }}</strong>
-        </div>
+        <span>{{ 'reports.audit.summary-reports' | translate }}</span>
+        <strong>{{ auditEvidence().reports.length }}</strong>
       </article>
       <article class="summary-card accent-red">
-        <mat-icon aria-hidden="true">rule</mat-icon>
-        <div>
-          <span>{{ 'reports.audit.summary-pending' | translate }}</span>
-          <strong>{{ auditEvidence().incompleteItems }}</strong>
-        </div>
+        <span>{{ 'reports.audit.summary-pending' | translate }}</span>
+        <strong>{{ auditEvidence().incompleteItems }}</strong>
       </article>
     </section>
 
@@ -259,6 +237,3 @@
     </section>
   }
 </section>
-
-
-

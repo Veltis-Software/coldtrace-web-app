@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BaseApi } from '../../shared/infrastructure/base-api';
+import { OrganizationScopeStore } from '../../shared/infrastructure/organization-scope.store';
 import { Asset } from '../domain/model/asset.entity';
 import { AssetSettings } from '../domain/model/asset-settings.entity';
 import { Gateway } from '../domain/model/gateway.entity';
@@ -24,13 +25,13 @@ export class AssetManagementApi extends BaseApi {
   private readonly gatewaysEndpoint: GatewaysApiEndpoint;
   private readonly assetSettingsEndpoint: AssetSettingsApiEndpoint;
 
-  constructor(httpClient: HttpClient) {
+  constructor(httpClient: HttpClient, organizationScope: OrganizationScopeStore) {
     super();
-    this.locationsEndpoint = new LocationsApiEndpoint(httpClient);
-    this.assetsEndpoint = new AssetsApiEndpoint(httpClient);
-    this.iotDevicesEndpoint = new IoTDevicesApiEndpoint(httpClient);
-    this.gatewaysEndpoint = new GatewaysApiEndpoint(httpClient);
-    this.assetSettingsEndpoint = new AssetSettingsApiEndpoint(httpClient);
+    this.locationsEndpoint = new LocationsApiEndpoint(httpClient, organizationScope);
+    this.assetsEndpoint = new AssetsApiEndpoint(httpClient, organizationScope);
+    this.iotDevicesEndpoint = new IoTDevicesApiEndpoint(httpClient, organizationScope);
+    this.gatewaysEndpoint = new GatewaysApiEndpoint(httpClient, organizationScope);
+    this.assetSettingsEndpoint = new AssetSettingsApiEndpoint(httpClient, organizationScope);
   }
 
   /**
@@ -76,13 +77,6 @@ export class AssetManagementApi extends BaseApi {
   }
 
   /**
-   * @summary Deletes an asset by identifier.
-   */
-  deleteAsset(id: number): Observable<void> {
-    return this.assetsEndpoint.delete(id);
-  }
-
-  /**
    * @summary Fetches IoT devices from the API endpoint.
    */
   getIoTDevices(): Observable<IoTDevice[]> {
@@ -104,13 +98,6 @@ export class AssetManagementApi extends BaseApi {
   }
 
   /**
-   * @summary Deletes an IoT device by identifier.
-   */
-  deleteIoTDevice(id: number): Observable<void> {
-    return this.iotDevicesEndpoint.delete(id);
-  }
-
-  /**
    * @summary Fetches gateways from the API endpoint.
    */
   getGateways(): Observable<Gateway[]> {
@@ -129,13 +116,6 @@ export class AssetManagementApi extends BaseApi {
    */
   updateGateway(gateway: Gateway): Observable<Gateway> {
     return this.gatewaysEndpoint.update(gateway, gateway.id);
-  }
-
-  /**
-   * @summary Deletes a gateway by identifier.
-   */
-  deleteGateway(id: number): Observable<void> {
-    return this.gatewaysEndpoint.delete(id);
   }
 
   /**
@@ -166,10 +146,4 @@ export class AssetManagementApi extends BaseApi {
     return this.assetSettingsEndpoint.update(assetSettings, assetSettings.id);
   }
 
-  /**
-   * @summary Deletes asset settings by identifier.
-   */
-  deleteAssetSettings(id: number): Observable<void> {
-    return this.assetSettingsEndpoint.delete(id);
-  }
 }

@@ -14,5 +14,8 @@ export class SensorReading {
     public imageCaptured: boolean | null = null,
     public batteryLevel: number | null = null,
     public signalStrength: number | null = null,
+    public organizationId: number | null = null,
+    public gatewayId: number | null = null,
+    public locationId: number | null = null,
   ) {}
 }

@@ -14,7 +14,7 @@ export class NotificationAssembler implements BaseAssembler<Notification, Notifi
       Number(resource.id),
       resource.organizationId,
       resource.incidentId,
-      resource.assetName,
+      resource.assetName ?? '',
       resource.channel,
       resource.recipient,
       resource.message,

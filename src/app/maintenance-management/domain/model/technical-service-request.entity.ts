@@ -18,6 +18,11 @@ export class TechnicalServiceRequest implements BaseEntity {
     private readonly _resultNotes: string | null,
     private readonly _functionalTestPassed: boolean | null,
     private readonly _closedAt: string | null,
+    private readonly _assetLocationId: number | null = null,
+    private readonly _assetName: string | null = null,
+    private readonly _incidentId: number | null = null,
+    private readonly _requestedBy: string | null = null,
+    private readonly _closedBy: string | null = null,
   ) {}
 
   get id(): number {
@@ -66,5 +71,25 @@ export class TechnicalServiceRequest implements BaseEntity {
 
   get closedAt(): string | null {
     return this._closedAt;
+  }
+
+  get assetLocationId(): number | null {
+    return this._assetLocationId;
+  }
+
+  get assetName(): string | null {
+    return this._assetName;
+  }
+
+  get incidentId(): number | null {
+    return this._incidentId;
+  }
+
+  get requestedBy(): string | null {
+    return this._requestedBy;
+  }
+
+  get closedBy(): string | null {
+    return this._closedBy;
   }
 }

@@ -5,6 +5,11 @@ import { MaintenanceScheduleStatus } from '../domain/model/maintenance-schedule-
 import { TechnicalServiceRequest } from '../domain/model/technical-service-request.entity';
 import { TechnicalServiceStatus } from '../domain/model/technical-service-status.enum';
 import { MaintenanceManagementApi } from '../infrastructure/maintenance-management-api';
+import { OrganizationScopeStore } from '../../shared/infrastructure/organization-scope.store';
+
+interface LoadOptions {
+  force?: boolean;
+}
 
 /**
  * @summary Manages maintenance management state and workflows for presentation components.
@@ -15,6 +20,10 @@ export class MaintenanceManagementStore {
   private readonly technicalServiceRequestsSignal = signal<TechnicalServiceRequest[]>([]);
   private readonly loadingSignal = signal(false);
   private readonly errorSignal = signal<string | null>(null);
+  private maintenanceSchedulesLoadedForOrganizationId: number | null = null;
+  private maintenanceSchedulesRequestInFlightForOrganizationId: number | null = null;
+  private technicalServiceRequestsLoadedForOrganizationId: number | null = null;
+  private technicalServiceRequestsRequestInFlightForOrganizationId: number | null = null;
 
   readonly maintenanceSchedules = this.maintenanceSchedulesSignal.asReadonly();
   readonly technicalServiceRequests = this.technicalServiceRequestsSignal.asReadonly();
@@ -28,22 +37,44 @@ export class MaintenanceManagementStore {
       .length;
   });
 
-  constructor(private maintenanceManagementApi: MaintenanceManagementApi) {}
+  constructor(
+    private maintenanceManagementApi: MaintenanceManagementApi,
+    private organizationScope: OrganizationScopeStore,
+  ) {}
 
   /**
    * @summary Loads maintenance schedules data into local state.
    */
-  loadMaintenanceSchedules(): void {
+  loadMaintenanceSchedules(options: LoadOptions = {}): void {
+    const organizationId = this.organizationScope.activeOrganizationId();
+
+    if (!organizationId) {
+      this.maintenanceSchedulesSignal.set([]);
+      return;
+    }
+
+    if (
+      !options.force &&
+      (this.maintenanceSchedulesLoadedForOrganizationId === organizationId ||
+        this.maintenanceSchedulesRequestInFlightForOrganizationId === organizationId)
+    ) {
+      return;
+    }
+
+    this.maintenanceSchedulesRequestInFlightForOrganizationId = organizationId;
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
     this.maintenanceManagementApi.getMaintenanceSchedules().subscribe({
       next: (maintenanceSchedules) => {
         this.maintenanceSchedulesSignal.set(maintenanceSchedules);
+        this.maintenanceSchedulesLoadedForOrganizationId = organizationId;
+        this.maintenanceSchedulesRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
       error: (error) => {
         this.errorSignal.set(error.message);
+        this.maintenanceSchedulesRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
     });
@@ -52,17 +83,36 @@ export class MaintenanceManagementStore {
   /**
    * @summary Loads technical service requests data into local state.
    */
-  loadTechnicalServiceRequests(): void {
+  loadTechnicalServiceRequests(options: LoadOptions = {}): void {
+    const organizationId = this.organizationScope.activeOrganizationId();
+
+    if (!organizationId) {
+      this.technicalServiceRequestsSignal.set([]);
+      return;
+    }
+
+    if (
+      !options.force &&
+      (this.technicalServiceRequestsLoadedForOrganizationId === organizationId ||
+        this.technicalServiceRequestsRequestInFlightForOrganizationId === organizationId)
+    ) {
+      return;
+    }
+
+    this.technicalServiceRequestsRequestInFlightForOrganizationId = organizationId;
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
     this.maintenanceManagementApi.getTechnicalServiceRequests().subscribe({
       next: (technicalServiceRequests) => {
         this.technicalServiceRequestsSignal.set(technicalServiceRequests);
+        this.technicalServiceRequestsLoadedForOrganizationId = organizationId;
+        this.technicalServiceRequestsRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
       error: (error) => {
         this.errorSignal.set(error.message);
+        this.technicalServiceRequestsRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
     });
@@ -77,6 +127,8 @@ export class MaintenanceManagementStore {
     return this.maintenanceManagementApi.createMaintenanceSchedule(maintenanceSchedule).pipe(
       tap((createdSchedule) => {
         this.maintenanceSchedulesSignal.update((schedules) => [...schedules, createdSchedule]);
+        this.maintenanceSchedulesLoadedForOrganizationId =
+          this.organizationScope.activeOrganizationId();
       }),
     );
   }
@@ -94,6 +146,8 @@ export class MaintenanceManagementStore {
             schedule.id === updatedSchedule.id ? updatedSchedule : schedule,
           ),
         );
+        this.maintenanceSchedulesLoadedForOrganizationId =
+          this.organizationScope.activeOrganizationId();
       }),
     );
   }
@@ -109,6 +163,8 @@ export class MaintenanceManagementStore {
       .pipe(
         tap((createdRequest) => {
           this.technicalServiceRequestsSignal.update((requests) => [...requests, createdRequest]);
+          this.technicalServiceRequestsLoadedForOrganizationId =
+            this.organizationScope.activeOrganizationId();
         }),
       );
   }
@@ -128,6 +184,8 @@ export class MaintenanceManagementStore {
               request.id === updatedRequest.id ? updatedRequest : request,
             ),
           );
+          this.technicalServiceRequestsLoadedForOrganizationId =
+            this.organizationScope.activeOrganizationId();
         }),
       );
   }

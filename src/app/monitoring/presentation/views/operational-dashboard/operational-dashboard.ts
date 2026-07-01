@@ -27,6 +27,7 @@ import { RecentAlert } from '../../../domain/model/recent-alert.entity';
 import { SensorReading } from '../../../domain/model/sensor-reading.entity';
 import { StorageDistributionItem } from '../../../domain/model/storage-distribution-item.entity';
 import { TemperaturePoint } from '../../../domain/model/temperature-point.entity';
+import { DashboardAiAssistant } from '../../components/dashboard-ai-assistant/dashboard-ai-assistant';
 import { IncidentsChart } from '../../components/incidents-chart/incidents-chart';
 import { MaintenanceList } from '../../components/maintenance-list/maintenance-list';
 import { RecentAlerts } from '../../components/recent-alerts/recent-alerts';
@@ -40,6 +41,8 @@ interface TemperatureLimits {
   max: number;
 }
 
+type ThermalState = 'frozen' | 'refrigerated' | 'ambient' | 'noData';
+
 /**
  * @summary Presents the operational dashboard user interface in the monitoring bounded context.
  */
@@ -51,6 +54,7 @@ interface TemperatureLimits {
     MatIconModule,
     MatProgressSpinnerModule,
     StatCard,
+    DashboardAiAssistant,
     TemperatureChart,
     StorageDistribution,
     MaintenanceList,
@@ -120,6 +124,11 @@ export class OperationalDashboard implements OnInit {
   protected readonly criticalAlertsKpi = computed(() => this.buildCriticalAlertsKpi());
   protected readonly activeSensorsKpi = computed(() => this.buildActiveSensorsKpi());
   protected readonly incidentsKpi = computed(() => this.buildIncidentsKpi());
+  protected readonly thermalCompliancePercent = computed(() => {
+    return this.thermalComplianceFor(
+      this.organizationReadings().filter((reading) => reading.temperature !== null),
+    );
+  });
   protected readonly thermalComplianceKpi = computed(() => this.buildThermalComplianceKpi());
   protected readonly temperaturePoints = computed(() => this.buildTemperaturePoints());
   protected readonly storageDistribution = computed(() => this.buildStorageDistribution());
@@ -197,7 +206,7 @@ export class OperationalDashboard implements OnInit {
     this.assetStore.loadAssetSettings();
     this.maintenanceStore.loadMaintenanceSchedules();
     this.maintenanceStore.loadTechnicalServiceRequests();
-    this.alertsStore.loadIncidents();
+    this.alertsStore.loadIncidents({ evaluateReadings: true });
     this.monitoringStore.loadReadings();
     this.startReadingsUpdates();
   }
@@ -358,7 +367,7 @@ export class OperationalDashboard implements OnInit {
     const thermalReadings = this.organizationReadings().filter(
       (reading) => reading.temperature !== null,
     );
-    const compliance = this.thermalComplianceFor(thermalReadings);
+    const compliance = this.thermalCompliancePercent();
 
     return this.kpi({
       id: 5,
@@ -441,53 +450,41 @@ export class OperationalDashboard implements OnInit {
       return [];
     }
 
+    const latestReadingsByAssetId = this.latestTemperatureReadingsByAssetId();
+    const counts: Record<ThermalState, number> = {
+      frozen: 0,
+      refrigerated: 0,
+      ambient: 0,
+      noData: 0,
+    };
+
+    assets.forEach((asset) => {
+      counts[this.thermalStateForAsset(asset, latestReadingsByAssetId)] += 1;
+    });
+
     const groups = [
       {
         id: 1,
         label: 'monitoring.operational.storage-frozen',
-        count: assets.filter((asset) => {
-          const temperature = this.temperatureFromAsset(asset.currentTemperature);
-          return temperature !== null && temperature <= 0;
-        }).length,
+        count: counts.frozen,
         color: '#91BDFF',
       },
       {
         id: 2,
         label: 'monitoring.operational.storage-refrigerated',
-        count: assets.filter((asset) => {
-          const temperature = this.temperatureFromAsset(asset.currentTemperature);
-          const maximumTemperature = this.maximumTemperatureForAsset(asset);
-          return (
-            temperature !== null &&
-            maximumTemperature !== null &&
-            temperature > 0 &&
-            temperature <= maximumTemperature
-          );
-        }).length,
+        count: counts.refrigerated,
         color: '#51BD7A',
       },
       {
         id: 3,
         label: 'monitoring.operational.storage-ambient',
-        count: assets.filter((asset) => {
-          const temperature = this.temperatureFromAsset(asset.currentTemperature);
-          const maximumTemperature = this.maximumTemperatureForAsset(asset);
-          return (
-            temperature !== null &&
-            maximumTemperature !== null &&
-            temperature > maximumTemperature
-          );
-        }).length,
+        count: counts.ambient,
         color: '#F5BD38',
       },
       {
         id: 4,
         label: 'monitoring.operational.storage-other',
-        count: assets.filter((asset) => {
-          const temperature = this.temperatureFromAsset(asset.currentTemperature);
-          const maximumTemperature = this.maximumTemperatureForAsset(asset);
-          return temperature === null || (temperature > 0 && maximumTemperature === null);
-        }).length,
+        count: counts.noData,
         color: '#9AA3AF',
       },
     ];
@@ -502,6 +499,42 @@ export class OperationalDashboard implements OnInit {
           color: group.color,
         }),
     );
+  }
+
+  private latestTemperatureReadingsByAssetId(): Map<number, SensorReading> {
+    const readingsByAssetId = new Map<number, SensorReading>();
+
+    this.organizationReadings().forEach((reading) => {
+      if (reading.temperature === null || readingsByAssetId.has(reading.assetId)) {
+        return;
+      }
+
+      readingsByAssetId.set(reading.assetId, reading);
+    });
+
+    return readingsByAssetId;
+  }
+
+  private thermalStateForAsset(
+    asset: Asset,
+    readingsByAssetId: Map<number, SensorReading>,
+  ): ThermalState {
+    const reading = readingsByAssetId.get(asset.id);
+    const settings = this.assetStore.settingsForAsset(this.activeOrganizationId(), asset.id);
+
+    if (!reading || reading.temperature === null || !settings) {
+      return 'noData';
+    }
+
+    if (reading.temperature <= 0) {
+      return 'frozen';
+    }
+
+    if (reading.temperature <= settings.maximumTemperature) {
+      return 'refrigerated';
+    }
+
+    return 'ambient';
   }
 
   private buildMaintenanceTasks(): MaintenanceTask[] {
@@ -988,18 +1021,6 @@ export class OperationalDashboard implements OnInit {
     return `${new Date(date).getHours().toString().padStart(2, '0')}:00`;
   }
 
-  private averageAssetTemperature(): number | null {
-    const temperatures = this.organizationAssets()
-      .map((asset) => this.temperatureFromAsset(asset.currentTemperature))
-      .filter((temperature): temperature is number => temperature !== null);
-
-    if (!temperatures.length) {
-      return null;
-    }
-
-    return this.average(temperatures);
-  }
-
   private currentTemperatureLimits(): TemperatureLimits {
     const settings = this.currentSettings();
 
@@ -1010,17 +1031,8 @@ export class OperationalDashboard implements OnInit {
       };
     }
 
-    return this.temperatureLimitsFromValues([
-      ...this.organizationReadings().map((reading) => reading.temperature),
-      ...this.organizationAssets().map((asset) => this.temperatureFromAsset(asset.currentTemperature)),
-    ]);
-  }
-
-  private maximumTemperatureForAsset(asset: Asset): number | null {
-    return (
-      this.assetStore.settingsForAsset(this.activeOrganizationId(), asset.id)?.maximumTemperature ??
-      this.currentSettings()?.maximumTemperature ??
-      null
+    return this.temperatureLimitsFromValues(
+      this.organizationReadings().map((reading) => reading.temperature),
     );
   }
 
@@ -1052,11 +1064,6 @@ export class OperationalDashboard implements OnInit {
 
   private average(values: number[]): number {
     return values.reduce((sum, value) => sum + value, 0) / Math.max(values.length, 1);
-  }
-
-  private temperatureFromAsset(currentTemperature: string): number | null {
-    const temperature = Number(currentTemperature.replace('°C', '').trim());
-    return Number.isFinite(temperature) ? temperature : null;
   }
 
   private formatDate(date: string): string {

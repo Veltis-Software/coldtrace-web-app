@@ -1,6 +1,5 @@
 import { NgClass } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -29,6 +28,7 @@ type PreventiveMaintenanceFeedback =
   | 'invalid'
   | 'invalid-asset'
   | 'duplicate'
+  | 'status-updated'
   | 'access-denied'
   | 'server-error';
 
@@ -37,7 +37,7 @@ type PreventiveMaintenanceFeedback =
  */
 @Component({
   selector: 'app-preventive-maintenance-scheduler',
-  imports: [RouterLink, RouterLinkActive,
+  imports: [
     MatButton,
     MatIcon,
     MatProgressSpinner,
@@ -63,6 +63,13 @@ export class PreventiveMaintenanceScheduler implements OnInit {
   protected readonly saving = signal(false);
   protected readonly submitted = signal(false);
   protected readonly feedback = signal<PreventiveMaintenanceFeedback>('idle');
+  protected readonly updatingScheduleId = signal<number | null>(null);
+  protected readonly maintenanceScheduleStatuses: MaintenanceScheduleStatus[] = [
+    MaintenanceScheduleStatus.Scheduled,
+    MaintenanceScheduleStatus.Pending,
+    MaintenanceScheduleStatus.Completed,
+    MaintenanceScheduleStatus.Canceled,
+  ];
   protected readonly pageSize = 10;
   protected readonly currentPage = signal(1);
   protected readonly users = signal<User[]>([]);
@@ -143,8 +150,6 @@ export class PreventiveMaintenanceScheduler implements OnInit {
   protected loadPageData(): void {
     this.identityLoading.set(true);
     this.feedback.set('idle');
-    this.assetManagementStore.loadGateways();
-    this.maintenanceStore.loadMaintenanceSchedules();
 
     forkJoin({
       users: this.identityAccessApi.getUsers(),
@@ -249,6 +254,47 @@ export class PreventiveMaintenanceScheduler implements OnInit {
       observations: '',
     });
     this.maintenanceForm.markAsPristine();
+  }
+
+  protected updateScheduleStatus(schedule: MaintenanceSchedule, value: string): void {
+    const nextStatus = this.maintenanceScheduleStatuses.find((status) => status === value);
+
+    this.feedback.set('idle');
+
+    if (!nextStatus || nextStatus === schedule.status || !this.canScheduleMaintenance()) {
+      return;
+    }
+
+    const nextSchedule = new MaintenanceSchedule(
+      schedule.id,
+      schedule.organizationId,
+      schedule.uuid,
+      schedule.assetId,
+      schedule.iotDeviceId,
+      schedule.scheduledDate,
+      schedule.period,
+      schedule.observations,
+      nextStatus,
+      schedule.createdAt,
+      schedule.frequencyDays,
+      schedule.responsibleUserId,
+    );
+
+    this.updatingScheduleId.set(schedule.id);
+    this.maintenanceStore
+      .updateMaintenanceSchedule(nextSchedule)
+      .pipe(finalize(() => this.updatingScheduleId.set(null)))
+      .subscribe({
+        next: (updatedSchedule) => {
+          this.maintenanceSchedules.update((schedules) =>
+            schedules.map((currentSchedule) =>
+              currentSchedule.id === updatedSchedule.id ? updatedSchedule : currentSchedule,
+            ),
+          );
+          this.feedback.set('status-updated');
+        },
+        error: () => this.feedback.set('server-error'),
+      });
   }
 
   protected hasControlError(controlName: keyof typeof this.maintenanceForm.controls): boolean {

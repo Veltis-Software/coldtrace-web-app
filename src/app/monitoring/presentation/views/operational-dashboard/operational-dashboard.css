@@ -7,6 +7,24 @@
   padding: 4px 10px 40px !important;
 }
 
+.dashboard-hero {
+  margin-bottom: 18px;
+}
+
+.dashboard-title-block h1 {
+  color: #263348;
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.dashboard-title-block p {
+  color: #98a2b3;
+  font-size: 12px;
+  font-weight: 800;
+  margin: 6px 0 0;
+}
+
 .loading-overlay {
   align-items: center;
   background: rgba(245, 246, 248, 0.74);

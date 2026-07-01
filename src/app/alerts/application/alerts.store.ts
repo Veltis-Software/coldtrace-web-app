@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { forkJoin, map, Observable, of, retry, switchMap, tap, throwError } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of, retry, switchMap, tap, throwError } from 'rxjs';
 import { AssetSettings } from '../../asset-management/domain/model/asset-settings.entity';
 import { Asset } from '../../asset-management/domain/model/asset.entity';
 import { IoTDeviceStatus } from '../../asset-management/domain/model/iot-device-status.enum';
@@ -8,10 +8,9 @@ import { AssetManagementApi } from '../../asset-management/infrastructure/asset-
 import { IdentityAccessStore } from '../../identity-access/application/identity-access.store';
 import { SensorReading } from '../../monitoring/domain/model/sensor-reading.entity';
 import { MonitoringApi } from '../../monitoring/infrastructure/monitoring-api';
+import { OrganizationScopeStore } from '../../shared/infrastructure/organization-scope.store';
 import { EscalationPolicy } from '../domain/model/escalation-policy.entity';
 import { Incident, IncidentType } from '../domain/model/incident.entity';
-import { NotificationChannel } from '../domain/model/notification-channel.enum';
-import { NotificationStatus } from '../domain/model/notification-status.enum';
 import { Notification } from '../domain/model/notification.entity';
 import { AlertsApi } from '../infrastructure/alerts-api';
 
@@ -31,6 +30,11 @@ type GeneratedIncidentCandidate = {
   severity: 'warning' | 'critical';
   value: string;
   reviewStatus: 'complete' | 'pending-review';
+};
+type LoadIncidentsOptions = {
+  silent?: boolean;
+  evaluateReadings?: boolean;
+  force?: boolean;
 };
 
 /**
@@ -52,6 +56,9 @@ export class AlertsStore {
   private readonly reviewingEscalationIdSignal = signal<number | null>(null);
   private readonly feedbackSignal = signal<string | null>(null);
   private incidentsRequestInFlight = false;
+  private incidentsLoadedForOrganizationId: number | null = null;
+  private incidentsEvaluatedForOrganizationId: number | null = null;
+  private notificationsLoadedForOrganizationId: number | null = null;
 
   readonly incidents = computed(() => {
     const organizationId = this.identityAccessStore.currentOrganizationIdFrom(
@@ -108,15 +115,33 @@ export class AlertsStore {
     private readonly identityAccessStore: IdentityAccessStore,
     private readonly monitoringApi: MonitoringApi,
     private readonly assetManagementApi: AssetManagementApi,
+    private readonly organizationScope: OrganizationScopeStore,
   ) {}
 
   /**
    * @summary Loads incidents data into local state.
    */
-  loadIncidents(options: { silent?: boolean } = {}): void {
+  loadIncidents(options: LoadIncidentsOptions = {}): void {
     const showLoading = !options.silent;
+    const evaluateReadings = options.evaluateReadings ?? false;
+    const organizationId = this.organizationScope.activeOrganizationId();
+
+    if (!organizationId) {
+      this.incidentsSignal.set([]);
+      this.notificationsSignal.set([]);
+      return;
+    }
 
     if (this.incidentsRequestInFlight) {
+      return;
+    }
+
+    if (
+      !options.force &&
+      this.incidentsLoadedForOrganizationId === organizationId &&
+      this.notificationsLoadedForOrganizationId === organizationId &&
+      (!evaluateReadings || this.incidentsEvaluatedForOrganizationId === organizationId)
+    ) {
       return;
     }
 
@@ -126,15 +151,41 @@ export class AlertsStore {
       this.loadingSignal.set(true);
       this.errorSignal.set(null);
     }
+
+    if (!evaluateReadings) {
+      forkJoin({
+        incidents: this.alertsApi.getIncidents(),
+        notifications: this.alertsApi.getNotifications().pipe(catchError(() => of([]))),
+      }).subscribe({
+        next: ({ incidents, notifications }) => {
+          this.incidentsSignal.set(incidents);
+          this.notificationsSignal.set(notifications);
+          this.incidentsLoadedForOrganizationId = organizationId;
+          this.notificationsLoadedForOrganizationId = organizationId;
+          if (showLoading) {
+            this.loadingSignal.set(false);
+          }
+          this.incidentsRequestInFlight = false;
+        },
+        error: (error) => {
+          if (showLoading) {
+            this.errorSignal.set(error.message);
+            this.loadingSignal.set(false);
+          }
+          this.incidentsRequestInFlight = false;
+        },
+      });
+      return;
+    }
+
     forkJoin({
       incidents: this.alertsApi.getIncidents(),
-      notifications: this.alertsApi.getNotifications(),
       readings: this.monitoringApi.getSensorReadings(),
       assets: this.assetManagementApi.getAssets(),
       settings: this.assetManagementApi.getAssetSettings(),
     })
       .pipe(
-        switchMap(({ incidents, notifications, readings, assets, settings }) => {
+        switchMap(({ incidents, readings, assets, settings }) => {
           const generatedIncidents = this.generatedParameterIncidentsFrom(
             incidents,
             readings,
@@ -144,33 +195,27 @@ export class AlertsStore {
 
           const incidentsRequest = generatedIncidents.length
             ? forkJoin(
-                generatedIncidents.map((incident) => this.createIncidentWithRetry(incident)),
-              ).pipe(map((createdIncidents) => [...incidents, ...createdIncidents]))
+                generatedIncidents.map((incident) =>
+                  this.createIncidentWithRetry(incident).pipe(catchError(() => of(null))),
+                ),
+              ).pipe(
+                map((createdIncidents) => [
+                  ...incidents,
+                  ...createdIncidents.filter(
+                    (incident): incident is Incident => incident !== null,
+                  ),
+                ]),
+              )
             : of(incidents);
 
           return incidentsRequest.pipe(
             switchMap((currentIncidents) => this.applyEscalationPolicies(currentIncidents)),
-            switchMap((currentIncidents) => {
-              const generatedNotifications = this.generatedNotificationsFrom(
-                currentIncidents,
-                notifications,
-              );
-
-              if (!generatedNotifications.length) {
-                return of({ incidents: currentIncidents, notifications });
-              }
-
-              return forkJoin(
-                generatedNotifications.map((notification) =>
-                  this.createNotificationWithRetry(notification),
-                ),
-              ).pipe(
-                map((createdNotifications) => ({
-                  incidents: currentIncidents,
-                  notifications: [...notifications, ...createdNotifications],
-                })),
-              );
-            }),
+            switchMap((currentIncidents) =>
+              forkJoin({
+                incidents: of(currentIncidents),
+                notifications: this.alertsApi.getNotifications().pipe(catchError(() => of([]))),
+              }),
+            ),
           );
         }),
       )
@@ -178,6 +223,9 @@ export class AlertsStore {
         next: ({ incidents, notifications }) => {
           this.incidentsSignal.set(incidents);
           this.notificationsSignal.set(notifications);
+          this.incidentsLoadedForOrganizationId = organizationId;
+          this.incidentsEvaluatedForOrganizationId = organizationId;
+          this.notificationsLoadedForOrganizationId = organizationId;
           if (showLoading) {
             this.loadingSignal.set(false);
           }
@@ -214,6 +262,7 @@ export class AlertsStore {
           this.incidentsSignal.update((current) =>
             current.map((i) => (i.id === updated.id ? updated : i)),
           );
+          this.refreshNotifications();
           this.recognizingIdSignal.set(null);
           this.feedbackSignal.set('alerts.incident-list.feedback-recognized');
         },
@@ -259,6 +308,7 @@ export class AlertsStore {
           this.incidentsSignal.update((current) =>
             current.map((i) => (i.id === updated.id ? updated : i)),
           );
+          this.refreshNotifications();
           this.closingIdSignal.set(null);
           this.feedbackSignal.set('alerts.incident-list.feedback-closed');
         },
@@ -270,6 +320,36 @@ export class AlertsStore {
     );
   }
 
+  /**
+   * @summary Marks an escalation as reviewed by the responsible user.
+   */
+  reviewEscalation(incident: Incident, responsibleUserName: string): Observable<Incident> {
+    const reviewed = this.incidentWith(incident, {
+      escalationStatus: 'reviewed',
+      escalationReviewedBy: responsibleUserName,
+      escalationReviewedAt: new Date().toISOString(),
+    });
+
+    this.reviewingEscalationIdSignal.set(incident.id);
+    this.feedbackSignal.set(null);
+
+    return this.updateIncidentWithRetry(reviewed).pipe(
+      tap({
+        next: (updated) => {
+          this.incidentsSignal.update((current) =>
+            current.map((i) => (i.id === updated.id ? updated : i)),
+          );
+          this.refreshNotifications();
+          this.reviewingEscalationIdSignal.set(null);
+          this.feedbackSignal.set('alerts.incident-list.feedback-escalation-reviewed');
+        },
+        error: () => {
+          this.reviewingEscalationIdSignal.set(null);
+          this.feedbackSignal.set('alerts.incident-list.feedback-error');
+        },
+      }),
+    );
+  }
   /**
    * @summary Registers an in-range reading for the incident asset and marks the condition as stable.
    */
@@ -300,7 +380,7 @@ export class AlertsStore {
 
         return this.monitoringApi
           .createSensorReading(reading)
-          .pipe(switchMap(() => this.updateIncidentWithRetry(stabilized)));
+          .pipe(map(() => stabilized));
       }),
       tap({
         next: (updated) => {
@@ -317,36 +397,6 @@ export class AlertsStore {
               ? 'alerts.incident-list.feedback-stabilize-missing-device'
               : 'alerts.incident-list.feedback-stabilize-error',
           );
-        },
-      }),
-    );
-  }
-
-  /**
-   * @summary Marks an escalated incident as reviewed by the responsible user.
-   */
-  reviewEscalation(incident: Incident, responsibleUserName: string): Observable<Incident> {
-    const reviewed = this.incidentWith(incident, {
-      escalationStatus: 'reviewed',
-      escalationReviewedBy: responsibleUserName,
-      escalationReviewedAt: new Date().toISOString(),
-    });
-
-    this.reviewingEscalationIdSignal.set(incident.id);
-    this.feedbackSignal.set(null);
-
-    return this.updateIncidentWithRetry(reviewed).pipe(
-      tap({
-        next: (updated) => {
-          this.incidentsSignal.update((current) =>
-            current.map((i) => (i.id === updated.id ? updated : i)),
-          );
-          this.reviewingEscalationIdSignal.set(null);
-          this.feedbackSignal.set('alerts.incident-list.feedback-escalation-reviewed');
-        },
-        error: () => {
-          this.reviewingEscalationIdSignal.set(null);
-          this.feedbackSignal.set('alerts.incident-list.feedback-error');
         },
       }),
     );
@@ -376,6 +426,13 @@ export class AlertsStore {
    */
   setFeedback(feedback: string | null): void {
     this.feedbackSignal.set(feedback);
+  }
+
+  /**
+   * @summary Loads notifications linked to one incident from the backend endpoint.
+   */
+  notificationsForIncident(incidentId: number): Observable<Notification[]> {
+    return this.alertsApi.getNotificationsByIncidentId(incidentId);
   }
 
   private incidentWith(
@@ -422,14 +479,20 @@ export class AlertsStore {
     return this.alertsApi.updateIncident(incident).pipe(retry({ count: 2, delay: 250 }));
   }
 
-  private createNotificationWithRetry(notification: Notification): Observable<Notification> {
-    return this.alertsApi.createNotification(notification).pipe(retry({ count: 2, delay: 250 }));
-  }
-
   private isNotificationForOpenIncident(notification: Notification): boolean {
     return (
       this.incidents().find((incident) => incident.id === notification.incidentId)?.isOpen ?? false
     );
+  }
+
+  private refreshNotifications(): void {
+    this.alertsApi.getNotifications().subscribe({
+      next: (notifications) => {
+        this.notificationsSignal.set(notifications);
+        this.notificationsLoadedForOrganizationId = this.organizationScope.activeOrganizationId();
+      },
+      error: () => undefined,
+    });
   }
 
   private stableReadingForIncident(
@@ -466,6 +529,9 @@ export class AlertsStore {
       parameters.includes('image') ? false : null,
       parameters.includes('battery') ? 80 : null,
       parameters.includes('signal') ? 85 : null,
+      asset.organizationId,
+      device.gatewayId,
+      asset.locationId,
     );
   }
 
@@ -525,7 +591,11 @@ export class AlertsStore {
       return of(incidents);
     }
 
-    return forkJoin(updates.map((incident) => this.updateIncidentWithRetry(incident))).pipe(
+    return forkJoin(
+      updates.map((incident) =>
+        this.updateIncidentWithRetry(incident).pipe(catchError(() => of(incident))),
+      ),
+    ).pipe(
       map((updatedIncidents) =>
         incidents.map(
           (incident) => updatedIncidents.find((updated) => updated.id === incident.id) ?? incident,
@@ -619,8 +689,6 @@ export class AlertsStore {
   private hasEscalationChanges(current: Incident, updated: Incident): boolean {
     return (
       current.escalationStatus !== updated.escalationStatus ||
-      current.escalationLevel !== updated.escalationLevel ||
-      current.escalationPolicyMinutes !== updated.escalationPolicyMinutes ||
       current.escalatedAt !== updated.escalatedAt ||
       current.escalatedTo !== updated.escalatedTo ||
       current.escalationReviewedBy !== updated.escalationReviewedBy ||
@@ -688,100 +756,6 @@ export class AlertsStore {
     });
 
     return generatedIncidents;
-  }
-
-  private generatedNotificationsFrom(
-    incidents: Incident[],
-    notifications: Notification[],
-  ): Notification[] {
-    let nextId = Math.max(...notifications.map((notification) => notification.id), 0) + 1;
-
-    return incidents
-      .filter((incident) => incident.isOpen)
-      .flatMap((incident) =>
-        this.notificationChannelsForIncident(incident)
-          .filter(
-            (channel) =>
-              !notifications.some(
-                (notification) =>
-                  notification.incidentId === incident.id && notification.channel === channel,
-              ),
-          )
-          .map((channel) => {
-            const notification = this.notificationForIncident(incident, channel, nextId);
-            nextId += 1;
-            return notification;
-          }),
-      );
-  }
-
-  private notificationForIncident(
-    incident: Incident,
-    channel: NotificationChannel,
-    id: number,
-  ): Notification {
-    const status = this.notificationStatusFor(channel);
-    const createdAt = new Date(incident.detectedAt).toISOString();
-
-    return new Notification(
-      id,
-      incident.organizationId,
-      incident.id,
-      incident.assetName,
-      channel,
-      this.notificationRecipientFor(channel),
-      this.notificationMessageFor(incident),
-      status,
-      createdAt,
-      status === NotificationStatus.Sent ? this.plusMinutes(createdAt, 2) : null,
-      status === NotificationStatus.Failed
-        ? 'Recipient phone is not configured for SMS alerts.'
-        : null,
-    );
-  }
-
-  private notificationChannelsForIncident(incident: Incident): NotificationChannel[] {
-    if (incident.severity === 'critical') {
-      return [NotificationChannel.App, NotificationChannel.Email, NotificationChannel.Sms];
-    }
-
-    return [NotificationChannel.App];
-  }
-
-  private notificationMessageFor(incident: Incident): string {
-    const severity = incident.severity === 'critical' ? 'Critical alert' : 'Warning alert';
-
-    return `${severity}: ${incident.assetName} reported ${incident.value} and requires attention.`;
-  }
-
-  private notificationStatusFor(channel: NotificationChannel): NotificationStatus {
-    switch (channel) {
-      case NotificationChannel.App:
-        return NotificationStatus.Sent;
-      case NotificationChannel.Email:
-        return NotificationStatus.Pending;
-      default:
-        return NotificationStatus.Failed;
-    }
-  }
-
-  private notificationRecipientFor(channel: NotificationChannel): string {
-    const currentUser = this.identityAccessStore.currentUserFrom(this.identityAccessStore.users());
-
-    switch (channel) {
-      case NotificationChannel.Email:
-        return currentUser?.email ?? 'operations@coldtrace.local';
-      case NotificationChannel.Sms:
-        return 'No phone configured';
-      default:
-        return this.identityAccessStore.currentUserNameFrom(this.identityAccessStore.users());
-    }
-  }
-
-  private plusMinutes(isoDate: string, minutes: number): string {
-    const date = new Date(isoDate);
-    date.setMinutes(date.getMinutes() + minutes);
-    return date.toISOString();
   }
 
   private latestParameterCandidates(

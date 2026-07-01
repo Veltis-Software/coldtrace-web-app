@@ -8,6 +8,7 @@ import { ConnectivityStatus } from '../../asset-management/domain/model/connecti
 import { IoTDevice } from '../../asset-management/domain/model/iot-device.entity';
 import { SensorReading } from '../../monitoring/domain/model/sensor-reading.entity';
 import { MonitoringStore } from '../../monitoring/application/monitoring.store';
+import { OrganizationScopeStore } from '../../shared/infrastructure/organization-scope.store';
 import { AuditEvidence, AuditEvidenceFilters } from '../domain/model/audit-evidence.entity';
 import {
   ComplianceFinding,
@@ -42,6 +43,10 @@ import {
 } from '../domain/model/sanitary-compliance-report.entity';
 import { ReportsApi } from '../infrastructure/reports-api';
 
+interface LoadOptions {
+  force?: boolean;
+}
+
 /**
  * @summary Manages reports state and workflows for presentation components.
  */
@@ -51,6 +56,8 @@ export class ReportsStore {
   private readonly loadingSignal = signal<boolean>(false);
   private readonly errorSignal = signal<string | null>(null);
   private readonly closedComplianceFindingIdsSignal = signal<Set<string>>(new Set());
+  private reportsLoadedForOrganizationId: number | null = null;
+  private reportsRequestInFlightForOrganizationId: number | null = null;
 
   readonly reports = this.reportsSignal.asReadonly();
   readonly loading = this.loadingSignal.asReadonly();
@@ -60,23 +67,44 @@ export class ReportsStore {
     private readonly reportsApi: ReportsApi,
     private readonly assetManagementStore: AssetManagementStore,
     private readonly monitoringStore: MonitoringStore,
+    private readonly organizationScope: OrganizationScopeStore,
   ) {}
 
   /**
    * @summary Loads reports data into local state.
    */
-  loadReports(): void {
+  loadReports(options: LoadOptions = {}): void {
+    const organizationId = this.organizationScope.activeOrganizationId();
+
+    if (!organizationId) {
+      this.reportsSignal.set([]);
+      return;
+    }
+
+    if (
+      !options.force &&
+      (this.reportsLoadedForOrganizationId === organizationId ||
+        this.reportsRequestInFlightForOrganizationId === organizationId)
+    ) {
+      return;
+    }
+
+    this.reportsRequestInFlightForOrganizationId = organizationId;
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
     this.reportsApi.getReports().subscribe({
       next: (reports) => {
         this.reportsSignal.set(reports);
+        this.reportsLoadedForOrganizationId = organizationId;
+        this.reportsRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
       },
       error: () => {
         // Stored reports are optional for the demo; generated views can still work from readings.
         this.reportsSignal.set([]);
+        this.reportsLoadedForOrganizationId = organizationId;
+        this.reportsRequestInFlightForOrganizationId = null;
         this.errorSignal.set(null);
         this.loadingSignal.set(false);
       },

@@ -19,3 +19,14 @@ export interface UserResource extends BaseResource {
 export interface UsersResponse extends BaseResponse {
   users: UserResource[];
 }
+
+/**
+ * @summary Request payload for creating a user inside an organization.
+ */
+export interface CreateUserRequest {
+  firstName: string;
+  lastName?: string;
+  email: string;
+  password: string;
+  roleId: number;
+}

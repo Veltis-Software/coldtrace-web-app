@@ -8,7 +8,9 @@
   <div class="page-heading">
     <div>
       <span class="section-kicker">{{ activeOrganizationName() }}</span>
-      <h1 id="preventive-maintenance-title">{{ 'dashboard-shell.nav-settings' | translate }}</h1>
+      <h1 id="preventive-maintenance-title">
+        {{ 'maintenance.preventive.title' | translate }}
+      </h1>
       <p>{{ 'maintenance.preventive.subtitle' | translate }}</p>
     </div>
 
@@ -20,16 +22,14 @@
     </div>
   </div>
 
-
-  <nav class="work-tabs section-tabs" aria-label="Settings sections">
-    <a routerLink="/asset-management/safety-ranges" routerLinkActive="active">{{ 'dashboard-shell.nav-safety-ranges' | translate }}</a>
-    <a routerLink="/asset-management/operational-parameters" routerLinkActive="active">{{ 'dashboard-shell.nav-operational-parameters' | translate }}</a>
-    <a routerLink="/maintenance/preventive" routerLinkActive="active">{{ 'dashboard-shell.nav-preventive-maintenance' | translate }}</a>
-    <a routerLink="/maintenance/technical-service" routerLinkActive="active">{{ 'dashboard-shell.nav-technical-service' | translate }}</a>
-  </nav>
-
   @if (feedback() === 'scheduled') {
     <p class="feedback success">{{ 'maintenance.preventive.feedback-scheduled' | translate }}</p>
+  }
+
+  @if (feedback() === 'status-updated') {
+    <p class="feedback success">
+      {{ 'maintenance.preventive.feedback-status-updated' | translate }}
+    </p>
   }
 
   @if (feedback() === 'invalid') {
@@ -214,9 +214,30 @@
               <td>{{ schedule.scheduledDate }}</td>
               <td>{{ schedule.period }}</td>
               <td>
-                <span class="status-pill" [ngClass]="scheduleStatusClass(schedule.status)">
-                  {{ scheduleStatusKey(schedule.status) | translate }}
-                </span>
+                @if (canScheduleMaintenance()) {
+                  <label
+                    class="status-select-field"
+                    [ngClass]="scheduleStatusClass(schedule.status)"
+                    [class.disabled]="updatingScheduleId() === schedule.id"
+                  >
+                    <span>{{ scheduleStatusKey(schedule.status) | translate }}</span>
+                    <mat-icon aria-hidden="true">expand_more</mat-icon>
+                    <select
+                      [attr.aria-label]="'maintenance.preventive.table.status' | translate"
+                      [value]="schedule.status"
+                      [disabled]="updatingScheduleId() === schedule.id"
+                      (change)="updateScheduleStatus(schedule, $any($event.target).value)"
+                    >
+                      @for (status of maintenanceScheduleStatuses; track status) {
+                        <option [value]="status">{{ scheduleStatusKey(status) | translate }}</option>
+                      }
+                    </select>
+                  </label>
+                } @else {
+                  <span class="status-pill" [ngClass]="scheduleStatusClass(schedule.status)">
+                    {{ scheduleStatusKey(schedule.status) | translate }}
+                  </span>
+                }
               </td>
             </tr>
           } @empty {

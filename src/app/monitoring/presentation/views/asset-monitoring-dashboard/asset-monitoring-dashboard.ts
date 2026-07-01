@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AssetManagementStore } from '../../../../asset-management/application/asset-management.store';
 import { AssetSettings } from '../../../../asset-management/domain/model/asset-settings.entity';
@@ -48,8 +47,6 @@ export class AssetMonitoringDashboard implements OnInit {
   private readonly identityStore = inject(IdentityAccessStore);
   private readonly assetStore = inject(AssetManagementStore);
   private readonly monitoringStore = inject(MonitoringStore);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
 
   protected readonly searchTerm = signal('');
   protected readonly pageSize = 10;
@@ -103,9 +100,6 @@ export class AssetMonitoringDashboard implements OnInit {
    * @summary Initializes the asset monitoring dashboard view state.
    */
   ngOnInit(): void {
-    this.route.queryParamMap.subscribe((params) => {
-      this.applyAssetType(this.assetTypeFromQueryParam(params.get('type')));
-    });
     this.identityStore.loadUsers();
     this.identityStore.loadOrganizations();
     this.identityStore.loadRoles();
@@ -123,35 +117,14 @@ export class AssetMonitoringDashboard implements OnInit {
   }
 
   protected selectAssetType(type: AssetType): void {
-    if (this.activeType() === type) {
-      return;
-    }
-
-    this.applyAssetType(type);
-    void this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { type },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
+    this.activeType.set(type);
+    this.currentPage.set(1);
   }
 
   protected updatePage(page: number): void {
     this.currentPage.set(page);
   }
 
-  private applyAssetType(type: AssetType): void {
-    if (this.activeType() === type) {
-      return;
-    }
-
-    this.activeType.set(type);
-    this.currentPage.set(1);
-  }
-
-  private assetTypeFromQueryParam(value: string | null): AssetType {
-    return value === AssetType.Transport ? AssetType.Transport : AssetType.ColdRoom;
-  }
   private buildMonitoringItem(asset: Asset): AssetMonitoringItem {
     const readings = this.monitoringStore.getReadingsByAsset(asset.id);
     const settings = this.assetStore.settingsForAsset(this.activeOrganizationId(), asset.id);

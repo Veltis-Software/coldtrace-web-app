@@ -1,50 +1,86 @@
-.distribution-card {
+.distribution-card,
+:host {
+  min-height: 0;
+}
+
+:host {
   container-type: inline-size;
+  display: block;
   height: 100%;
-  padding: 24px 28px;
+  min-width: 0;
+}
+
+.distribution-card {
+  height: 100%;
+  min-width: 0;
+  padding: clamp(18px, 5cqw, 24px) clamp(18px, 5cqw, 28px);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: clamp(12px, 4cqw, 18px);
+  min-width: 0;
 }
 
 .card-title {
+  flex: 1 1 auto;
   margin: 0;
-  font-size: 16px;
-  font-weight: 700;
+  min-width: 0;
+  font:
+    800 clamp(15px, 5.2cqw, 17px) / 1.25 Inter,
+    Arial,
+    sans-serif;
   color: #111827;
+  overflow-wrap: anywhere;
 }
 
 .more-btn {
-  background: none;
-  border: none;
-  color: #9ca3af;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #edf0f4;
+  border-radius: 10px;
+  color: #9CA3AF;
   cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 32px;
+  height: 32px;
+  justify-content: center;
+  padding: 0;
+  width: 32px;
+}
+
+.more-btn mat-icon {
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
 }
 
 .card-body {
   align-items: center;
   display: grid;
   flex: 1;
-  gap: clamp(16px, 5cqw, 32px);
-  grid-template-columns: minmax(136px, 0.88fr) minmax(0, 1fr);
+  gap: clamp(16px, 4cqw, 28px);
+  grid-template-columns: minmax(120px, 172px) minmax(0, 1fr);
   justify-content: start;
+  min-height: 0;
   min-width: 0;
 }
 
 .chart-container {
   aspect-ratio: 1;
-  height: 172px;
+  height: clamp(120px, 34cqw, 172px);
   max-width: 172px;
   min-width: 0;
-  width: min(172px, 100%);
+  width: clamp(120px, 34cqw, 172px);
   position: relative;
+  justify-self: center;
 }
 
 .chart-container canvas {
@@ -56,16 +92,18 @@
 .legend-container {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: clamp(10px, 3cqw, 14px);
+  justify-content: center;
+  min-height: 0;
   padding-top: 2px;
   min-width: 0;
   width: 100%;
 }
 
 .legend-row {
-  display: flex;
-  gap: 12px;
-  justify-content: space-between;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   min-width: 0;
 }
@@ -86,19 +124,19 @@
 }
 
 .frozen {
-  background: #3b82f6;
+  background: #3B82F6;
 }
 
 .refrigerated {
-  background: #10b981;
+  background: #10B981;
 }
 
 .ambient {
-  background: #f59e0b;
+  background: #F59E0B;
 }
 
 .other {
-  background: #94a3b8;
+  background: #94A3B8;
 }
 
 .text-group {
@@ -117,7 +155,7 @@
 
 .cat-assets {
   font-size: 11px;
-  color: #9ca3af;
+  color: #9CA3AF;
   font-weight: 500;
 }
 
@@ -125,7 +163,7 @@
   font-size: 13px;
   font-weight: 700;
   color: #111827;
-  flex: 0 0 auto;
+  justify-self: end;
 }
 
 .empty-distribution {
@@ -136,31 +174,54 @@
   text-align: center;
 }
 
-@media (max-width: 760px) {
-  .card-body {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-container,
-  .legend-container {
-    justify-self: center;
-  }
-}
-
-@container (max-width: 360px) {
+@container (max-width: 320px) {
   .distribution-card {
-    padding: 22px 24px;
+    min-height: 380px;
+    padding: 20px 22px;
   }
 
   .card-body {
-    gap: 18px;
+    align-content: start;
+    gap: 16px;
     grid-template-columns: 1fr;
     justify-content: center;
   }
 
   .chart-container {
-    height: min(184px, 72cqw);
+    height: clamp(116px, 42cqw, 148px);
     justify-self: center;
-    width: min(184px, 72cqw);
+    width: clamp(116px, 42cqw, 148px);
+  }
+
+  .legend-container {
+    justify-self: stretch;
+    width: 100%;
+  }
+}
+
+@container (max-width: 300px) {
+  .distribution-card {
+    padding: 18px;
+  }
+
+  .card-header {
+    gap: 10px;
+  }
+
+  .card-title {
+    font-size: 15px;
+  }
+
+  .chart-container {
+    height: clamp(104px, 48cqw, 128px);
+    width: clamp(104px, 48cqw, 128px);
+  }
+
+  .legend-row {
+    gap: 8px;
+  }
+
+  .category {
+    gap: 10px;
   }
 }

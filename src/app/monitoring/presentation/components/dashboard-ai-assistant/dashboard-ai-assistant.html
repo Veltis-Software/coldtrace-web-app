@@ -1,0 +1,111 @@
+@if (!expanded()) {
+  <button
+    class="ai-launcher"
+    type="button"
+    (click)="openPanel()"
+    [class.ok]="insightTone === 'ok'"
+    [class.warning]="insightTone === 'warning'"
+    [class.critical]="insightTone === 'critical'"
+  >
+    <mat-icon aria-hidden="true">auto_awesome</mat-icon>
+    <span>{{ 'monitoring.operational.ai-open' | translate }}</span>
+    <strong>{{ insightStatusKey | translate }}</strong>
+  </button>
+} @else {
+  <div class="ai-backdrop" (click)="closePanel()" aria-hidden="true"></div>
+
+  <section class="ai-panel" aria-labelledby="dashboard-ai-title" role="dialog" aria-modal="true">
+    <div class="ai-header">
+      <div class="ai-mark" aria-hidden="true">
+        <mat-icon>auto_awesome</mat-icon>
+      </div>
+
+      <div class="ai-heading">
+        <span>{{ 'monitoring.operational.ai-kicker' | translate }}</span>
+        <h2 id="dashboard-ai-title">{{ 'monitoring.operational.ai-title' | translate }}</h2>
+        <p>{{ 'monitoring.operational.ai-subtitle' | translate }}</p>
+      </div>
+
+      <button
+        class="ai-close"
+        type="button"
+        (click)="closePanel()"
+        [attr.aria-label]="'monitoring.operational.ai-close' | translate"
+      >
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </div>
+
+    <span
+      class="ai-status"
+      [class.ok]="insightTone === 'ok'"
+      [class.warning]="insightTone === 'warning'"
+      [class.critical]="insightTone === 'critical'"
+    >
+      {{ insightStatusKey | translate }}
+    </span>
+
+    <div class="ai-grid">
+      <div class="ai-summary">
+        <h3>{{ 'monitoring.operational.ai-summary-title' | translate }}</h3>
+        <p>{{ summaryKey | translate: summaryParams }}</p>
+
+        <div class="ai-signals" aria-label="AI dashboard signals">
+          @for (signal of signals; track signal.labelKey) {
+            <article
+              class="ai-signal"
+              [class.ok]="signal.tone === 'ok'"
+              [class.warning]="signal.tone === 'warning'"
+              [class.critical]="signal.tone === 'critical'"
+            >
+              <mat-icon aria-hidden="true">{{ signal.icon }}</mat-icon>
+              <div>
+                <span>{{ signal.labelKey | translate }}</span>
+                <strong>{{ signal.value }}</strong>
+                <p>{{ signal.descriptionKey | translate: signal.params }}</p>
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+
+      <div class="ai-qa">
+        <h3>{{ 'monitoring.operational.ai-qa-title' | translate }}</h3>
+
+        <div class="ai-prompts" aria-label="Suggested dashboard questions">
+          @for (prompt of suggestedQuestions; track prompt.id) {
+            <button type="button" (click)="askSuggestedQuestion(prompt)">
+              {{ prompt.textKey | translate }}
+            </button>
+          }
+        </div>
+
+        <label class="ai-question">
+          <span>{{ 'monitoring.operational.ai-question-label' | translate }}</span>
+          <div class="ai-question-row">
+            <input
+              type="text"
+              [ngModel]="question()"
+              (ngModelChange)="updateQuestion($event)"
+              (keydown.enter)="askQuestion()"
+              [placeholder]="'monitoring.operational.ai-question-placeholder' | translate"
+            />
+            <button type="button" (click)="askQuestion()" aria-label="Ask AI">
+              <mat-icon aria-hidden="true">send</mat-icon>
+            </button>
+          </div>
+        </label>
+
+        <div class="ai-answer" aria-live="polite">
+          <span>{{ 'monitoring.operational.ai-answer-title' | translate }}</span>
+          <p>
+            {{
+              answer() ||
+                ('monitoring.operational.ai-answer-empty' | translate)
+            }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+}
