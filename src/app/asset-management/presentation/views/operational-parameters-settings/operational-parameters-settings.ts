@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { finalize, forkJoin } from 'rxjs';
 import { IdentityAccessStore } from '../../../../identity-access/application/identity-access.store';
@@ -45,6 +46,7 @@ type OperationalParametersFeedback =
     MatProgressSpinner,
     NgClass,
     ReactiveFormsModule,
+    RouterLink,
     TranslatePipe,
     ListPagination,
   ],
@@ -407,7 +409,18 @@ export class OperationalParametersSettings implements OnInit {
       return 'status-compliant';
     }
 
-    return statusKey.endsWith('status-gateway-offline') ? 'status-danger' : 'status-observation';
+    if (statusKey.endsWith('status-gateway-offline')) {
+      return 'status-danger';
+    }
+
+    if (
+      statusKey.endsWith('status-asset-inactive') ||
+      statusKey.endsWith('status-device-unlinked')
+    ) {
+      return 'status-neutral';
+    }
+
+    return 'status-observation';
   }
 
   private selectInitialScope(): void {

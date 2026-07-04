@@ -7,10 +7,21 @@
 
   <div class="page-heading">
     <div>
-      <span class="section-kicker">{{ activeOrganizationName() }}</span>
-      <h1 id="monthly-title">{{ 'reports.monthly.title' | translate }}</h1>
+      <h1 id="monthly-title">{{ 'dashboard-shell.nav-reports' | translate }}</h1>
       <p>{{ 'reports.monthly.subtitle' | translate }}</p>
     </div>
+  </div>
+
+  <div class="reports-workbar">
+  <nav class="report-tabs" aria-label="Reports navigation">
+    <a routerLink="/reports/daily-log" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-daily-log' | translate }}</a>
+    <a routerLink="/reports/monthly" [queryParams]="{ organizationId: activeOrganizationId() }" class="active">{{ 'dashboard-shell.nav-monthly-report' | translate }}</a>
+    <a routerLink="/reports/history" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-history' | translate }}</a>
+    <a routerLink="/reports/compliance" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-compliance' | translate }}</a>
+    <a routerLink="/reports/ai-summary" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-ai-summary' | translate }}</a>
+    <a routerLink="/reports/findings" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-findings' | translate }}</a>
+    <a routerLink="/reports/audit-evidence" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-audit-evidence' | translate }}</a>
+  </nav>
   </div>
 
   @if (feedback() === 'downloaded') {

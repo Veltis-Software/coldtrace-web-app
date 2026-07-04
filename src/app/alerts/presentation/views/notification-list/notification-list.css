@@ -2,22 +2,23 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 0 !important;
+  gap: 18px !important;
   min-height: 100%;
-  padding: 0 0 44px !important;
+  padding: 24px 18px 44px !important;
 }
 
 .alerts-header {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin: 0 0 18px;
+  margin: 0;
 }
 
 .view-header {
   align-items: flex-start;
   display: flex;
   justify-content: space-between;
+  min-height: 54px;
   margin: 0 !important;
 }
 
@@ -264,25 +265,6 @@
   color: #dc2626;
 }
 
-.attend-action {
-  border-color: #c7d2fe !important;
-  border-radius: 8px !important;
-  color: #2563eb !important;
-  font-size: 11px;
-  font-weight: 800;
-  height: 34px;
-  line-height: 34px;
-  padding: 0 10px;
-  white-space: nowrap;
-}
-
-.attend-action mat-icon {
-  font-size: 16px;
-  height: 16px;
-  margin-right: 4px;
-  width: 16px;
-}
-
 .notification-empty,
 .loading-container {
   align-items: center;
@@ -492,32 +474,20 @@
   display: inline-flex !important;
   font-size: 11px !important;
   font-weight: 800 !important;
-  gap: 6px !important;
+  gap: 8px !important;
   height: 34px !important;
   justify-content: center !important;
-  padding: 0 12px !important;
-}
-
-.attend-action mat-icon {
-  font-size: 16px !important;
-  height: 16px !important;
-  line-height: 16px !important;
-  width: 16px !important;
-}
-
-.attend-action {
-  gap: 8px !important;
-  min-width: 128px !important;
-  padding: 0 14px !important;
+  min-width: 140px !important;
+  padding: 0 18px !important;
+  white-space: nowrap !important;
 }
 
 .attend-action mat-icon {
   flex: 0 0 16px !important;
-}
-
-.attend-action {
-  min-width: 140px !important;
-  padding: 0 18px !important;
+  font-size: 16px !important;
+  height: 16px !important;
+  line-height: 16px !important;
+  width: 16px !important;
 }
 
 .notification-toolbar {

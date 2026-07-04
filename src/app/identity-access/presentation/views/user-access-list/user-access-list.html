@@ -5,28 +5,64 @@
       <p>{{ 'roles-permissions.denied.message' | translate }}</p>
     </section>
   } @else {
-    <label class="search-box">
-      <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
-      <input
-        type="search"
-        [value]="searchTerm()"
-        [placeholder]="'roles-permissions.search' | translate"
-        (input)="updateSearchTerm($any($event.target).value)"
-      />
-    </label>
+    <header class="access-header">
+      <div class="header-text">
+        <h1>{{ 'dashboard-shell.nav-access' | translate }}</h1>
+        <p>{{ 'roles-permissions.table-subtitle' | translate }}</p>
+      </div>
+    </header>
 
-    <section class="summary-grid" aria-label="Access summary">
-      <article>
-        <span>{{ 'roles-permissions.summary.users' | translate }}</span>
-        <strong>{{ organizationUsers().length }}</strong>
+    <div class="access-workbar">
+      <nav class="work-tabs" aria-label="Access sections">
+        <a routerLink="/identity-access/users" class="active">
+          {{ 'dashboard-shell.nav-users' | translate }}
+        </a>
+        <a routerLink="/identity-access/roles-permissions/users/new">
+          {{ 'dashboard-shell.nav-new-user' | translate }}
+        </a>
+        <a routerLink="/identity-access/roles-permissions/permissions">
+          {{ 'dashboard-shell.nav-permissions' | translate }}
+        </a>
+      </nav>
+
+      <label class="search-box">
+        <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
+        <input
+          type="search"
+          [value]="searchTerm()"
+          [placeholder]="'roles-permissions.search' | translate"
+          (input)="updateSearchTerm($any($event.target).value)"
+        />
+      </label>
+    </div>
+
+    <section class="access-summary-grid" aria-label="Access summary">
+      <article class="access-summary-card accent-blue">
+        <span class="summary-icon">
+          <mat-icon aria-hidden="true">groups</mat-icon>
+        </span>
+        <div class="summary-copy">
+          <span>{{ 'roles-permissions.summary.users' | translate }}</span>
+          <strong>{{ organizationUsers().length }}</strong>
+        </div>
       </article>
-      <article>
-        <span>{{ 'roles-permissions.summary.admins' | translate }}</span>
-        <strong>{{ administratorCount() }}</strong>
+      <article class="access-summary-card accent-green">
+        <span class="summary-icon">
+          <mat-icon aria-hidden="true">admin_panel_settings</mat-icon>
+        </span>
+        <div class="summary-copy">
+          <span>{{ 'roles-permissions.summary.admins' | translate }}</span>
+          <strong>{{ administratorCount() }}</strong>
+        </div>
       </article>
-      <article>
-        <span>{{ 'roles-permissions.summary.pending' | translate }}</span>
-        <strong>{{ pendingChangeCount() }}</strong>
+      <article class="access-summary-card accent-amber">
+        <span class="summary-icon">
+          <mat-icon aria-hidden="true">pending_actions</mat-icon>
+        </span>
+        <div class="summary-copy">
+          <span>{{ 'roles-permissions.summary.pending' | translate }}</span>
+          <strong>{{ pendingChangeCount() }}</strong>
+        </div>
       </article>
     </section>
 
@@ -70,15 +106,15 @@
         <div class="access-table-wrapper">
           <table class="access-table" [class.read-only-table]="!canManageAccess()">
             <colgroup>
-              <col style="width: 70px" />
-              <col style="width: 230px" />
-              <col style="width: 130px" />
+              <col class="col-id" />
+              <col class="col-user" />
+              <col class="col-current-role" />
               @if (canManageAccess()) {
-                <col style="width: 170px" />
+                <col class="col-new-role" />
               }
-              <col style="width: 330px" />
+              <col class="col-permissions" />
               @if (canManageAccess()) {
-                <col style="width: 150px" />
+                <col class="col-actions" />
               }
             </colgroup>
             <thead>

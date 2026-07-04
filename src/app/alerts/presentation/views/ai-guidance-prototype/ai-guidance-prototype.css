@@ -1,34 +1,28 @@
+@import '../alerts-workflow.css';
+
 :host {
   display: block;
+  width: 100%;
 }
 
 .ai-page {
   background: var(--color-background);
+  box-sizing: border-box;
   min-height: 100%;
-  padding: 18px 22px 44px;
+  padding: 24px 18px 44px;
 }
 
-.page-heading,
 .panel-heading,
 .incident-strip,
 .ai-grid {
-  max-width: 1180px;
+  max-width: none;
 }
 
-.page-heading,
 .panel-heading {
   align-items: flex-start;
   display: flex;
   gap: 18px;
   justify-content: space-between;
-}
-
-.section-kicker {
-  color: var(--color-primary);
-  display: block;
-  font-size: 11px;
-  font-weight: 800;
-  margin-bottom: 4px;
 }
 
 h1,
@@ -121,8 +115,9 @@ button:disabled {
   font-weight: 800;
   gap: 10px;
   margin-top: 18px;
-  max-width: 1180px;
+  max-width: none;
   padding: 12px 14px;
+  width: 100%;
 }
 
 .feedback-approved {
@@ -157,6 +152,7 @@ button:disabled {
 
 .field select,
 .field textarea {
+  appearance: none;
   background: #fff;
   color: var(--color-text);
   font-size: 13px;
@@ -270,7 +266,8 @@ button:disabled {
 
 .history-panel {
   margin-top: 18px;
-  max-width: 1180px;
+  max-width: none;
+  width: 100%;
 }
 
 .history-item {

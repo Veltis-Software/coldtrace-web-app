@@ -54,125 +54,9 @@ export class DashboardShell {
   @Output() signedOut = new EventEmitter<void>();
   @Output() monthlyReportRequested = new EventEmitter<void>();
 
-  protected accessDropdownOpen = false;
-  protected accessDropdownTouched = false;
-  protected reportsDropdownOpen = false;
-  protected reportsDropdownTouched = false;
-  protected settingsDropdownOpen = false;
-  protected settingsDropdownTouched = false;
-
-  protected isAccessDropdownOpen(isActive: boolean): boolean {
-    return this.accessDropdownTouched ? this.accessDropdownOpen : isActive || this.isAccessRoute();
-  }
-
-  protected isReportsDropdownOpen(isActive: boolean): boolean {
-    return this.reportsDropdownTouched
-      ? this.reportsDropdownOpen
-      : isActive || this.isReportsRoute();
-  }
-
-  protected isSettingsDropdownOpen(isActive: boolean): boolean {
-    return this.settingsDropdownTouched
-      ? this.settingsDropdownOpen
-      : isActive || this.isSettingsRoute();
-  }
-
-  protected toggleAccessDropdown(isActive: boolean): void {
-    this.accessDropdownOpen = !this.isAccessDropdownOpen(isActive);
-    this.accessDropdownTouched = true;
-  }
-
-  protected toggleReportsDropdown(isActive: boolean): void {
-    this.reportsDropdownOpen = !this.isReportsDropdownOpen(isActive);
-    this.reportsDropdownTouched = true;
-  }
-
-  protected toggleSettingsDropdown(isActive: boolean): void {
-    this.settingsDropdownOpen = !this.isSettingsDropdownOpen(isActive);
-    this.settingsDropdownTouched = true;
-  }
-
   protected contextualLinks(): ContextLink[] {
     if (this.isAccessRoute()) {
-      return [
-        {
-          path: '/identity-access/users',
-          labelKey: 'dashboard-shell.nav-users',
-          visible: true,
-        },
-        {
-          path: '/identity-access/roles-permissions/users/new',
-          labelKey: 'dashboard-shell.nav-new-user',
-          visible: this.canManageUsers,
-        },
-        {
-          path: '/identity-access/roles-permissions/permissions',
-          labelKey: 'dashboard-shell.nav-permissions',
-          visible: this.canManageAccess,
-        },
-      ];
-    }
-
-    if (this.isSettingsRoute()) {
-      return [
-        {
-          path: '/asset-management/safety-ranges',
-          labelKey: 'dashboard-shell.nav-safety-ranges',
-          visible: true,
-        },
-        {
-          path: '/asset-management/operational-parameters',
-          labelKey: 'dashboard-shell.nav-operational-parameters',
-          visible: true,
-        },
-        {
-          path: '/maintenance/preventive',
-          labelKey: 'dashboard-shell.nav-preventive-maintenance',
-          visible: true,
-        },
-        {
-          path: '/maintenance/technical-service',
-          labelKey: 'dashboard-shell.nav-technical-service',
-          visible: true,
-        },
-        {
-          path: '/settings/billing',
-          labelKey: 'dashboard-shell.nav-billing',
-          visible: true,
-        },
-      ];
-    }
-
-    if (this.isAlertsRoute()) {
-      return [
-        { path: '/alerts/incidents', labelKey: 'dashboard-shell.nav-incidents', visible: true },
-        {
-          path: '/alerts/ai-guidance',
-          labelKey: 'dashboard-shell.nav-ai-guidance',
-          visible: true,
-        },
-        {
-          path: '/alerts/notifications',
-          labelKey: 'dashboard-shell.nav-notifications',
-          visible: true,
-        },
-      ];
-    }
-
-    if (this.isReportsRoute()) {
-      return [
-        { path: '/reports/daily-log', labelKey: 'dashboard-shell.nav-daily-log', visible: true },
-        { path: '/reports/monthly', labelKey: 'dashboard-shell.nav-monthly-report', visible: true },
-        { path: '/reports/history', labelKey: 'dashboard-shell.nav-history', visible: true },
-        { path: '/reports/compliance', labelKey: 'dashboard-shell.nav-compliance', visible: true },
-        { path: '/reports/ai-summary', labelKey: 'dashboard-shell.nav-ai-summary', visible: true },
-        { path: '/reports/findings', labelKey: 'dashboard-shell.nav-findings', visible: true },
-        {
-          path: '/reports/audit-evidence',
-          labelKey: 'dashboard-shell.nav-audit-evidence',
-          visible: true,
-        },
-      ];
+      return [];
     }
 
     return [];
@@ -225,7 +109,9 @@ export class DashboardShell {
   }
 
   protected isAlertsRoute(): boolean {
-    return this.router.url.includes('/alerts');
+    const url = this.router.url;
+
+    return url.includes('/alerts') && !url.includes('/alerts/notifications');
   }
 
   protected isSettingsRoute(): boolean {

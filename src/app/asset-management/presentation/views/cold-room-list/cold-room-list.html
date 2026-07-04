@@ -1,33 +1,43 @@
-<nav class="asset-tabs" aria-label="Asset sections">
-  @for (assetType of assetTypeTabs; track assetType) {
-    <button
-      type="button"
-      [class.active]="selectedTab() === assetType"
-      (click)="selectAssetType(assetType)"
-    >
-      {{ assetTypeLabelKey(assetType) | translate }}
-    </button>
-  }
-</nav>
+<header class="assets-header">
+  <div class="view-header">
+    <div class="header-text">
+      <h1 class="view-title">{{ 'asset-management.title' | translate }}</h1>
+      <p class="view-subtitle">{{ pageSubtitleKey() | translate }}</p>
+    </div>
+  </div>
 
-<div class="assets-toolbar">
-  <label class="search-box">
-    <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
-    <input
-      type="search"
-      [value]="searchTerm()"
-      [placeholder]="'asset-management.search' | translate"
-      (input)="updateSearchTerm($any($event.target).value)"
-    />
-  </label>
+  <div class="assets-workbar">
+    <nav class="asset-tabs" aria-label="Asset sections">
+      @for (assetType of assetTypeTabs; track assetType) {
+        <button
+          type="button"
+          [class.active]="selectedTab() === assetType"
+          (click)="selectAssetType(assetType)"
+        >
+          {{ assetTypeLabelKey(assetType) | translate }}
+        </button>
+      }
+    </nav>
 
-  @if (canManageAssets() && canCreateSelectedResource()) {
-    <button mat-flat-button type="button" class="primary-action" (click)="toggleForm()">
-      {{ createButtonKey() | translate }}
-    </button>
-  }
-</div>
+    <div class="assets-toolbar">
+      <label class="search-box">
+        <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
+        <input
+          type="search"
+          [value]="searchTerm()"
+          [placeholder]="'asset-management.search' | translate"
+          (input)="updateSearchTerm($any($event.target).value)"
+        />
+      </label>
 
+      @if (canManageAssets() && canCreateSelectedResource()) {
+        <button mat-flat-button type="button" class="primary-action" (click)="toggleForm()">
+          {{ createButtonKey() | translate }}
+        </button>
+      }
+    </div>
+  </div>
+</header>
 @if (positiveFeedback()) {
   <p class="feedback success">{{ formCreatedKey() | translate }}</p>
 }
@@ -538,6 +548,16 @@
 
     <div class="assets-table-wrapper">
       <table class="assets-table location-table">
+        <colgroup>
+          <col style="width: 17%" />
+          <col style="width: 12%" />
+          <col style="width: 20%" />
+          <col style="width: 28%" />
+          <col style="width: 13%" />
+          @if (canManageAssets()) {
+            <col style="width: 10%" />
+          }
+        </colgroup>
         <thead>
           <tr>
             <th>{{ 'asset-management.locations.table.name' | translate }}</th>
@@ -627,6 +647,20 @@
 
     <div class="assets-table-wrapper">
       <table class="assets-table iot-device-table">
+        <colgroup>
+          <col style="width: 9%" />
+          <col style="width: 11%" />
+          <col style="width: 10%" />
+          <col style="width: 14%" />
+          <col style="width: 13%" />
+          <col style="width: 10%" />
+          <col style="width: 10%" />
+          <col style="width: 10%" />
+          <col style="width: 8%" />
+          @if (canManageAssets()) {
+            <col style="width: 5%" />
+          }
+        </colgroup>
         <thead>
           <tr>
             <th>{{ 'asset-management.iot-devices.table.id' | translate }}</th>
@@ -734,6 +768,18 @@
 
     <div class="assets-table-wrapper">
       <table class="assets-table gateway-table">
+        <colgroup>
+          <col style="width: 12%" />
+          <col style="width: 18%" />
+          <col style="width: 20%" />
+          <col style="width: 16%" />
+          <col style="width: 10%" />
+          <col style="width: 10%" />
+          <col style="width: 8%" />
+          @if (canManageAssets()) {
+            <col style="width: 6%" />
+          }
+        </colgroup>
         <thead>
           <tr>
             <th>{{ 'asset-management.gateways.table.id' | translate }}</th>
@@ -826,6 +872,20 @@
     } @else {
       <div class="assets-table-wrapper">
         <table class="assets-table">
+          <colgroup>
+            <col style="width: 10%" />
+            <col style="width: 11%" />
+            <col style="width: 10%" />
+            <col style="width: 10%" />
+            <col style="width: 14%" />
+            <col style="width: 7%" />
+            <col style="width: 9%" />
+            <col style="width: 10%" />
+            <col style="width: 9%" />
+            @if (canManageAssets()) {
+              <col style="width: 8%" />
+            }
+          </colgroup>
           <thead>
             <tr>
               <th>{{ 'asset-management.table.id' | translate }}</th>
@@ -872,10 +932,10 @@
                   </span>
                 </td>
                 <td [attr.data-label]="'asset-management.table.temperature' | translate">
-                  {{ asset.currentTemperature }}
+                  {{ asset.currentTemperature || '—' }}
                 </td>
                 <td [attr.data-label]="'asset-management.table.entry-date' | translate">
-                  {{ asset.entryDate }}
+                  {{ asset.entryDate || '—' }}
                 </td>
                 <td [attr.data-label]="'asset-management.table.status' | translate">
                   @if (canManageAssets()) {

@@ -50,6 +50,7 @@
           routerLink="/alerts/incidents"
           [queryParams]="contextQueryParams"
           routerLinkActive="active"
+          [class.alerts-active]="isAlertsRoute()"
         >
           <mat-icon class="menu-icon">warning</mat-icon>
           <span class="menu-label">{{ 'dashboard-shell.nav-alerts' | translate }}</span>
@@ -58,195 +59,35 @@
           }
         </a>
 
-        <div
-          class="menu-group"
-          routerLinkActive="active-group"
-          #accessGroup="routerLinkActive"
-          [class.open]="isAccessDropdownOpen(accessGroup.isActive)"
+        <a
+          class="menu-item"
+          routerLink="/identity-access/users"
+          [queryParams]="contextQueryParams"
+          [class.active]="isAccessRoute()"
         >
-          <button
-            class="menu-item menu-trigger"
-            type="button"
-            [attr.aria-expanded]="isAccessDropdownOpen(accessGroup.isActive)"
-            (click)="toggleAccessDropdown(accessGroup.isActive)"
-          >
-            <mat-icon class="menu-icon">admin_panel_settings</mat-icon>
-            <span class="menu-label">{{ 'dashboard-shell.nav-access' | translate }}</span>
-            <mat-icon class="dropdown-icon">expand_more</mat-icon>
-          </button>
-          @if (isAccessDropdownOpen(accessGroup.isActive)) {
-            <div class="sub-menu" aria-label="Access navigation">
-              <a
-                class="sub-menu-link"
-                routerLink="/identity-access/users"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-users' | translate }}
-              </a>
-              @if (canManageUsers) {
-                <a
-                  class="sub-menu-link"
-                  routerLink="/identity-access/roles-permissions/users/new"
-                  [queryParams]="contextQueryParams"
-                  routerLinkActive="active"
-                >
-                  {{ 'dashboard-shell.nav-new-user' | translate }}
-                </a>
-              }
-              @if (canManageAccess) {
-                <a
-                  class="sub-menu-link"
-                  routerLink="/identity-access/roles-permissions/permissions"
-                  [queryParams]="contextQueryParams"
-                  routerLinkActive="active"
-                >
-                  {{ 'dashboard-shell.nav-permissions' | translate }}
-                </a>
-              }
-            </div>
-          }
-        </div>
+          <mat-icon class="menu-icon">admin_panel_settings</mat-icon>
+          <span class="menu-label">{{ 'dashboard-shell.nav-access' | translate }}</span>
+        </a>
 
-        <div
-          class="menu-group"
-          routerLinkActive="active-group"
-          #settingsGroup="routerLinkActive"
-          [class.open]="isSettingsDropdownOpen(settingsGroup.isActive)"
+        <a
+          class="menu-item"
+          routerLink="/asset-management/safety-ranges"
+          [queryParams]="contextQueryParams"
+          [class.active]="isSettingsRoute()"
         >
-          <button
-            class="menu-item menu-trigger"
-            type="button"
-            [attr.aria-expanded]="isSettingsDropdownOpen(settingsGroup.isActive)"
-            (click)="toggleSettingsDropdown(settingsGroup.isActive)"
-          >
-            <mat-icon class="menu-icon">settings</mat-icon>
-            <span class="menu-label">{{ 'dashboard-shell.nav-settings' | translate }}</span>
-            <mat-icon class="dropdown-icon">expand_more</mat-icon>
-          </button>
-          @if (isSettingsDropdownOpen(settingsGroup.isActive)) {
-            <div class="sub-menu" aria-label="Settings navigation">
-              <a
-                class="sub-menu-link"
-                routerLink="/asset-management/safety-ranges"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-safety-ranges' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/asset-management/operational-parameters"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-operational-parameters' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/maintenance/preventive"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-preventive-maintenance' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/maintenance/technical-service"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-technical-service' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/settings/billing"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-billing' | translate }}
-              </a>
-            </div>
-          }
-        </div>
+          <mat-icon class="menu-icon">settings</mat-icon>
+          <span class="menu-label">{{ 'dashboard-shell.nav-settings' | translate }}</span>
+        </a>
 
-        <div
-          class="menu-group"
-          routerLinkActive="active-group"
-          #reportsGroup="routerLinkActive"
-          [class.open]="isReportsDropdownOpen(reportsGroup.isActive)"
+        <a
+          class="menu-item"
+          routerLink="/reports/daily-log"
+          [queryParams]="contextQueryParams"
+          [class.active]="isReportsRoute()"
         >
-          <button
-            class="menu-item menu-trigger"
-            type="button"
-            [attr.aria-expanded]="isReportsDropdownOpen(reportsGroup.isActive)"
-            (click)="toggleReportsDropdown(reportsGroup.isActive)"
-          >
-            <mat-icon class="menu-icon">description</mat-icon>
-            <span class="menu-label">{{ 'dashboard-shell.nav-reports' | translate }}</span>
-            <mat-icon class="dropdown-icon">expand_more</mat-icon>
-          </button>
-          @if (isReportsDropdownOpen(reportsGroup.isActive)) {
-            <div class="sub-menu" aria-label="Reports navigation">
-              <a
-                class="sub-menu-link"
-                routerLink="/reports/daily-log"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-daily-log' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/reports/monthly"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-monthly-report' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/reports/history"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-history' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/reports/compliance"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-compliance' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/reports/ai-summary"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-ai-summary' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/reports/findings"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-findings' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/reports/audit-evidence"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-audit-evidence' | translate }}
-              </a>
-            </div>
-          }
-        </div>
+          <mat-icon class="menu-icon">description</mat-icon>
+          <span class="menu-label">{{ 'dashboard-shell.nav-reports' | translate }}</span>
+        </a>
 
         <a
           class="menu-item"

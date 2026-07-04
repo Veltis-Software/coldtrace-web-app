@@ -2,7 +2,8 @@
   box-sizing: border-box;
   display: block;
   min-height: 100%;
-  padding: 18px 0 44px;
+  padding: 24px 18px 44px;
+  width: 100%;
 }
 
 .access-view-header {
@@ -91,9 +92,9 @@
     0 1px 2px rgba(16, 24, 40, 0.04),
     0 8px 18px rgba(16, 24, 40, 0.06);
   margin-top: 0 !important;
-  max-width: 1080px !important;
+  max-width: none !important;
   padding: 28px 30px 30px;
-  width: min(1080px, 100%) !important;
+  width: 100% !important;
 }
 
 .table-heading {

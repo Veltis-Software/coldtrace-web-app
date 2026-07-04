@@ -1,10 +1,22 @@
 <section class="summary-page" aria-labelledby="summary-title">
   <div class="page-heading">
     <div>
-      <span class="section-kicker">Sprint 4 prototype</span>
-      <h1 id="summary-title">Intelligent compliance summary</h1>
+      <h1 id="summary-title">{{ 'dashboard-shell.nav-reports' | translate }}</h1>
       <p>Turn an existing compliance report into an executive explanation of risks and actions.</p>
     </div>
+  </div>
+
+  <div class="reports-workbar">
+    <nav class="report-tabs" aria-label="Reports navigation">
+      <a routerLink="/reports/daily-log">{{ 'dashboard-shell.nav-daily-log' | translate }}</a>
+      <a routerLink="/reports/monthly">{{ 'dashboard-shell.nav-monthly-report' | translate }}</a>
+      <a routerLink="/reports/history">{{ 'dashboard-shell.nav-history' | translate }}</a>
+      <a routerLink="/reports/compliance">{{ 'dashboard-shell.nav-compliance' | translate }}</a>
+      <a routerLink="/reports/ai-summary" class="active">{{ 'dashboard-shell.nav-ai-summary' | translate }}</a>
+      <a routerLink="/reports/findings">{{ 'dashboard-shell.nav-findings' | translate }}</a>
+      <a routerLink="/reports/audit-evidence">{{ 'dashboard-shell.nav-audit-evidence' | translate }}</a>
+    </nav>
+
     <div class="heading-actions">
       <button type="button" class="secondary-action" (click)="showInsufficientState()">
         <mat-icon aria-hidden="true">rule</mat-icon>

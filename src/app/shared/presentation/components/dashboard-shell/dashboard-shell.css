@@ -6,7 +6,7 @@
   background: var(--color-background);
   display: grid;
   font-family: Inter, Arial, sans-serif;
-  grid-template-columns: 318px minmax(0, 1fr);
+  grid-template-columns: 274px minmax(0, 1fr);
   height: 100vh;
   overflow: hidden;
 }
@@ -43,9 +43,9 @@
 }
 
 .brand-section {
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 48px;
-  padding: 0 36px;
+  padding: 0 4px 0 36px;
 }
 .logo-img {
   height: 46px;
@@ -64,7 +64,7 @@
 }
 .brand-sub {
   color: var(--color-text-subtle);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -82,7 +82,7 @@
   color: var(--color-text-muted);
   cursor: pointer;
   gap: 24px;
-  padding: 12px 38px;
+  padding: 12px 20px 12px 38px;
   text-decoration: none;
   width: 100%;
 }
@@ -102,11 +102,13 @@
   text-align: left;
 }
 .menu-item.active,
+.menu-item.alerts-active,
 .menu-group.active-group > .menu-item,
 .menu-group.open > .menu-item {
   color: var(--color-primary);
 }
 .menu-item.active .menu-icon,
+.menu-item.alerts-active .menu-icon,
 .menu-group.active-group .menu-icon,
 .menu-group.open .menu-icon {
   color: var(--color-primary);
@@ -151,8 +153,10 @@
   background: #ffffff;
   border: 1px solid #e8edf5;
   border-radius: 8px;
-  margin: 0 18px 24px;
-  padding: 16px 16px 19px;
+  justify-self: start;
+  margin: 0 0 24px 28px;
+  padding: 15px 16px 19px;
+  width: 238px;
 }
 .team-card-header {
   color: #667085;
@@ -160,7 +164,7 @@
   font-weight: 800;
   justify-content: space-between;
   line-height: 18px;
-  margin-bottom: 12px;
+  margin-bottom: 11px;
 }
 .team-card-header span {
   font: inherit;
@@ -255,17 +259,20 @@
 .sidebar-footer {
   display: grid;
   gap: 22px;
-  padding: 0 32px;
+  justify-items: start;
+  padding: 0 8px 0 28px;
 }
 .drag-upload {
   background: #fff;
   border: 1px dashed var(--color-border);
   border-radius: 8px;
   color: var(--color-primary);
+  cursor: pointer;
   flex-direction: column;
   gap: 8px;
   justify-content: center;
   min-height: 126px;
+  width: 238px;
 }
 .upload-icon {
   font-size: 28px;
@@ -278,24 +285,30 @@
 }
 .toggle-control {
   background: #eef2f7;
-  border-radius: 999px;
+  border: 0;
+  border-radius: 32px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 4px;
-  padding: 4px;
+  height: 54px;
+  padding: 8px;
+  width: 238px;
 }
 .toggle-option {
   align-items: center;
-  border-radius: 999px;
+  border-radius: 24px;
   color: #98a2b3;
   display: flex;
   flex: 1;
   gap: 8px;
   justify-content: center;
-  min-height: 36px;
+  min-height: 38px;
 }
 .toggle-option.active {
   background: #fff;
   color: #111827;
-  box-shadow: var(--shadow-soft);
+  box-shadow: 0 1px 3px rgba(96, 108, 128, 0.05), 0 6px 14px rgba(96, 108, 128, 0.12);
 }
 .toggle-option span {
   font-size: 12px;
@@ -304,13 +317,21 @@
 
 .workspace {
   min-width: 0;
-  overflow: hidden;
+  overflow: auto;
+  position: relative;
 }
 .topbar {
+  background: transparent;
   gap: 20px;
   height: 74px;
   justify-content: space-between;
-  padding: 0 28px;
+  left: 0;
+  padding: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
 }
 .context-nav {
   align-items: center;
@@ -344,6 +365,10 @@
 .topbar-actions {
   gap: 22px;
   justify-content: flex-end;
+  pointer-events: auto;
+  position: absolute;
+  right: 18px;
+  top: 28px;
 }
 .notification-shortcut {
   background: var(--color-danger-soft);
@@ -397,9 +422,9 @@
   color: #98a2b3;
 }
 .content-scroll {
-  height: calc(100vh - 74px);
-  overflow: auto;
-  padding: 0 28px 44px;
+  min-height: 100vh;
+  overflow: visible;
+  padding: 0 8px 44px;
 }
 
 @media (max-width: 1100px) {
@@ -421,12 +446,9 @@
     padding-inline: 0;
   }
   .topbar {
-    align-items: flex-start;
-    flex-direction: column;
-    height: auto;
-    padding-block: 18px;
+    height: 74px;
   }
   .content-scroll {
-    height: calc(100vh - 112px);
+    height: 100vh;
   }
 }

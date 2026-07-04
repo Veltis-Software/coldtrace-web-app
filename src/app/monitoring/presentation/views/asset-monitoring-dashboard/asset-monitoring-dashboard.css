@@ -1,21 +1,30 @@
+:host {
+  box-sizing: border-box;
+  display: block;
+  min-height: 100%;
+  padding: 24px 18px 44px !important;
+  width: 100%;
+}
+
 .monitoring-page {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 0 !important;
-  padding-top: 0 !important;
+  gap: 18px;
+  min-height: 100%;
+  padding: 0 !important;
 }
 
 .monitoring-header {
-  display: flex;
-  flex-direction: column;
-  gap: 16px !important;
-  margin: 0 0 18px !important;
+  display: grid;
+  gap: 14px;
+  margin: 0 !important;
 }
 
 .header-main {
-  display: flex;
-  flex-direction: column;
-  gap: 0 !important;
+  display: grid;
+  gap: 0;
+  min-height: 54px;
 }
 
 .page-title {
@@ -37,27 +46,37 @@
 }
 
 .monitoring-tabs {
+  align-items: center;
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
+  flex-wrap: nowrap;
+  gap: 26px;
+  min-height: 42px;
+  overflow-x: auto;
 }
 
 .monitoring-tabs button {
+  align-items: center;
+  appearance: none;
   background: transparent;
   border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
   color: #98a2b3;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 20px;
+  display: inline-flex;
+  font: 800 12px/20px Inter, Arial, sans-serif;
+  min-height: 42px;
   padding: 0;
   text-decoration: none;
-  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
 }
 
-.monitoring-tabs button.active {
+.monitoring-tabs button.active,
+.monitoring-tabs button:hover {
+  border-bottom-color: #2563eb;
   color: #2563eb;
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .assets-toolbar {
@@ -65,8 +84,8 @@
   border-bottom: 0;
   display: grid;
   gap: 18px;
-  grid-template-columns: auto minmax(240px, 400px) minmax(245px, 1fr) !important;
-  justify-content: initial;
+  grid-template-columns: max-content minmax(260px, 400px) minmax(245px, 1fr);
+  justify-content: stretch;
   margin: 0 !important;
   min-height: 42px !important;
   width: 100%;
@@ -110,10 +129,10 @@
 }
 
 .monitoring-workbar {
-  background: #ffffff;
-  border: 1px solid #e5eaf1;
-  border-radius: 8px;
-  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
 }
 
 .search-box {
@@ -192,6 +211,7 @@
 .monitoring-list {
   display: flex;
   flex-direction: column;
+  gap: 12px;
   margin-top: 0 !important;
 }
 
@@ -232,7 +252,7 @@
 
 @media (max-width: 860px) {
   .assets-toolbar {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
     padding-bottom: 12px;
   }
 

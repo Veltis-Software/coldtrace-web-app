@@ -4,15 +4,61 @@
 
 .billing-page {
   background: var(--color-background);
+  box-sizing: border-box;
+  display: grid;
+  gap: 14px;
+  justify-items: stretch;
   min-height: 100%;
-  padding: 18px 22px 44px;
+  padding: 24px 18px 44px !important;
+  position: relative;
+}
+
+.billing-page > * {
+  box-sizing: border-box;
+  justify-self: stretch;
+  width: 100%;
+}
+
+.settings-workbar {
+  align-items: center;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  min-height: 42px;
+}
+
+.setting-tabs {
+  align-items: center;
+  display: flex;
+  gap: 26px;
+  margin-top: 0;
+  min-height: 42px;
+  overflow-x: auto;
+}
+
+.setting-tabs a {
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  color: #98a2b3;
+  display: inline-flex;
+  flex: none;
+  font: 800 12px/20px Inter, Arial, sans-serif;
+  min-height: 42px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.setting-tabs a.active,
+.setting-tabs a:hover {
+  border-bottom-color: #2563eb;
+  color: #2563eb;
 }
 
 .page-heading,
 .billing-status,
 .plan-grid,
 .dashboard-grid {
-  max-width: 1180px;
+  max-width: none;
 }
 
 .page-heading,
@@ -26,12 +72,16 @@
   justify-content: space-between;
 }
 
-.section-kicker {
-  color: var(--color-primary);
-  display: block;
-  font-size: 11px;
-  font-weight: 800;
-  margin-bottom: 4px;
+.page-heading {
+  min-height: 54px;
+}
+
+.heading-actions {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  min-width: max-content;
 }
 
 h1,
@@ -42,8 +92,7 @@ p {
 
 h1 {
   color: var(--color-text);
-  font-size: 22px;
-  font-weight: 800;
+  font: 800 24px/30px Inter, Arial, sans-serif;
 }
 
 h2 {
@@ -57,9 +106,8 @@ h2 {
 .panel-heading p,
 .locked-item p {
   color: var(--color-text-subtle);
-  font-size: 12px;
-  font-weight: 800;
-  margin-top: 4px;
+  font: 800 13px/20px Inter, Arial, sans-serif;
+  margin-top: 6px;
 }
 
 .primary-action,
@@ -70,7 +118,7 @@ h2 {
   cursor: pointer;
   display: inline-flex;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   gap: 8px;
   justify-content: center;
   min-height: 38px;
@@ -81,6 +129,16 @@ h2 {
   background: var(--color-primary);
   border: 0;
   color: #fff;
+  font-weight: 800;
+}
+
+.secondary-action .mdc-button__label,
+.inline-action .mdc-button__label {
+  font-weight: 700;
+}
+
+.primary-action .mdc-button__label {
+  font-weight: 800;
 }
 
 .secondary-action,
@@ -112,7 +170,6 @@ button:disabled {
   font-size: 13px;
   font-weight: 800;
   gap: 12px;
-  margin-top: 18px;
   padding: 13px 15px;
 }
 
@@ -228,13 +285,18 @@ button:disabled {
 }
 
 .usage-item {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   display: grid;
-  gap: 8px;
+  gap: 10px;
+  padding: 12px 14px;
 }
 
 .usage-item div:first-child {
   align-items: center;
   display: flex;
+  gap: 12px;
   justify-content: space-between;
 }
 
@@ -244,11 +306,24 @@ button:disabled {
   font-weight: 800;
 }
 
+.usage-item span {
+  background: #eff4ff;
+  border: 1px solid #dbe4ff;
+  border-radius: 8px;
+  color: var(--color-primary);
+  flex: 0 0 auto;
+  font-size: 11px;
+  line-height: 16px;
+  padding: 3px 8px;
+}
+
 .usage-bar {
   background: #eef2f7;
+  border: 1px solid #e4e7ec;
   border-radius: 999px;
-  height: 8px;
+  height: 10px;
   overflow: hidden;
+  padding: 2px;
 }
 
 .usage-bar span {
@@ -256,10 +331,24 @@ button:disabled {
   border-radius: inherit;
   display: block;
   height: 100%;
+  min-width: 8px;
+  padding: 0;
+}
+
+.locked-usage {
+  background: #f8fafc;
+  border-color: #e4e7ec;
+}
+
+.locked-usage div:first-child span {
+  background: #f3f4f6;
+  border-color: #e4e7ec;
+  color: var(--color-text-muted);
 }
 
 .locked-usage .usage-bar span {
-  background: var(--color-danger);
+  background: #cbd5e1;
+  min-width: 0;
 }
 
 .locked-item {

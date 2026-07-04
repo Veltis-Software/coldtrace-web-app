@@ -1,5 +1,7 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
+import { ActivatedRoute, Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 
 type PlanStatus = 'pending' | 'approved' | 'rejected';
 
@@ -31,11 +33,14 @@ interface PlanHistoryItem {
 @Component({
   selector: 'app-ai-guidance-prototype',
   standalone: true,
-  imports: [MatIcon],
+  imports: [MatIcon, TranslateModule],
   templateUrl: './ai-guidance-prototype.html',
   styleUrl: './ai-guidance-prototype.css',
 })
 export class AiGuidancePrototype {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
   protected readonly incidents: PrototypeIncident[] = [
     {
       id: 1007,
@@ -169,6 +174,15 @@ export class AiGuidancePrototype {
 
   protected updateRejectionReason(value: string): void {
     this.rejectionReason.set(value);
+  }
+
+  protected openIncidents(panel?: 'closure'): void {
+    const queryParams = {
+      ...this.route.snapshot.queryParams,
+      ...(panel ? { panel } : {}),
+    };
+
+    void this.router.navigate(['/alerts/incidents'], { queryParams });
   }
 
   protected statusIcon(status: PlanStatus): string {

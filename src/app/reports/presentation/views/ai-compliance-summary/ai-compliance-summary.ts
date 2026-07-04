@@ -1,5 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 type SummaryState = 'ready' | 'generated' | 'insufficient';
 
@@ -18,7 +20,7 @@ interface RiskInsight {
 @Component({
   selector: 'app-ai-compliance-summary',
   standalone: true,
-  imports: [MatIcon],
+  imports: [MatIcon, RouterLink, TranslatePipe],
   templateUrl: './ai-compliance-summary.html',
   styleUrl: './ai-compliance-summary.css',
 })

@@ -1,5 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 type PlanId = 'base' | 'operations' | 'compliance';
 type CheckoutState = 'idle' | 'checkout' | 'success' | 'portal';
@@ -30,7 +32,7 @@ interface LockedFeature {
 @Component({
   selector: 'app-billing-prototype',
   standalone: true,
-  imports: [MatIcon],
+  imports: [MatIcon, RouterLink, TranslatePipe],
   templateUrl: './billing-prototype.html',
   styleUrl: './billing-prototype.css',
 })

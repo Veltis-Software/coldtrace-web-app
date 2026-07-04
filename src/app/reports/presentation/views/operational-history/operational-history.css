@@ -4,8 +4,19 @@
 
 .history-page {
   background: #f5f6f8;
+  box-sizing: border-box;
+  display: grid;
+  gap: 14px;
+  justify-items: stretch;
   min-height: 100%;
-  padding: 18px 22px 44px;
+  padding: 24px 18px 44px !important;
+  position: relative;
+}
+
+.history-page > * {
+  box-sizing: border-box;
+  justify-self: stretch;
+  width: 100%;
 }
 
 .loading-overlay {
@@ -20,11 +31,12 @@
 
 .page-heading,
 .section-heading,
+.report-tabs,
 .filter-card,
 .summary-grid,
 .table-card,
 .access-banner {
-  max-width: 1180px;
+  max-width: none;
 }
 
 .page-heading,
@@ -35,10 +47,49 @@
   justify-content: space-between;
 }
 
+.page-heading {
+  min-height: 54px;
+}
+
+.reports-workbar {
+  align-items: center;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  min-height: 42px;
+}
+.report-tabs {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 26px;
+  margin-top: 0;
+  min-height: 42px;
+  overflow-x: auto;
+}
+
+.report-tabs a {
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  color: #98a2b3;
+  display: inline-flex;
+  flex: none;
+  font: 800 12px/20px Inter, Arial, sans-serif;
+  min-height: 42px;
+  padding: 0;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.report-tabs a.active,
+.report-tabs a:hover {
+  border-bottom-color: #2563eb;
+  color: #2563eb;
+}
+
 .page-heading h1 {
   color: #263348;
-  font-size: 22px;
-  line-height: 30px;
+  font: 800 24px/30px Inter, Arial, sans-serif;
   margin: 0;
 }
 
@@ -54,19 +105,8 @@
 .page-heading p,
 .section-heading p {
   color: #98a2b3;
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 20px;
+  font: 800 13px/20px Inter, Arial, sans-serif;
   margin: 6px 0 0;
-}
-
-.section-kicker {
-  color: #2563eb;
-  display: block;
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 16px;
-  margin-bottom: 4px;
 }
 
 .filter-card,
@@ -80,7 +120,7 @@
 .table-card,
 .access-banner {
   border-radius: 8px;
-  margin-top: 20px;
+  margin-top: 0;
 }
 
 .filter-card {
@@ -111,15 +151,35 @@
 
 .filter-field input,
 .filter-field select {
-  background: #f4f4f4;
+  background: #f8fafc;
+  border: 1px solid #e4e7ec;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.14);
+  box-shadow: none;
   box-sizing: border-box;
-  color: #404040;
-  font-size: 13px;
-  min-height: 38px;
+  color: #263348;
+  font: 700 13px/18px Inter, Arial, sans-serif;
+  min-height: 40px;
+  outline: none;
   padding: 9px 12px;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
   width: 100%;
+}
+
+.filter-field input:focus-visible,
+.filter-field select:focus-visible {
+  border-color: #9bb7ff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.filter-field input[type='date'] {
+  color-scheme: light;
+}
+
+.filter-field input[type='date']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.72;
 }
 
 .summary-grid {

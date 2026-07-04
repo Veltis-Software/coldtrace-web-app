@@ -1,15 +1,47 @@
 <section class="ai-page" aria-labelledby="ai-guidance-title">
-  <div class="page-heading">
-    <div>
-      <span class="section-kicker">Sprint 4 prototype</span>
-      <h1 id="ai-guidance-title">AI Guidance for incident resolution</h1>
-      <p>Generate an advisory plan, edit it, approve it, reject it, and keep an audit trail.</p>
+  <header class="alerts-header">
+    <div class="view-header">
+      <div class="header-text">
+        <h1 id="ai-guidance-title" class="view-title">
+          {{ 'dashboard-shell.nav-alerts' | translate }}
+        </h1>
+        <p class="view-subtitle">{{ 'alerts.incident-list.ai-guidance-subtitle' | translate }}</p>
+      </div>
     </div>
-    <button type="button" class="primary-action" [disabled]="generating()" (click)="generatePlan()">
-      <mat-icon aria-hidden="true">{{ generating() ? 'hourglass_top' : 'auto_awesome' }}</mat-icon>
-      {{ generating() ? 'Generating plan...' : 'Generate AI plan' }}
-    </button>
-  </div>
+
+    <div class="incident-workbar">
+      <nav class="incident-section-tabs" aria-label="Incident workflow sections">
+        <button type="button" (click)="openIncidents()">
+          {{ 'dashboard-shell.nav-incidents' | translate }}
+        </button>
+        <button type="button" (click)="openIncidents('closure')">
+          {{ 'alerts.incident-list.closure-title' | translate }}
+        </button>
+        <button type="button" class="active">
+          {{ 'dashboard-shell.nav-ai-guidance' | translate }}
+        </button>
+      </nav>
+
+      <div class="incident-toolbar">
+        <label class="search-box">
+          <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
+          <input type="search" value="" placeholder="Search incidents by asset, type, value or status..." readonly />
+        </label>
+
+        <button
+          type="button"
+          class="primary-action"
+          [disabled]="generating()"
+          (click)="generatePlan()"
+        >
+          <mat-icon aria-hidden="true">{{
+            generating() ? 'hourglass_top' : 'auto_awesome'
+          }}</mat-icon>
+          {{ generating() ? 'Generating plan...' : 'Generate AI plan' }}
+        </button>
+      </div>
+    </div>
+  </header>
 
   <section class="feedback-banner" [class.feedback-approved]="planStatus() === 'approved'" [class.feedback-rejected]="planStatus() === 'rejected'">
     <mat-icon aria-hidden="true">{{ statusIcon(planStatus()) }}</mat-icon>

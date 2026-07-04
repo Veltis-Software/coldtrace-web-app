@@ -3,6 +3,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { finalize, forkJoin } from 'rxjs';
 import { AssetManagementStore } from '../../../../asset-management/application/asset-management.store';
@@ -41,6 +42,7 @@ type TechnicalServiceFeedback =
     MatProgressSpinner,
     NgClass,
     ReactiveFormsModule,
+    RouterLink,
     TranslatePipe,
     ListPagination,
   ],

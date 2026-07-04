@@ -3,21 +3,8 @@
     <div class="view-header">
       <div class="header-text">
         <h1 class="view-title">{{ 'dashboard-shell.nav-alerts' | translate }}</h1>
-        <p class="view-subtitle">{{ 'alerts.incident-list.subtitle' | translate }}</p>
+        <p class="view-subtitle">{{ subtitleKey() | translate }}</p>
       </div>
-
-      @if (alertsStore.feedback()) {
-        <div
-          class="feedback-banner"
-          [class.feedback-success]="isSuccessFeedback(alertsStore.feedback()!)"
-          [class.feedback-error]="!isSuccessFeedback(alertsStore.feedback()!)"
-        >
-          <mat-icon>{{
-            isSuccessFeedback(alertsStore.feedback()!) ? 'check_circle' : 'error_outline'
-          }}</mat-icon>
-          <span>{{ alertsStore.feedback()! | translate }}</span>
-        </div>
-      }
     </div>
 
     <div class="incident-workbar">
@@ -27,7 +14,7 @@
           [class.active]="selectedIncidentPanel() === 'incidents'"
           (click)="selectIncidentPanel('incidents')"
         >
-          <span>{{ 'alerts.incident-list.title' | translate }}</span>
+          {{ 'dashboard-shell.nav-incidents' | translate }}
         </button>
 
         @if (canResolveAlerts()) {
@@ -36,9 +23,13 @@
             [class.active]="selectedIncidentPanel() === 'closure'"
             (click)="selectIncidentPanel('closure')"
           >
-            <span>{{ 'alerts.incident-list.closure-title' | translate }}</span>
+            {{ 'alerts.incident-list.closure-title' | translate }}
           </button>
         }
+
+        <button type="button" (click)="openAiGuidance()">
+          {{ 'dashboard-shell.nav-ai-guidance' | translate }}
+        </button>
       </nav>
 
       <div class="incident-toolbar">
@@ -70,13 +61,26 @@
     </div>
   </header>
 
+  @if (alertsStore.feedback()) {
+    <div
+      class="feedback-banner"
+      [class.feedback-success]="isSuccessFeedback(alertsStore.feedback()!)"
+      [class.feedback-error]="!isSuccessFeedback(alertsStore.feedback()!)"
+    >
+      <mat-icon>{{
+        isSuccessFeedback(alertsStore.feedback()!) ? 'check_circle' : 'error_outline'
+      }}</mat-icon>
+      <span>{{ alertsStore.feedback()! | translate }}</span>
+    </div>
+  }
+
   @if (alertsStore.loading()) {
     <div class="loading-container">
       <mat-spinner diameter="40" />
     </div>
   } @else {
     @if (canResolveAlerts() && selectedIncidentPanel() === 'closure') {
-      <div #closureCard class="premium-card closure-card">
+      <div class="premium-card closure-card">
         <div class="card-header closure-header">
           <div>
             <h3 class="card-title">{{ 'alerts.incident-list.closure-title' | translate }}</h3>
@@ -186,6 +190,20 @@
 
         <div class="table-container">
           <table class="premium-table">
+            <colgroup>
+              <col style="width: 9%" />
+              <col style="width: 8%" />
+              <col style="width: 12%" />
+              <col style="width: 12%" />
+              <col style="width: 8%" />
+              <col style="width: 8%" />
+              <col style="width: 9%" />
+              <col style="width: 13%" />
+              <col style="width: 9%" />
+              @if (canResolveAlerts()) {
+                <col style="width: 12%" />
+              }
+            </colgroup>
             <thead>
               <tr>
                 <th>{{ 'alerts.incident-list.col-asset' | translate }}</th>
@@ -277,46 +295,31 @@
                   <td class="recognized-by">{{ incident.recognizedBy ?? '—' }}</td>
                   @if (canResolveAlerts()) {
                     <td>
-                      @if (incident.isEscalated || incident.isPendingEscalationConfiguration) {
+                      <div class="incident-action-stack">
+                        @if (incident.isOpen && !incident.isRecognized) {
+                          <button
+                            id="recognize-incident-{{ incident.id }}"
+                            class="recognize-btn"
+                            [disabled]="alertsStore.recognizingId() === incident.id"
+                            (click)="recognize(incident)"
+                          >
+                            @if (alertsStore.recognizingId() === incident.id) {
+                              <mat-spinner diameter="14" />
+                            } @else {
+                              {{ 'alerts.incident-list.action-recognize' | translate }}
+                            }
+                          </button>
+                        }
+
                         <button
-                          id="review-escalation-{{ incident.id }}"
-                          class="review-escalation-btn"
-                          [disabled]="alertsStore.reviewingEscalationId() === incident.id"
-                          (click)="reviewEscalation(incident)"
+                          type="button"
+                          class="notifications-action-btn"
+                          [attr.aria-label]="'alerts.incident-list.action-notifications' | translate"
+                          (click)="reviewIncidentNotifications(incident)"
                         >
-                          @if (alertsStore.reviewingEscalationId() === incident.id) {
-                            <mat-spinner diameter="14" />
-                          } @else {
-                            {{ 'alerts.incident-list.action-review-escalation' | translate }}
-                          }
+                          <mat-icon aria-hidden="true">notifications</mat-icon>
                         </button>
-                      } @else if (incident.isOpen) {
-                        <button
-                          id="recognize-incident-{{ incident.id }}"
-                          class="recognize-btn"
-                          [disabled]="alertsStore.recognizingId() === incident.id"
-                          (click)="recognize(incident)"
-                        >
-                          @if (alertsStore.recognizingId() === incident.id) {
-                            <mat-spinner diameter="14" />
-                          } @else {
-                            {{ 'alerts.incident-list.action-recognize' | translate }}
-                          }
-                        </button>
-                      } @else if (!incident.isClosed) {
-                        <button
-                          id="close-incident-shortcut-{{ incident.id }}"
-                          class="close-shortcut-btn"
-                          [disabled]="alertsStore.closingId() === incident.id"
-                          (click)="selectIncidentForClosure(incident)"
-                        >
-                          {{ 'alerts.incident-list.action-prepare-close' | translate }}
-                        </button>
-                      } @else {
-                        <span class="action-done">
-                          <mat-icon>check</mat-icon>
-                        </span>
-                      }
+                      </div>
                     </td>
                   }
                 </tr>
@@ -351,6 +354,45 @@
           </div>
         }
       </div>
+
+      @if (selectedNotificationIncident(); as notificationIncident) {
+        <aside class="premium-card table-card incident-notification-panel">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">{{ 'alerts.incident-list.notifications-title' | translate }}</h3>
+              <p class="notification-panel-subtitle">
+                INC-{{ notificationIncident.id }} · {{ notificationIncident.assetName }}
+              </p>
+            </div>
+          </div>
+
+          @if (loadingIncidentNotifications()) {
+            <div class="notification-panel-empty">
+              <mat-spinner diameter="24" />
+            </div>
+          } @else {
+            <div class="incident-notification-list">
+              @for (notification of incidentNotifications(); track notification.id) {
+                <article class="incident-notification-row">
+                  <div>
+                    <strong>{{ notificationChannelLabelKey(notification) | translate }}</strong>
+                    <p>{{ notification.message }}</p>
+                    <small>
+                      {{ 'alerts.notification-list.recipient' | translate }}
+                      {{ notification.recipient }} ·
+                      {{ notificationStatusLabelKey(notification) | translate }}
+                    </small>
+                  </div>
+                </article>
+              } @empty {
+                <div class="notification-panel-empty">
+                  {{ 'alerts.incident-list.notifications-empty' | translate }}
+                </div>
+              }
+            </div>
+          }
+        </aside>
+      }
     }
   }
 </div>

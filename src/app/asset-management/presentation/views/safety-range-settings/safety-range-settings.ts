@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { finalize, forkJoin } from 'rxjs';
 import { IdentityAccessStore } from '../../../../identity-access/application/identity-access.store';
@@ -36,6 +37,7 @@ type SafetyRangeFeedback = 'idle' | 'saved' | 'invalid' | 'access-denied' | 'ser
     MatProgressSpinner,
     NgClass,
     ReactiveFormsModule,
+    RouterLink,
     TranslatePipe,
     ListPagination,
   ],
