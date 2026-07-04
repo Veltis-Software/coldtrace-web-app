@@ -378,10 +378,11 @@
 .assets-table td {
   color: #263348;
   font: 600 12px/18px Inter, Arial, sans-serif;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   text-align: left;
   vertical-align: middle;
   white-space: normal;
+  word-break: normal;
 }
 
 .assets-table th {
@@ -398,7 +399,6 @@
 
 .assets-table th:last-child,
 .assets-table td:last-child {
-  min-width: 96px;
   padding-right: 0;
   text-align: right;
 }
@@ -447,14 +447,15 @@
   font: 700 11px/16px Inter, Arial, sans-serif;
   justify-content: center;
   min-height: 26px;
-  min-width: 96px;
+  min-width: 0;
   padding: 3px 8px;
+  white-space: nowrap;
 }
 
 .status-select-field {
   cursor: pointer;
   justify-content: space-between;
-  max-width: 128px;
+  max-width: 118px;
   min-width: 104px;
   position: relative;
   width: 100%;

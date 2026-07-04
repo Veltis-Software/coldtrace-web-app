@@ -118,6 +118,9 @@ export class ColdRoomList implements OnInit {
   protected readonly locationStatuses = ['active', 'maintenance', 'inactive'];
   private readonly locationTypeFormAliases: Record<string, string> = {
     facility: 'WAREHOUSE',
+    site: 'CLIENT_SITE',
+    SITE: 'CLIENT_SITE',
+    'asset-management.locations.types.SITE': 'CLIENT_SITE',
     'transport-route': 'ROUTE',
   };
   protected readonly identityLoading = signal(false);
@@ -1058,14 +1061,18 @@ export class ColdRoomList implements OnInit {
   }
 
   protected locationTypeLabelKey(type: string): string {
+    const keyPrefix = 'asset-management.locations.types.';
+    const rawType = type.startsWith(keyPrefix) ? type.slice(keyPrefix.length) : type;
     const aliases: Record<string, string> = {
       facility: 'WAREHOUSE',
       warehouse: 'WAREHOUSE',
+      site: 'CLIENT_SITE',
+      SITE: 'CLIENT_SITE',
       store: 'CLIENT_SITE',
       kitchen: 'CLIENT_SITE',
       'transport-route': 'ROUTE',
     };
-    const normalizedType = aliases[type] ?? type.toUpperCase().replaceAll('-', '_');
+    const normalizedType = aliases[rawType] ?? rawType.toUpperCase().replaceAll('-', '_');
     return `asset-management.locations.types.${normalizedType}`;
   }
 

@@ -366,6 +366,7 @@
       "types": {
         "WAREHOUSE": "Warehouse",
         "CLIENT_SITE": "Client site",
+        "SITE": "Client site",
         "ROUTE": "Route",
         "LABORATORY": "Laboratory",
         "DISTRIBUTION_CENTER": "Distribution center",

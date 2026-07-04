@@ -366,6 +366,7 @@
       "types": {
         "WAREHOUSE": "Almacén",
         "CLIENT_SITE": "Sede de cliente",
+        "SITE": "Sede de cliente",
         "ROUTE": "Ruta",
         "LABORATORY": "Laboratorio",
         "DISTRIBUTION_CENTER": "Centro de distribución",
