@@ -348,7 +348,7 @@ h3 {
   line-height: 20px;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1180px) {
   .page-heading,
   .filter-card,
   .section-heading {

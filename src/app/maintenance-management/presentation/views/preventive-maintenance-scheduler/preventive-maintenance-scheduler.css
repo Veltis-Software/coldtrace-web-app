@@ -125,7 +125,7 @@
   opacity: 0.65;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1180px) {
   .form-grid {
     grid-template-columns: 1fr;
   }

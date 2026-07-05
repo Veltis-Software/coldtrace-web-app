@@ -597,7 +597,7 @@ select {
   }
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1180px) {
   .access-workbar {
     grid-template-columns: 1fr !important;
   }

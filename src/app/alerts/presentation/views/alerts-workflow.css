@@ -111,7 +111,7 @@
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1180px) {
   .incident-workbar {
     grid-template-columns: 1fr;
     padding-bottom: 12px;

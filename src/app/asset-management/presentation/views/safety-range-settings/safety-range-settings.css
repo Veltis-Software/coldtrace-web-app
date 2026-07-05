@@ -86,7 +86,7 @@
   width: auto;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1180px) {
   .safety-filter,
   .settings-grid {
     grid-template-columns: 1fr;

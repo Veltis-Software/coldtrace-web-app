@@ -250,7 +250,7 @@
   height: 48px;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1180px) {
   .assets-toolbar {
     grid-template-columns: 1fr;
     padding-bottom: 12px;

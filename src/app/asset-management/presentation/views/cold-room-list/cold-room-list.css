@@ -509,7 +509,7 @@
   text-align: center;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1180px) {
   .assets-workbar {
     grid-template-columns: 1fr;
     padding-bottom: 12px;

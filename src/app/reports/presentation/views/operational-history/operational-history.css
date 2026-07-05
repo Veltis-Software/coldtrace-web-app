@@ -421,7 +421,7 @@
   margin: 0;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1180px) {
   .page-heading,
   .filter-card {
     display: grid;
