@@ -1,18 +1,26 @@
-import { Component, Input, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, Input, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { finalize } from 'rxjs';
+import { MonitoringApi } from '../../../infrastructure/monitoring-api';
+import {
+  DashboardAiInterpretationResource,
+  DashboardAiMetricInsightResource,
+  DashboardAiSourceMetricResource,
+} from '../../../infrastructure/dashboard-ai-interpretation-response';
 
 type DashboardAiTone = 'ok' | 'warning' | 'critical';
-
-interface DashboardAiSignal {
-  icon: string;
-  labelKey: string;
-  value: string;
-  descriptionKey: string;
-  tone: DashboardAiTone;
-  params?: Record<string, number | string>;
-}
+type DashboardAiFailure =
+  | 'none'
+  | 'organization-required'
+  | 'auth-required'
+  | 'plan-locked'
+  | 'invalid-output'
+  | 'timeout'
+  | 'provider-error';
 
 interface DashboardAiPrompt {
   id: string;
@@ -25,11 +33,12 @@ interface DashboardAiPrompt {
 @Component({
   selector: 'app-dashboard-ai-assistant',
   standalone: true,
-  imports: [FormsModule, MatIconModule, TranslateModule],
+  imports: [FormsModule, MatIconModule, RouterLink, TranslateModule],
   templateUrl: './dashboard-ai-assistant.html',
   styleUrl: './dashboard-ai-assistant.css',
 })
 export class DashboardAiAssistant {
+  private readonly monitoringApi = inject(MonitoringApi);
   private readonly translate = inject(TranslateService);
 
   @Input() thermalCompliance = 0;
@@ -42,12 +51,21 @@ export class DashboardAiAssistant {
   @Input() assetIssueCount = 0;
 
   protected readonly question = signal('');
-  protected readonly answer = signal('');
   protected readonly expanded = signal(false);
+  protected readonly failure = signal<DashboardAiFailure>('none');
+  protected readonly interpretation = signal<DashboardAiInterpretationResource | null>(null);
+  protected readonly lastQuestion = signal('');
+  protected readonly loading = signal(false);
+  protected readonly currentTone = computed(() =>
+    this.interpretation()
+      ? this.toneFromAttentionLevel(this.interpretation()?.attentionLevel)
+      : this.insightTone,
+  );
   protected readonly suggestedQuestions: DashboardAiPrompt[] = [
     { id: 'risk', textKey: 'monitoring.operational.ai-question-risk' },
     { id: 'compliance', textKey: 'monitoring.operational.ai-question-compliance' },
     { id: 'next', textKey: 'monitoring.operational.ai-question-next' },
+    { id: 'maintenance', textKey: 'monitoring.operational.ai-question-maintenance' },
   ];
 
   protected get insightTone(): DashboardAiTone {
@@ -63,50 +81,7 @@ export class DashboardAiAssistant {
   }
 
   protected get insightStatusKey(): string {
-    return `monitoring.operational.ai-status-${this.insightTone}`;
-  }
-
-  protected get summaryKey(): string {
-    return `monitoring.operational.ai-summary-${this.insightTone}`;
-  }
-
-  protected get summaryParams(): Record<string, number> {
-    return {
-      compliance: this.thermalCompliance,
-      incidents: this.activeIncidents,
-      critical: this.criticalIncidents,
-      readings: this.readingsCount,
-      maintenance: this.maintenanceCompletion,
-    };
-  }
-
-  protected get signals(): DashboardAiSignal[] {
-    return [
-      {
-        icon: 'device_thermostat',
-        labelKey: 'monitoring.operational.ai-signal-compliance',
-        value: `${this.thermalCompliance}%`,
-        descriptionKey: 'monitoring.operational.ai-signal-compliance-body',
-        tone: this.thermalCompliance >= 95 ? 'ok' : this.thermalCompliance >= 85 ? 'warning' : 'critical',
-        params: { compliance: this.thermalCompliance },
-      },
-      {
-        icon: 'report_problem',
-        labelKey: 'monitoring.operational.ai-signal-incidents',
-        value: `${this.activeIncidents}`,
-        descriptionKey: 'monitoring.operational.ai-signal-incidents-body',
-        tone: this.criticalIncidents > 0 ? 'critical' : this.activeIncidents > 0 ? 'warning' : 'ok',
-        params: { incidents: this.activeIncidents, critical: this.criticalIncidents },
-      },
-      {
-        icon: 'construction',
-        labelKey: 'monitoring.operational.ai-signal-maintenance',
-        value: `${this.maintenanceCompletion}%`,
-        descriptionKey: 'monitoring.operational.ai-signal-maintenance-body',
-        tone: this.maintenanceCompletion >= 85 ? 'ok' : 'warning',
-        params: { maintenance: this.maintenanceCompletion },
-      },
-    ];
+    return `monitoring.operational.ai-status-${this.currentTone()}`;
   }
 
   protected updateQuestion(value: string): void {
@@ -115,6 +90,10 @@ export class DashboardAiAssistant {
 
   protected openPanel(): void {
     this.expanded.set(true);
+
+    if (!this.interpretation() && !this.loading()) {
+      this.requestInterpretation();
+    }
   }
 
   protected closePanel(): void {
@@ -122,7 +101,8 @@ export class DashboardAiAssistant {
   }
 
   protected askSuggestedQuestion(prompt: DashboardAiPrompt): void {
-    this.askQuestion(this.translate.instant(prompt.textKey));
+    const translatedQuestion = this.translate.instant(prompt.textKey);
+    this.askQuestion(translatedQuestion);
   }
 
   protected askQuestion(question = this.question()): void {
@@ -133,49 +113,188 @@ export class DashboardAiAssistant {
     }
 
     this.question.set(normalizedQuestion);
-    this.answer.set(this.answerFor(normalizedQuestion));
+    this.requestInterpretation(normalizedQuestion);
   }
 
-  private answerFor(question: string): string {
-    const normalizedQuestion = question.toLowerCase();
-    const params = {
-      assets: this.monitoredAssets,
-      sensors: this.activeSensors,
-      compliance: this.thermalCompliance,
-      incidents: this.activeIncidents,
-      critical: this.criticalIncidents,
-      readings: this.readingsCount,
-      maintenance: this.maintenanceCompletion,
-      issues: this.assetIssueCount,
-    };
+  protected retry(): void {
+    this.requestInterpretation(this.lastQuestion() || this.question());
+  }
+
+  protected formattedGeneratedAt(): string {
+    const generatedAt = this.interpretation()?.generatedAt;
+
+    if (!generatedAt) {
+      return '';
+    }
+
+    const date = new Date(generatedAt);
+
+    if (Number.isNaN(date.getTime())) {
+      return generatedAt;
+    }
+
+    return new Intl.DateTimeFormat(this.currentLocale(), {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(date);
+  }
+
+  protected formatSourceMetric(metric: DashboardAiSourceMetricResource): string {
+    const value = `${metric.value ?? ''}`.trim();
+    const unit = `${metric.unit ?? ''}`.trim();
+
+    if (!unit) {
+      return value;
+    }
+
+    if (unit === '%') {
+      return `${value}${unit}`;
+    }
+
+    return `${value} ${unit}`;
+  }
+
+  protected hasGeneratedContent(): boolean {
+    const interpretation = this.interpretation();
+
+    return Boolean(
+      interpretation?.overallReading ||
+        interpretation?.metricInsights?.length ||
+        interpretation?.risks?.length ||
+        interpretation?.recommendedActions?.length ||
+        interpretation?.sourceMetrics?.length,
+    );
+  }
+
+  protected hasFailure(): boolean {
+    return this.failure() !== 'none';
+  }
+
+  protected failureTitleKey(): string {
+    return `monitoring.operational.ai-error-${this.failure()}-title`;
+  }
+
+  protected failureBodyKey(): string {
+    return `monitoring.operational.ai-error-${this.failure()}-body`;
+  }
+
+  protected metricTone(metricInsight: DashboardAiMetricInsightResource): DashboardAiTone {
+    return this.toneFromAttentionLevel(metricInsight.severity);
+  }
+
+  private requestInterpretation(question?: string): void {
+    const normalizedQuestion = question?.trim() ?? '';
+
+    this.loading.set(true);
+    this.failure.set('none');
+
+    this.monitoringApi
+      .generateDashboardAiInterpretation({
+        question: normalizedQuestion || undefined,
+        preferredLanguage: this.preferredLanguageFrom(normalizedQuestion),
+      })
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: (interpretation) => {
+          this.interpretation.set(interpretation);
+          this.lastQuestion.set(interpretation.question || normalizedQuestion);
+          this.question.set(interpretation.question || normalizedQuestion);
+        },
+        error: (error: unknown) => {
+          this.failure.set(this.failureFrom(error));
+        },
+      });
+  }
+
+  private failureFrom(error: unknown): DashboardAiFailure {
+    if (error instanceof Error && error.message === 'organization-scope-required') {
+      return 'organization-required';
+    }
+
+    if (!(error instanceof HttpErrorResponse)) {
+      return 'provider-error';
+    }
+
+    if (error.status === 401) {
+      return 'auth-required';
+    }
+
+    if ([402, 403, 409].includes(error.status)) {
+      return 'plan-locked';
+    }
+
+    if (error.status === 502) {
+      return 'invalid-output';
+    }
+
+    if (error.status === 504) {
+      return 'timeout';
+    }
+
+    return 'provider-error';
+  }
+
+  private preferredLanguageFrom(question: string): string {
+    const currentLanguage = this.translate.getCurrentLang() || 'en';
+
+    if (currentLanguage?.startsWith('es') || this.looksLikeSpanish(question)) {
+      return 'es';
+    }
+
+    return 'en';
+  }
+
+  private looksLikeSpanish(question: string): boolean {
+    const normalizedQuestion = this.normalizeText(question);
+
+    return (
+      /[¿¡]/.test(question) ||
+      [
+        /\bque\b/,
+        /\bcual(es)?\b/,
+        /\bpor que\b/,
+        /\bincidencia(s)?\b/,
+        /\bcumplimiento\b/,
+        /\bmantenimiento\b/,
+        /\briesgo(s)?\b/,
+        /\btemperatura\b/,
+        /\bdeberia\b/,
+        /\baccion(es)?\b/,
+      ].some((pattern) => pattern.test(normalizedQuestion))
+    );
+  }
+
+  private toneFromAttentionLevel(attentionLevel?: string): DashboardAiTone {
+    const normalizedAttentionLevel = this.normalizeText(attentionLevel ?? '');
 
     if (
-      normalizedQuestion.includes('riesgo') ||
-      normalizedQuestion.includes('risk') ||
-      normalizedQuestion.includes('prioridad') ||
-      normalizedQuestion.includes('priority')
+      normalizedAttentionLevel.includes('critical') ||
+      normalizedAttentionLevel.includes('critica') ||
+      normalizedAttentionLevel.includes('high')
     ) {
-      return this.translate.instant('monitoring.operational.ai-answer-risk', params);
+      return 'critical';
     }
 
     if (
-      normalizedQuestion.includes('cumplimiento') ||
-      normalizedQuestion.includes('compliance') ||
-      normalizedQuestion.includes('temperatura') ||
-      normalizedQuestion.includes('temperature')
+      normalizedAttentionLevel.includes('warning') ||
+      normalizedAttentionLevel.includes('medium') ||
+      normalizedAttentionLevel.includes('attention') ||
+      normalizedAttentionLevel.includes('moderate')
     ) {
-      return this.translate.instant('monitoring.operational.ai-answer-compliance', params);
+      return 'warning';
     }
 
-    if (
-      normalizedQuestion.includes('siguiente') ||
-      normalizedQuestion.includes('hacer') ||
-      normalizedQuestion.includes('next') ||
-      normalizedQuestion.includes('action')
-    ) {
-      return this.translate.instant('monitoring.operational.ai-answer-next', params);
-    }
+    return 'ok';
+  }
 
-    return this.translate.instant('monitoring.operational.ai-answer-default', params);
+  private normalizeText(text: string): string {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  private currentLocale(): string {
+    return this.translate.getCurrentLang()?.startsWith('es') ? 'es-PE' : 'en-US';
   }
 }

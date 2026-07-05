@@ -4,6 +4,11 @@ import { Observable } from 'rxjs';
 import { BaseApi } from '../../shared/infrastructure/base-api';
 import { OrganizationScopeStore } from '../../shared/infrastructure/organization-scope.store';
 import { SensorReading } from '../domain/model/sensor-reading.entity';
+import {
+  DashboardAiInterpretationRequest,
+  DashboardAiInterpretationResource,
+} from './dashboard-ai-interpretation-response';
+import { DashboardAiInterpretationApiEndpoint } from './dashboard-ai-interpretation-api-endpoint';
 import { GenerateDemoSensorReadingsRequest } from './sensor-readings-response';
 import { SensorReadingsApiEndpoint } from './sensor-readings-api-endpoint';
 
@@ -12,11 +17,25 @@ import { SensorReadingsApiEndpoint } from './sensor-readings-api-endpoint';
  */
 @Injectable({ providedIn: 'root' })
 export class MonitoringApi extends BaseApi {
+  private readonly dashboardAiInterpretationEndpoint: DashboardAiInterpretationApiEndpoint;
   private readonly sensorReadingsEndpoint: SensorReadingsApiEndpoint;
 
   constructor(http: HttpClient, organizationScope: OrganizationScopeStore) {
     super();
+    this.dashboardAiInterpretationEndpoint = new DashboardAiInterpretationApiEndpoint(
+      http,
+      organizationScope,
+    );
     this.sensorReadingsEndpoint = new SensorReadingsApiEndpoint(http, organizationScope);
+  }
+
+  /**
+   * @summary Generates an AI interpretation for the active organization's operational dashboard.
+   */
+  generateDashboardAiInterpretation(
+    request: DashboardAiInterpretationRequest,
+  ): Observable<DashboardAiInterpretationResource> {
+    return this.dashboardAiInterpretationEndpoint.generate(request);
   }
 
   /**
