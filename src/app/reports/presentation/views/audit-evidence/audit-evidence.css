@@ -20,6 +20,43 @@
 
 .checklist-table {
   min-width: 760px;
+  table-layout: fixed;
+}
+
+.checklist-table th:first-child,
+.checklist-table td:first-child {
+  width: 26%;
+}
+
+.checklist-table th:nth-child(2),
+.checklist-table td:nth-child(2) {
+  width: 56%;
+}
+
+.checklist-table th:nth-child(3),
+.checklist-table td:nth-child(3) {
+  width: 18%;
+}
+
+.checklist-table td {
+  overflow-wrap: anywhere;
+}
+
+@container (max-width: 1040px) {
+  .checklist-table {
+    min-width: 0;
+    table-layout: auto;
+    width: 100%;
+  }
+
+  .checklist-table th:first-child,
+  .checklist-table td:first-child,
+  .checklist-table th:nth-child(2),
+  .checklist-table td:nth-child(2),
+  .checklist-table th:nth-child(3),
+  .checklist-table td:nth-child(3) {
+    width: 100%;
+  }
 }
 
 .evidence-grid {
@@ -65,6 +102,8 @@
 .evidence-row strong,
 .evidence-row span {
   display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .evidence-row strong {

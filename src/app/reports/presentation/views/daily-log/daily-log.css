@@ -396,6 +396,7 @@
 }
 
 .table-card {
+  container-type: inline-size;
   padding: 20px 24px;
 }
 
@@ -502,7 +503,7 @@
   }
 }
 
-@media (max-width: 720px) {
+@container (max-width: 980px) {
   .daily-log-table-wrapper {
     overflow-x: visible;
   }
@@ -543,8 +544,17 @@
     display: grid;
     gap: 8px;
     grid-template-columns: minmax(108px, 0.4fr) minmax(0, 1fr);
+    min-width: 0;
+    overflow-wrap: anywhere;
     padding: 8px 0 !important;
     white-space: normal;
+  }
+
+  .daily-log-table td strong,
+  .daily-log-table td span,
+  .daily-log-table td small {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .daily-log-table td + td {
@@ -566,7 +576,9 @@
   .summary-grid {
     grid-template-columns: 1fr;
   }
+}
 
+@container (max-width: 520px) {
   .daily-log-table td {
     grid-template-columns: 1fr;
   }

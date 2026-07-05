@@ -166,26 +166,28 @@
             <tbody>
               @for (finding of paginatedFindings(); track trackFinding($index, finding)) {
                 <tr>
-                  <td>
+                  <td [attr.data-label]="'reports.findings.table.asset' | translate">
                     <strong>{{ finding.assetName }}</strong>
                     <span>{{ finding.assetLocation }}</span>
                   </td>
-                  <td>
+                  <td [attr.data-label]="'reports.findings.table.finding' | translate">
                     <strong>{{ typeLabelKey(finding.type) | translate }}</strong>
                     <small>{{ finding.messageKey | translate: finding.messageParams }}</small>
                   </td>
-                  <td>{{ finding.evidence }}</td>
-                  <td>
+                  <td [attr.data-label]="'reports.findings.table.evidence' | translate">
+                    {{ finding.evidence }}
+                  </td>
+                  <td [attr.data-label]="'reports.findings.table.severity' | translate">
                     <span class="severity-pill" [ngClass]="severityClass(finding.severity)">
                       {{ severityLabelKey(finding.severity) | translate }}
                     </span>
                   </td>
-                  <td>
+                  <td [attr.data-label]="'reports.findings.table.status' | translate">
                     <span class="status-pill" [ngClass]="statusClass(finding.status)">
                       {{ statusLabelKey(finding.status) | translate }}
                     </span>
                   </td>
-                  <td>
+                  <td [attr.data-label]="'reports.findings.table.action' | translate">
                     <button
                       mat-stroked-button
                       type="button"

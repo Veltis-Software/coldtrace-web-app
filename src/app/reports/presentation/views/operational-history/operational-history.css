@@ -257,6 +257,7 @@
 }
 
 .table-card {
+  container-type: inline-size;
   padding: 20px 24px;
 }
 
@@ -401,7 +402,7 @@
   }
 }
 
-@media (max-width: 720px) {
+@container (max-width: 1060px) {
   .history-table-wrapper {
     overflow-x: visible;
   }
@@ -442,8 +443,17 @@
     display: grid;
     gap: 8px;
     grid-template-columns: minmax(108px, 0.4fr) minmax(0, 1fr);
+    min-width: 0;
+    overflow-wrap: anywhere;
     padding: 8px 0 !important;
     white-space: normal;
+  }
+
+  .history-table td strong,
+  .history-table td span,
+  .history-table td small {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .history-table td + td {
@@ -461,7 +471,7 @@
   }
 }
 
-@media (max-width: 520px) {
+@container (max-width: 520px) {
   .history-table td {
     grid-template-columns: 1fr;
   }
