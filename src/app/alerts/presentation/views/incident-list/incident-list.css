@@ -87,7 +87,12 @@
 .closure-card {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   padding: 22px 28px;
+}
+
+.closure-card {
+  container-type: inline-size;
 }
 
 .card-header {
@@ -384,12 +389,14 @@
   display: grid;
   gap: 14px;
   grid-template-columns: minmax(240px, 0.8fr) repeat(2, minmax(300px, 1fr));
+  min-width: 0;
 }
 
 .closure-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
 .closure-field span {
@@ -403,12 +410,15 @@
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
+  box-sizing: border-box;
   color: #111827;
   font: inherit;
   font-size: 12px;
+  min-width: 0;
   outline: none;
   padding: 10px 12px;
   resize: vertical;
+  width: 100%;
 }
 
 .closure-field select:focus,
@@ -470,6 +480,39 @@
   min-height: 30px;
   padding: 0 10px;
   white-space: nowrap;
+}
+
+@container (max-width: 900px) {
+  .closure-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .closure-field:nth-of-type(3) {
+    grid-column: 1 / -1;
+  }
+
+  .close-incident-btn {
+    width: 100%;
+  }
+}
+
+@container (max-width: 620px) {
+  .closure-form {
+    grid-template-columns: 1fr;
+  }
+
+  .closure-field:nth-of-type(3) {
+    grid-column: auto;
+  }
+
+  .closure-condition {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .stabilize-reading-btn {
+    flex: 1 1 180px;
+  }
 }
 
 .loading-container {
