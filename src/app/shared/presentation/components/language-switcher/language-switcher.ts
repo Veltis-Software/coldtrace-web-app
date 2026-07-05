@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonToggle, MatButtonToggleGroup } from '@angular/material/button-toggle';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -18,12 +19,17 @@ export class LanguageSwitcher {
   protected currentLang: string;
   protected languages: string[];
   protected menuOpen = false;
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private translate: TranslateService;
 
   constructor() {
     this.translate = inject(TranslateService);
     this.currentLang = this.translate.getCurrentLang() || 'en';
     this.languages = [...this.translate.getLangs()];
+
+    this.translate.onLangChange.pipe(takeUntilDestroyed()).subscribe((event) => {
+      this.currentLang = event.lang;
+    });
   }
 
   /**
@@ -37,6 +43,26 @@ export class LanguageSwitcher {
 
   protected toggleMenu() {
     this.menuOpen = !this.menuOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  protected closeMenuOnOutsideClick(event: MouseEvent): void {
+    if (!this.menuOpen) {
+      return;
+    }
+
+    const target = event.target;
+
+    if (target instanceof Node && this.elementRef.nativeElement.contains(target)) {
+      return;
+    }
+
+    this.menuOpen = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  protected closeMenuOnEscape(): void {
+    this.menuOpen = false;
   }
 
   protected flagFor(language: string): string {

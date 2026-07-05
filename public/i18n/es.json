@@ -784,6 +784,8 @@
     "nav-findings": "Hallazgos",
     "nav-audit-evidence": "Evidencia",
     "nav-notifications": "Notificaciones",
+    "open-navigation": "Abrir navegación",
+    "close-navigation": "Cerrar navegación",
     "notification-shortcut": "Alertas pendientes: {{ count }}",
     "team-members": "Miembros del equipo",
     "team-manage": "Gestionar miembros de la organización",

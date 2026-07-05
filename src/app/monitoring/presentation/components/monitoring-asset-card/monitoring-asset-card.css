@@ -21,7 +21,14 @@
   border-right: 1px solid #F1F5F9;
   display: flex;
   align-items: center;
+  min-width: 0;
   overflow: hidden;
+}
+
+.section-gauge app-temperature-gauge {
+  display: block;
+  min-width: 0;
+  width: 100%;
 }
 
 .section-chart {
