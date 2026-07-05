@@ -1,6 +1,7 @@
 @import '../alerts-workflow.css';
 
 .incident-list-view {
+  box-sizing: border-box;
   display: block;
   min-height: 100%;
   padding: 24px 18px 44px !important;
@@ -103,7 +104,8 @@
 }
 
 .table-container {
-  overflow-x: hidden;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .premium-table {
@@ -478,13 +480,123 @@
 }
 
 @media (max-width: 860px) {
+  .incident-list-view {
+    padding: 18px 12px 34px !important;
+  }
+
+  .table-card,
+  .closure-card {
+    padding: 18px;
+  }
+
   .closure-form {
     grid-template-columns: 1fr;
   }
 
   .incident-metrics {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    justify-content: stretch;
     justify-self: start;
+    width: 100%;
+  }
+
+  .metric-pill {
+    font-size: 11px;
+    min-height: 34px;
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 720px) {
+  .table-container {
+    overflow-x: visible;
+  }
+
+  .premium-table,
+  .premium-table tbody,
+  .premium-table tr,
+  .premium-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .premium-table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .premium-table colgroup,
+  .premium-table thead {
+    display: none;
+  }
+
+  .premium-table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .premium-table tr {
+    background: #ffffff;
+    border: 1px solid #e4e7ec;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(16, 24, 40, 0.04);
+    padding: 14px;
+  }
+
+  .premium-table td {
+    align-items: flex-start;
+    border: 0;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: minmax(94px, 0.42fr) minmax(0, 1fr);
+    height: auto;
+    min-height: 0;
+    padding: 8px 0 !important;
+    text-align: left !important;
+    white-space: normal;
+  }
+
+  .premium-table td + td {
+    border-top: 1px solid #eef2f7;
+  }
+
+  .premium-table td::before {
+    color: #98a2b3;
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 16px;
+  }
+
+  .premium-table td.empty-cell {
+    display: block;
+    padding: 28px 0 !important;
+    text-align: center !important;
+  }
+
+  .premium-table td.empty-cell::before {
+    content: none;
+  }
+
+  .type-cell,
+  .escalation-cell,
+  .incident-action-stack {
+    min-width: 0;
+  }
+
+  .incident-action-stack {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .recognize-btn {
+    flex: 1 1 132px;
+  }
+
+  .notifications-action-btn {
+    flex: 0 0 34px;
   }
 }

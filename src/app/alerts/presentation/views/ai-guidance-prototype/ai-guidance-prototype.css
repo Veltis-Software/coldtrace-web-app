@@ -12,6 +12,16 @@
   padding: 24px 18px 44px;
 }
 
+.ai-page,
+.ai-page > *,
+.field,
+.panel,
+.incident-summary,
+.step-card,
+.history-item {
+  min-width: 0;
+}
+
 .panel-heading,
 .incident-strip,
 .ai-grid {
@@ -294,5 +304,33 @@ button:disabled {
   .incident-strip,
   .ai-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .ai-page {
+    padding: 18px 12px 34px;
+  }
+
+  .primary-action,
+  .secondary-action,
+  .field select,
+  .field textarea {
+    width: 100%;
+  }
+
+  .feedback-banner,
+  .panel,
+  .incident-summary,
+  .plan-cause,
+  .step-card,
+  .history-item {
+    padding: 14px;
+  }
+
+  .panel-heading,
+  .plan-cause,
+  .history-item {
+    gap: 12px;
   }
 }

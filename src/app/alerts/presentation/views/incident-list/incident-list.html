@@ -223,8 +223,10 @@
             <tbody>
               @for (incident of paginatedIncidents(); track incident.id) {
                 <tr [class.recognized-row]="incident.isRecognized">
-                  <td class="asset-name">{{ incident.assetName }}</td>
-                  <td>
+                  <td class="asset-name" [attr.data-label]="'alerts.incident-list.col-asset' | translate">
+                    {{ incident.assetName }}
+                  </td>
+                  <td [attr.data-label]="'alerts.incident-list.col-type' | translate">
                     <div
                       class="type-cell"
                       [class.crit]="incident.severity === 'critical'"
@@ -234,9 +236,13 @@
                       <span>{{ typeLabelKey(incident) | translate }}</span>
                     </div>
                   </td>
-                  <td class="value">{{ incident.value }}</td>
-                  <td class="date">{{ formatDate(incident.detectedAt) }}</td>
-                  <td>
+                  <td class="value" [attr.data-label]="'alerts.incident-list.col-value' | translate">
+                    {{ incident.value }}
+                  </td>
+                  <td class="date" [attr.data-label]="'alerts.incident-list.col-detected' | translate">
+                    {{ formatDate(incident.detectedAt) }}
+                  </td>
+                  <td [attr.data-label]="'alerts.incident-list.col-status' | translate">
                     <span
                       class="badge"
                       [class.badge-open]="incident.status === 'open'"
@@ -246,7 +252,7 @@
                       {{ statusLabelKey(incident) | translate }}
                     </span>
                   </td>
-                  <td>
+                  <td [attr.data-label]="'alerts.incident-list.col-condition' | translate">
                     <span
                       class="condition-pill"
                       [class.condition-stable]="incident.isConditionStable"
@@ -255,7 +261,7 @@
                       {{ conditionLabelKey(incident) | translate }}
                     </span>
                   </td>
-                  <td>
+                  <td [attr.data-label]="'alerts.incident-list.col-source' | translate">
                     <span
                       class="source-pill"
                       [class.source-generated]="incident.isGenerated && !incident.isPendingReview"
@@ -265,7 +271,7 @@
                       {{ sourceLabelKey(incident) | translate }}
                     </span>
                   </td>
-                  <td>
+                  <td [attr.data-label]="'alerts.incident-list.col-escalation' | translate">
                     <div class="escalation-cell">
                       <span
                         class="escalation-pill"
@@ -292,9 +298,14 @@
                       }
                     </div>
                   </td>
-                  <td class="recognized-by">{{ incident.recognizedBy ?? '—' }}</td>
+                  <td
+                    class="recognized-by"
+                    [attr.data-label]="'alerts.incident-list.col-recognized-by' | translate"
+                  >
+                    {{ incident.recognizedBy ?? '—' }}
+                  </td>
                   @if (canResolveAlerts()) {
-                    <td>
+                    <td [attr.data-label]="'alerts.incident-list.col-actions' | translate">
                       <div class="incident-action-stack">
                         @if (incident.isOpen && !incident.isRecognized) {
                           <button
