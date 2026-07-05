@@ -501,3 +501,73 @@
     width: 100% !important;
   }
 }
+
+@media (max-width: 720px) {
+  .daily-log-table-wrapper {
+    overflow-x: visible;
+  }
+
+  .daily-log-table,
+  .daily-log-table tbody,
+  .daily-log-table tr,
+  .daily-log-table td {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .daily-log-table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .daily-log-table thead {
+    display: none;
+  }
+
+  .daily-log-table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .daily-log-table tr {
+    background: #ffffff;
+    border: 1px solid #e4e7ec;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(16, 24, 40, 0.04);
+    padding: 14px;
+  }
+
+  .daily-log-table td {
+    border: 0;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: minmax(108px, 0.4fr) minmax(0, 1fr);
+    padding: 8px 0 !important;
+    white-space: normal;
+  }
+
+  .daily-log-table td + td {
+    border-top: 1px solid #eef2f7;
+  }
+
+  .daily-log-table td::before {
+    color: #98a2b3;
+    content: attr(data-label);
+    font: 800 11px/16px Inter, Arial, sans-serif;
+  }
+
+  .status-pill {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 520px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .daily-log-table td {
+    grid-template-columns: 1fr;
+  }
+}

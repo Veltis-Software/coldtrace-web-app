@@ -258,12 +258,12 @@
         <tbody>
           @for (iotDevice of paginatedConfiguredDevices(); track iotDevice.id) {
             <tr>
-              <td>{{ assetNameFor(iotDevice) }}</td>
-              <td>{{ assetLocationFor(iotDevice) }}</td>
-              <td>{{ iotDevice.uuid }} - {{ iotDevice.model }}</td>
-              <td>{{ frequencyLabelFor(iotDevice) }}</td>
-              <td>{{ criteriaLabelFor(iotDevice) }}</td>
-              <td>
+              <td [attr.data-label]="'asset-management.operational-parameters.table.asset' | translate">{{ assetNameFor(iotDevice) }}</td>
+              <td [attr.data-label]="'asset-management.operational-parameters.table.location' | translate">{{ assetLocationFor(iotDevice) }}</td>
+              <td [attr.data-label]="'asset-management.operational-parameters.table.device' | translate">{{ iotDevice.uuid }} - {{ iotDevice.model }}</td>
+              <td [attr.data-label]="'asset-management.operational-parameters.table.frequency' | translate">{{ frequencyLabelFor(iotDevice) }}</td>
+              <td [attr.data-label]="'asset-management.operational-parameters.table.criteria' | translate">{{ criteriaLabelFor(iotDevice) }}</td>
+              <td [attr.data-label]="'asset-management.operational-parameters.table.status' | translate">
                 <span class="status-pill" [ngClass]="operationalStatusClass(iotDevice)">
                   {{ operationalStatusKey(iotDevice) | translate }}
                 </span>

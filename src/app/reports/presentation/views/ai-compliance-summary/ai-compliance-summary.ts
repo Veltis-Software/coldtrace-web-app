@@ -6,14 +6,14 @@ import { TranslatePipe } from '@ngx-translate/core';
 type SummaryState = 'ready' | 'generated' | 'insufficient';
 
 interface SummaryMetric {
-  label: string;
+  labelKey: string;
   value: string;
   tone: 'blue' | 'green' | 'amber' | 'red';
 }
 
 interface RiskInsight {
-  title: string;
-  description: string;
+  titleKey: string;
+  descriptionKey: string;
   severity: 'medium' | 'high';
 }
 
@@ -26,42 +26,39 @@ interface RiskInsight {
 })
 export class AiComplianceSummary {
   protected readonly state = signal<SummaryState>('generated');
-  protected readonly selectedReport = signal('June 2026 sanitary compliance');
+  protected readonly selectedReport = signal('reports.ai-summary.report-june');
 
   protected readonly metrics: SummaryMetric[] = [
-    { label: 'Assets reviewed', value: '18', tone: 'blue' },
-    { label: 'Compliance rate', value: '92%', tone: 'green' },
-    { label: 'Open incidents', value: '4', tone: 'amber' },
-    { label: 'Critical findings', value: '2', tone: 'red' },
+    { labelKey: 'reports.ai-summary.metric-assets', value: '18', tone: 'blue' },
+    { labelKey: 'reports.ai-summary.metric-compliance', value: '92%', tone: 'green' },
+    { labelKey: 'reports.ai-summary.metric-incidents', value: '4', tone: 'amber' },
+    { labelKey: 'reports.ai-summary.metric-findings', value: '2', tone: 'red' },
   ];
 
   protected readonly risks: RiskInsight[] = [
     {
-      title: 'Repeated thermal excursion in Cold Room 03',
-      description:
-        'Three deviations occurred during receiving hours. The pattern suggests door exposure instead of equipment failure.',
+      titleKey: 'reports.ai-summary.risk-thermal-title',
+      descriptionKey: 'reports.ai-summary.risk-thermal-description',
       severity: 'high',
     },
     {
-      title: 'Humidity drift in refrigerated transport',
-      description:
-        'Truck 08 stayed above humidity threshold in two routes. Calibration and gasket inspection should be prioritized.',
+      titleKey: 'reports.ai-summary.risk-humidity-title',
+      descriptionKey: 'reports.ai-summary.risk-humidity-description',
       severity: 'medium',
     },
     {
-      title: 'Audit evidence gap',
-      description:
-        'Two incidents were closed with corrective notes but without enough verification detail for an external review.',
+      titleKey: 'reports.ai-summary.risk-evidence-title',
+      descriptionKey: 'reports.ai-summary.risk-evidence-description',
       severity: 'medium',
     },
   ];
 
   protected readonly generatedSummary = computed(() => {
     if (this.state() === 'insufficient') {
-      return 'The selected report does not contain enough incidents, readings, and corrective actions to produce a reliable summary.';
+      return 'reports.ai-summary.summary-insufficient';
     }
 
-    return 'ColdTrace detected a mostly compliant period with localized thermal risk around receiving operations. Corrective actions were documented for the majority of incidents, but two records require stronger verification evidence before an audit package is exported.';
+    return 'reports.ai-summary.summary-generated';
   });
 
   protected generateSummary(): void {

@@ -316,7 +316,7 @@
   border-bottom: 0;
   display: grid;
   gap: 18px;
-  grid-template-columns: auto minmax(260px, 420px) minmax(260px, 1fr) !important;
+  grid-template-columns: max-content minmax(260px, 420px) minmax(0, 1fr) !important;
   justify-content: initial;
   margin: 0 !important;
   min-height: 42px !important;
@@ -329,7 +329,7 @@
   gap: 26px;
   margin: 0 !important;
   min-height: 42px !important;
-  min-width: max-content;
+  min-width: 0;
   overflow-x: auto;
 }
 
@@ -433,7 +433,7 @@
   }
 
   .notification-filter-tabs {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     min-width: 0;
   }
 
@@ -497,14 +497,6 @@
   height: 16px !important;
   line-height: 16px !important;
   width: 16px !important;
-}
-
-.notification-toolbar {
-  grid-template-columns: auto minmax(260px, 420px) minmax(260px, 1fr) !important;
-}
-
-.notification-workbar {
-  grid-template-columns: auto minmax(260px, 420px) minmax(260px, 1fr) !important;
 }
 
 @media (max-width: 640px) {

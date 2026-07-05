@@ -306,21 +306,21 @@
         <tbody>
           @for (request of paginatedRequests(); track request.id) {
             <tr>
-              <td>
+              <td [attr.data-label]="'maintenance.technical-service.table.id' | translate">
                 <strong>{{ request.uuid }}</strong>
                 <small>{{ request.requestedDate }}</small>
               </td>
-              <td>
+              <td [attr.data-label]="'maintenance.technical-service.table.asset' | translate">
                 <strong>{{ assetNameFor(request.assetId) }}</strong>
                 <small>{{ assetLocationFor(request.assetId) }}</small>
               </td>
-              <td>{{ priorityKey(request.priority) | translate }}</td>
-              <td>{{ request.issueDescription }}</td>
-              <td>
+              <td [attr.data-label]="'maintenance.technical-service.table.priority' | translate">{{ priorityKey(request.priority) | translate }}</td>
+              <td [attr.data-label]="'maintenance.technical-service.table.issue' | translate">{{ request.issueDescription }}</td>
+              <td [attr.data-label]="'maintenance.technical-service.table.result' | translate">
                 <strong>{{ resultLabelFor(request) | translate }}</strong>
                 <small>{{ request.resultNotes || 'N/A' }}</small>
               </td>
-              <td>
+              <td [attr.data-label]="'maintenance.technical-service.table.status' | translate">
                 <span class="status-pill" [ngClass]="requestStatusClass(request.status)">
                   {{ requestStatusKey(request.status) | translate }}
                 </span>

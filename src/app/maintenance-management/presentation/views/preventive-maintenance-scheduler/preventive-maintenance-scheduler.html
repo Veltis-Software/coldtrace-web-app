@@ -224,19 +224,19 @@
         <tbody>
           @for (schedule of paginatedSchedules(); track schedule.id) {
             <tr>
-              <td>{{ schedule.uuid }}</td>
-              <td>{{ assetNameFor(schedule) }}</td>
-              <td>
+              <td [attr.data-label]="'maintenance.preventive.table.id' | translate">{{ schedule.uuid }}</td>
+              <td [attr.data-label]="'maintenance.preventive.table.asset' | translate">{{ assetNameFor(schedule) }}</td>
+              <td [attr.data-label]="'maintenance.preventive.table.device' | translate">
                 @if (schedule.iotDeviceId) {
                   {{ deviceNameFor(schedule) }}
                 } @else {
                   {{ deviceNameFor(schedule) | translate }}
                 }
               </td>
-              <td>{{ assetLocationFor(schedule) }}</td>
-              <td>{{ schedule.scheduledDate }}</td>
-              <td>{{ schedule.period }}</td>
-              <td>
+              <td [attr.data-label]="'maintenance.preventive.table.location' | translate">{{ assetLocationFor(schedule) }}</td>
+              <td [attr.data-label]="'maintenance.preventive.table.date' | translate">{{ schedule.scheduledDate }}</td>
+              <td [attr.data-label]="'maintenance.preventive.table.period' | translate">{{ schedule.period }}</td>
+              <td [attr.data-label]="'maintenance.preventive.table.status' | translate">
                 @if (canScheduleMaintenance()) {
                   <label
                     class="status-select-field"

@@ -255,7 +255,7 @@
         <tbody>
           @for (settings of paginatedProfiles(); track settings.id) {
             <tr>
-              <td>
+              <td [attr.data-label]="'asset-management.safety-ranges.table.scope' | translate">
                 <strong>
                   {{
                     settings.assetId === null
@@ -265,22 +265,22 @@
                 </strong>
                 <span>{{ settings.uuid }}</span>
               </td>
-              <td>
+              <td [attr.data-label]="'asset-management.safety-ranges.table.location' | translate">
                 {{
                   settings.assetId === null
                     ? (scopeLocationFor(settings) | translate)
                     : scopeLocationFor(settings)
                 }}
               </td>
-              <td>
+              <td [attr.data-label]="'asset-management.safety-ranges.table.temperature' | translate">
                 {{ settings.minimumTemperature }}{{ settings.temperatureUnit }} -
                 {{ settings.maximumTemperature }}{{ settings.temperatureUnit }}
               </td>
-              <td>
+              <td [attr.data-label]="'asset-management.safety-ranges.table.humidity' | translate">
                 {{ settings.minimumHumidity }}{{ settings.humidityUnit }} -
                 {{ settings.maximumHumidity }}{{ settings.humidityUnit }}
               </td>
-              <td>
+              <td [attr.data-label]="'asset-management.safety-ranges.table.status' | translate">
                 <span class="status-pill" [ngClass]="settingStatusClass(settings)">
                   {{ settingStatusKey(settings) | translate }}
                 </span>

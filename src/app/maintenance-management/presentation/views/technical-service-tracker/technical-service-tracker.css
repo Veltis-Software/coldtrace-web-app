@@ -68,3 +68,13 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 720px) {
+  .data-table {
+    min-width: 0;
+  }
+
+  .table-wrapper {
+    overflow-x: visible;
+  }
+}

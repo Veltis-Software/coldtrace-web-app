@@ -178,4 +178,24 @@
   .section-status {
     border: 0;
   }
+
+  .section-gauge {
+    min-height: 210px;
+  }
+
+  .section-chart {
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 760px) {
+  .monitoring-asset-card {
+    min-height: 0;
+  }
+
+  .section-gauge,
+  .section-chart,
+  .section-status {
+    padding: 18px;
+  }
 }

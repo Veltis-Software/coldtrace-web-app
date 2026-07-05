@@ -130,12 +130,12 @@
           <tbody>
             @for (entry of paginatedEntries(); track trackEntry($index, entry)) {
               <tr>
-                <td>
+                <td [attr.data-label]="'reports.daily-log.table.asset' | translate">
                   <strong>{{ entry.assetName }}</strong>
                   <span>#{{ entry.assetId }}</span>
                 </td>
-                <td>{{ entry.assetLocation }}</td>
-                <td>
+                <td [attr.data-label]="'reports.daily-log.table.location' | translate">{{ entry.assetLocation }}</td>
+                <td [attr.data-label]="'reports.daily-log.table.readings' | translate">
                   <strong>{{ entry.totalReadings }} / {{ entry.expectedReadings }}</strong>
                   <small>
                     {{
@@ -144,11 +144,11 @@
                     }}
                   </small>
                 </td>
-                <td>{{ formatTemperature(entry.averageTemperature) }}</td>
-                <td>{{ formatHumidity(entry.averageHumidity) }}</td>
-                <td>{{ entry.outOfRangeCount }}</td>
-                <td>{{ formatTimeRange(entry) }}</td>
-                <td>
+                <td [attr.data-label]="'reports.daily-log.table.temperature' | translate">{{ formatTemperature(entry.averageTemperature) }}</td>
+                <td [attr.data-label]="'reports.daily-log.table.humidity' | translate">{{ formatHumidity(entry.averageHumidity) }}</td>
+                <td [attr.data-label]="'reports.daily-log.table.out-of-range' | translate">{{ entry.outOfRangeCount }}</td>
+                <td [attr.data-label]="'reports.daily-log.table.window' | translate">{{ formatTimeRange(entry) }}</td>
+                <td [attr.data-label]="'reports.daily-log.table.status' | translate">
                   <span class="status-pill" [ngClass]="statusClass(entry.status)">
                     {{ statusLabelKey(entry.status) | translate }}
                   </span>

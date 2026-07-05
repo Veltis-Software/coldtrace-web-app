@@ -70,12 +70,17 @@
 .status-warning,
 .status-observation {
   background: #fff8e8;
-  color: #b16f0b;
+  color: #b16f0b !important;
 }
 
 .status-danger {
   background: #feeceb;
-  color: #b51313;
+  color: #b51313 !important;
+}
+
+.status-compliant {
+  background: #eaf8f0;
+  color: #176900 !important;
 }
 
 .status-select-field {
@@ -129,5 +134,15 @@
 
   .save-actions {
     min-height: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .data-table {
+    min-width: 0;
+  }
+
+  .status-select-field {
+    justify-self: start;
   }
 }

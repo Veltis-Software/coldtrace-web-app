@@ -126,20 +126,20 @@
             <tbody>
               @for (event of paginatedEvents(); track trackEvent($index, event)) {
                 <tr>
-                  <td>{{ formatDateTime(event.occurredAt) }}</td>
-                  <td>
+                  <td [attr.data-label]="'reports.history.table.date' | translate">{{ formatDateTime(event.occurredAt) }}</td>
+                  <td [attr.data-label]="'reports.history.table.asset' | translate">
                     <strong>{{ event.assetName }}</strong>
                     <span>{{ event.assetLocation }}</span>
                   </td>
-                  <td>
+                  <td [attr.data-label]="'reports.history.table.type' | translate">
                     <span class="event-type">
                       <mat-icon aria-hidden="true">{{ event.icon }}</mat-icon>
                       {{ eventTypeLabelKey(event.eventType) | translate }}
                     </span>
                   </td>
-                  <td>{{ event.messageKey | translate: event.messageParams }}</td>
-                  <td>{{ event.value }}</td>
-                  <td>
+                  <td [attr.data-label]="'reports.history.table.detail' | translate">{{ event.messageKey | translate: event.messageParams }}</td>
+                  <td [attr.data-label]="'reports.history.table.value' | translate">{{ event.value }}</td>
+                  <td [attr.data-label]="'reports.history.table.severity' | translate">
                     <span class="severity-pill" [ngClass]="severityClass(event.severity)">
                       {{ severityLabelKey(event.severity) | translate }}
                     </span>
