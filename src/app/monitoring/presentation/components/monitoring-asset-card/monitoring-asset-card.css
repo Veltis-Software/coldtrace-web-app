@@ -1,11 +1,12 @@
 :host {
+  container-type: inline-size;
   display: block;
   width: 100%;
 }
 
 .monitoring-asset-card {
   display: grid;
-  grid-template-columns: minmax(320px, 0.95fr) minmax(280px, 1.1fr) minmax(220px, 0.7fr);
+  grid-template-columns: minmax(430px, 0.95fr) minmax(330px, 1.1fr) minmax(190px, 0.7fr);
   gap: 0;
   padding: 0 !important;
   overflow: hidden;
@@ -169,6 +170,26 @@
 }
 
 @media (max-width: 1180px) {
+  .monitoring-asset-card {
+    grid-template-columns: 1fr;
+  }
+
+  .section-gauge,
+  .section-chart,
+  .section-status {
+    border: 0;
+  }
+
+  .section-gauge {
+    min-height: 210px;
+  }
+
+  .section-chart {
+    min-height: 220px;
+  }
+}
+
+@container (max-width: 930px) {
   .monitoring-asset-card {
     grid-template-columns: 1fr;
   }
