@@ -37,7 +37,7 @@
 
 .dashboard-board {
   display: grid;
-  gap: 24px;
+  gap: 20px;
   grid-template-columns: minmax(0, 1fr) minmax(340px, 0.58fr) !important;
   margin: 0 !important;
   max-width: 1368px !important;
@@ -76,7 +76,7 @@
 .secondary-column {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   min-width: 0;
 }
 
@@ -85,12 +85,12 @@
 }
 
 .temp-chart-container {
-  height: 390px;
+  height: 370px;
 }
 
 .right-kpis {
   display: grid;
-  gap: 20px;
+  gap: 16px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -98,34 +98,34 @@
 .compact-kpis {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .feature-kpis app-stat-card {
-  height: 244px;
+  height: 228px;
 }
 
 .compact-kpis app-stat-card {
-  height: 156px;
+  height: 148px;
 }
 
 .lower-grid {
   display: grid;
-  gap: 24px;
+  gap: 20px;
   grid-template-columns: minmax(0, 1.42fr) minmax(300px, 1.08fr) !important;
 }
 
 .storage-box,
 .maintenance-box {
-  height: 292px;
+  height: 272px;
 }
 
 .alerts-row {
-  height: 336px;
+  height: 314px;
 }
 
 .incidents-box {
-  height: 534px;
+  height: 500px;
 }
 
 .empty-state {
@@ -289,20 +289,26 @@
 
   .dashboard-board {
     grid-template-columns: 1fr !important;
+    gap: 18px;
     margin-inline: auto;
     max-width: 760px;
   }
 
+  .primary-column,
+  .secondary-column {
+    gap: 18px;
+  }
+
   .right-kpis {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .lower-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.9fr) !important;
   }
 
   .incidents-box {
-    height: 430px;
+    height: 410px;
   }
 }
 
@@ -313,20 +319,33 @@
 
   .dashboard-board {
     grid-template-columns: 1fr !important;
+    gap: 18px;
     margin-inline: auto;
     max-width: 760px;
   }
 
+  .primary-column,
+  .secondary-column {
+    gap: 18px;
+  }
+
   .right-kpis {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .lower-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.9fr) !important;
   }
 
   .incidents-box {
-    height: 430px;
+    height: 410px;
+  }
+}
+
+@container (max-width: 760px) {
+  .right-kpis,
+  .lower-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 
