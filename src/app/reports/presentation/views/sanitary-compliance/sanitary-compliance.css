@@ -347,10 +347,46 @@
 }
 
 .summary-card {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
   border-radius: 8px;
   display: grid;
-  gap: 6px;
-  padding: 16px 18px;
+  column-gap: 12px;
+  grid-template-columns: 42px minmax(0, 1fr);
+  min-height: 82px;
+  padding: 14px 16px;
+}
+
+.summary-card::before {
+  align-items: center;
+  background: var(--accent-bg, #eff4ff);
+  border: 1px solid var(--accent-border, #dbe4ff);
+  border-radius: 8px;
+  color: var(--accent-text, #2563eb);
+  content: 'insights';
+  display: inline-flex;
+  font-family: 'Material Icons';
+  font-size: 22px;
+  height: 42px;
+  justify-content: center;
+  width: 42px;
+}
+
+.summary-card:nth-child(1)::before {
+  content: 'inventory_2';
+}
+
+.summary-card:nth-child(2)::before {
+  content: 'sensors';
+}
+
+.summary-card:nth-child(3)::before {
+  content: 'verified';
+}
+
+.summary-card:nth-child(4)::before {
+  content: 'assignment_late';
 }
 
 .summary-card span,
@@ -360,15 +396,32 @@
   color: #98a2b3;
 }
 
+.summary-card span,
+.summary-card strong {
+  grid-column: 2;
+}
+
+.accent-blue {
+  --accent-bg: #eff4ff;
+  --accent-border: #dbe4ff;
+  --accent-text: #2563eb;
+}
+
 .accent-green {
+  --accent-bg: #eaf8f0;
+  --accent-border: #cdebd8;
   --accent-text: #176900;
 }
 
 .accent-amber {
+  --accent-bg: #fff8e8;
+  --accent-border: #f6d69a;
   --accent-text: #b16f0b;
 }
 
 .accent-red {
+  --accent-bg: #feeceb;
+  --accent-border: #fecaca;
   --accent-text: #b51313;
 }
 
@@ -428,6 +481,9 @@
 }
 
 .data-table th {
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 17px;
   padding: 0 10px 12px;
   text-align: left;
 }
@@ -435,8 +491,9 @@
 .data-table td {
   border-top: 1px solid #ebeef2;
   color: #404040;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
+  line-height: 19px;
   padding: 12px 10px;
   vertical-align: top;
 }
@@ -450,7 +507,7 @@
 .data-table td span,
 .data-table small {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 

@@ -298,7 +298,7 @@
   border-radius: 16px;
   color: #606c80;
   display: inline-flex;
-  font: 800 10px/16px Inter, Arial, sans-serif;
+  font: 800 11px/16px Inter, Arial, sans-serif;
   padding: 3px 8px;
 }
 
@@ -377,7 +377,7 @@
 .assets-table th,
 .assets-table td {
   color: #263348;
-  font: 600 12px/18px Inter, Arial, sans-serif;
+  font: 700 13px/19px Inter, Arial, sans-serif;
   overflow-wrap: break-word;
   text-align: left;
   vertical-align: middle;
@@ -388,7 +388,7 @@
 .assets-table th {
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   color: #9ca3af;
-  font: 600 11px/16px Inter, Arial, sans-serif;
+  font: 800 12px/17px Inter, Arial, sans-serif;
   padding: 0 12px 12px 0;
 }
 
@@ -444,7 +444,7 @@
   box-sizing: border-box;
   color: var(--tone-text, #404040);
   display: inline-flex;
-  font: 700 11px/16px Inter, Arial, sans-serif;
+  font: 800 11px/16px Inter, Arial, sans-serif;
   justify-content: center;
   min-height: 26px;
   min-width: 0;
@@ -482,6 +482,25 @@
 .status-select-field.disabled {
   cursor: not-allowed;
   opacity: 0.65;
+}
+
+@media (max-width: 1180px) and (min-width: 721px) {
+  .assets-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .assets-table {
+    min-width: 980px;
+  }
+
+  .location-table,
+  .gateway-table {
+    min-width: 940px;
+  }
+
+  .iot-device-table {
+    min-width: 1080px;
+  }
 }
 
 .empty-state {
@@ -533,8 +552,8 @@
   }
 
   .form-card {
-    max-height: calc(100vh - 24px);
-    width: calc(100vw - 24px);
+    max-height: none;
+    width: 100%;
   }
 
   .assets-table colgroup,
