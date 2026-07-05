@@ -16,6 +16,7 @@
 .history-page > * {
   box-sizing: border-box;
   justify-self: stretch;
+  min-width: 0;
   width: 100%;
 }
 
@@ -37,6 +38,7 @@
 .table-card,
 .access-banner {
   max-width: none;
+  min-width: 0;
 }
 
 .page-heading,
@@ -45,10 +47,16 @@
   display: flex;
   gap: 20px;
   justify-content: space-between;
+  min-width: 0;
 }
 
 .page-heading {
   min-height: 54px;
+}
+
+.page-heading > div,
+.section-heading > div {
+  min-width: 0;
 }
 
 .reports-workbar {
@@ -57,6 +65,7 @@
   gap: 18px;
   grid-template-columns: minmax(0, 1fr) max-content;
   min-height: 42px;
+  min-width: 0;
 }
 .report-tabs {
   align-items: center;
@@ -65,7 +74,9 @@
   gap: 26px;
   margin-top: 0;
   min-height: 42px;
+  min-width: 0;
   overflow-x: auto;
+  width: 100%;
 }
 
 .report-tabs a {
@@ -134,6 +145,7 @@
 .filter-field {
   display: grid;
   gap: 6px;
+  min-width: 0;
 }
 
 .filter-field span,
@@ -249,6 +261,7 @@
 }
 
 .history-table-wrapper {
+  max-width: 100%;
   margin-top: 18px;
   overflow-x: auto;
 }
@@ -364,12 +377,25 @@
     grid-template-columns: 1fr;
   }
 
+  .reports-workbar {
+    grid-template-columns: 1fr;
+  }
+
   .summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 640px) {
+  .history-page {
+    padding: 18px 12px 34px !important;
+  }
+
+  .filter-card,
+  .table-card {
+    padding: 18px;
+  }
+
   .summary-grid {
     grid-template-columns: 1fr;
   }

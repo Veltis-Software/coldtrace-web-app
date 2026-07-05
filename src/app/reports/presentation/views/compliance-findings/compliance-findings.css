@@ -4,6 +4,12 @@
   grid-template-columns: repeat(4, minmax(150px, 1fr)) auto;
 }
 
+@media (max-width: 820px) {
+  .filter-card {
+    grid-template-columns: 1fr;
+  }
+}
+
 .accent-gray {
   --accent-text: #606c80;
 }

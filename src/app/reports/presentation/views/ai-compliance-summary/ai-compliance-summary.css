@@ -16,6 +16,7 @@
 .summary-page > * {
   box-sizing: border-box;
   justify-self: stretch;
+  min-width: 0;
   width: 100%;
 }
 
@@ -25,6 +26,7 @@
 .summary-grid,
 .insight-layout {
   max-width: none;
+  min-width: 0;
 }
 
 .page-heading,
@@ -34,6 +36,7 @@
   display: flex;
   gap: 16px;
   justify-content: space-between;
+  min-width: 0;
 }
 
 .heading-actions {
@@ -58,6 +61,7 @@
   gap: 18px;
   grid-template-columns: minmax(0, 1fr) max-content;
   min-height: 42px;
+  min-width: 0;
 }
 
 .report-tabs {
@@ -67,7 +71,9 @@
   gap: 26px;
   margin-top: 0;
   min-height: 42px;
+  min-width: 0;
   overflow-x: auto;
+  width: 100%;
 }
 
 .report-tabs a {
@@ -92,7 +98,7 @@
 .heading-actions {
   flex-wrap: nowrap;
   justify-content: flex-end;
-  min-width: max-content;
+  min-width: 0;
 }
 
 .heading-actions .primary-action,
@@ -191,7 +197,7 @@ h3 {
 .field {
   display: grid;
   gap: 7px;
-  min-width: min(100%, 380px);
+  min-width: 0;
 }
 
 .field span,
@@ -349,6 +355,16 @@ h3 {
     flex-direction: column;
   }
 
+  .reports-workbar {
+    grid-template-columns: 1fr;
+  }
+
+  .heading-actions,
+  .heading-actions .primary-action,
+  .heading-actions .secondary-action {
+    width: 100%;
+  }
+
   .summary-grid,
   .insight-layout {
     grid-template-columns: 1fr;
@@ -356,5 +372,17 @@ h3 {
 
   .filter-meta {
     justify-items: start;
+  }
+}
+
+@media (max-width: 640px) {
+  .summary-page {
+    padding: 18px 12px 34px !important;
+  }
+
+  .filter-card,
+  .narrative-card,
+  .risk-card {
+    padding: 18px;
   }
 }
