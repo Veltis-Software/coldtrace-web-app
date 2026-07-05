@@ -526,7 +526,7 @@
   padding: 80px 0;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1180px) {
   .incident-list-view {
     padding: 18px 12px 34px !important;
   }
@@ -538,6 +538,10 @@
 
   .closure-form {
     grid-template-columns: 1fr;
+  }
+
+  .premium-table {
+    min-width: 1040px;
   }
 
   .incident-metrics {
@@ -572,6 +576,7 @@
   .premium-table {
     border-collapse: separate;
     border-spacing: 0;
+    min-width: 0;
   }
 
   .premium-table colgroup,

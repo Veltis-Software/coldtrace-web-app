@@ -140,8 +140,8 @@
   align-items: center;
   display: flex;
   gap: 16px;
-  min-height: 108px;
-  padding: 20px 22px;
+  min-height: 92px;
+  padding: 16px 18px;
 }
 
 .access-summary-card,
@@ -182,7 +182,7 @@
 
 .summary-copy strong {
   color: #0f172a;
-  font: 800 28px/34px Inter, Arial, sans-serif;
+  font: 800 24px/30px Inter, Arial, sans-serif;
 }
 
 .accent-blue .summary-icon {
@@ -296,8 +296,8 @@
 .access-table th {
   color: #aeaeae;
   font-size: 12px;
-  font-weight: 400;
-  line-height: 14px;
+  font-weight: 800;
+  line-height: 17px;
   padding: 14px 12px;
   text-align: left;
   white-space: nowrap;
@@ -306,9 +306,9 @@
 .access-table td {
   border-top: 0.5px solid #ececec;
   color: #404040;
-  font-size: 12px;
+  font-size: 13px;
   height: 48px;
-  line-height: 16px;
+  line-height: 19px;
   padding: 10px 12px;
   vertical-align: middle;
 }
@@ -340,7 +340,7 @@
   color: #606c80 !important;
   display: inline-block !important;
   font-family: 'Inter', Arial, sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   line-height: 16px;
   max-width: 128px;
@@ -378,8 +378,8 @@ select {
   color: #606c80 !important;
   display: inline-flex !important;
   font-family: 'Inter', Arial, sans-serif;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   line-height: 16px;
   margin: 0 !important;
   max-width: none;
@@ -566,7 +566,7 @@ select {
 .access-table td {
   color: #323c4d;
   font-family: Inter, Arial, sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   height: 54px;
 }
 
@@ -597,7 +597,7 @@ select {
   }
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1180px) {
   .access-workbar {
     grid-template-columns: 1fr !important;
   }

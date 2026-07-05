@@ -1062,7 +1062,7 @@ export class ColdRoomList implements OnInit {
 
   protected locationTypeLabelKey(type: string): string {
     const keyPrefix = 'asset-management.locations.types.';
-    const rawType = type.startsWith(keyPrefix) ? type.slice(keyPrefix.length) : type;
+    const rawType = (type.startsWith(keyPrefix) ? type.slice(keyPrefix.length) : type).trim();
     const aliases: Record<string, string> = {
       facility: 'WAREHOUSE',
       warehouse: 'WAREHOUSE',
@@ -1072,7 +1072,9 @@ export class ColdRoomList implements OnInit {
       kitchen: 'CLIENT_SITE',
       'transport-route': 'ROUTE',
     };
-    const normalizedType = aliases[rawType] ?? rawType.toUpperCase().replaceAll('-', '_');
+    const normalizedType =
+      aliases[rawType] ?? aliases[rawType.toLowerCase()] ?? rawType.toUpperCase().replaceAll('-', '_');
+
     return `asset-management.locations.types.${normalizedType}`;
   }
 
@@ -1305,9 +1307,15 @@ export class ColdRoomList implements OnInit {
   }
 
   private locationTypeFormValue(type: string): string {
-    return this.locationTypes.includes(type)
-      ? type
-      : (this.locationTypeFormAliases[type] ?? 'WAREHOUSE');
+    const keyPrefix = 'asset-management.locations.types.';
+    const rawType = (type.startsWith(keyPrefix) ? type.slice(keyPrefix.length) : type).trim();
+    const normalizedType =
+      this.locationTypeFormAliases[type] ??
+      this.locationTypeFormAliases[rawType] ??
+      this.locationTypeFormAliases[rawType.toLowerCase()] ??
+      rawType.toUpperCase().replaceAll('-', '_');
+
+    return this.locationTypes.includes(normalizedType) ? normalizedType : 'WAREHOUSE';
   }
 
   private measurementParametersForDeviceType(deviceType: string): IoTMeasurementParameter[] {

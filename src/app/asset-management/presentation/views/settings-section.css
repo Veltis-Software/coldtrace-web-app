@@ -223,23 +223,61 @@
 }
 
 .summary-card {
+  align-items: center;
   background: var(--accent-bg, #f8fafc);
   border: 1px solid var(--accent-border, #e4e7ec);
   border-radius: 8px;
   display: grid;
-  gap: 4px;
-  min-height: 70px;
-  padding: 12px 14px;
+  column-gap: 12px;
+  grid-template-columns: 42px minmax(0, 1fr);
+  min-height: 78px;
+  padding: 14px 16px;
+}
+
+.summary-card::before {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--accent-border, #e4e7ec);
+  border-radius: 8px;
+  color: var(--accent-text, #263348);
+  content: 'insights';
+  display: inline-flex;
+  font-family: 'Material Icons';
+  font-size: 22px;
+  height: 42px;
+  justify-content: center;
+  width: 42px;
+}
+
+.summary-card:nth-child(1)::before {
+  content: 'inventory_2';
+}
+
+.summary-card:nth-child(2)::before {
+  content: 'tune';
+}
+
+.summary-card:nth-child(3)::before {
+  content: 'thermostat';
+}
+
+.summary-card:nth-child(4)::before {
+  content: 'water_drop';
 }
 
 .summary-card span {
   color: #98a2b3;
   font: 800 12px/18px Inter, Arial, sans-serif;
+  grid-column: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .summary-card strong {
   color: var(--accent-text, #263348);
   font: 800 22px/28px Inter, Arial, sans-serif;
+  grid-column: 2;
 }
 
 .accent-blue {
@@ -289,7 +327,7 @@
 .data-table th,
 .data-table td {
   color: #263348;
-  font: 600 12px/18px Inter, Arial, sans-serif;
+  font: 700 13px/19px Inter, Arial, sans-serif;
   padding: 12px 10px;
   text-align: left;
   vertical-align: middle;
@@ -298,7 +336,7 @@
 .data-table th {
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   color: #9ca3af;
-  font: 700 11px/16px Inter, Arial, sans-serif;
+  font: 800 12px/17px Inter, Arial, sans-serif;
   padding-top: 0;
 }
 
@@ -309,13 +347,13 @@
 .data-table td strong {
   color: #111827;
   display: block;
-  font: 800 12px/18px Inter, Arial, sans-serif;
+  font: 800 13px/19px Inter, Arial, sans-serif;
 }
 
 .data-table td span:not(.status-pill) {
   color: #667085;
   display: block;
-  font: 700 11px/16px Inter, Arial, sans-serif;
+  font: 700 12px/17px Inter, Arial, sans-serif;
 }
 
 .data-table td,
@@ -328,7 +366,7 @@
 
 .status-pill {
   border: 1px solid rgba(16, 24, 40, 0.06);
-  border-radius: 8px;
+  border-radius: 16px;
   display: inline-flex;
   font: 800 11px/16px Inter, Arial, sans-serif;
   justify-content: center;
@@ -338,7 +376,9 @@
 }
 
 .status-active,
-.status-compliant {
+.status-compliant,
+.status-complete,
+.status-closed {
   background: #dcfce7;
   color: #15803d !important;
 }
@@ -347,7 +387,9 @@
 .status-pending,
 .status-maintenance,
 .status-observation,
-.status-insufficient {
+.status-insufficient,
+.status-scheduled,
+.status-open {
   background: #fef3c7;
   color: #b45309 !important;
 }
@@ -398,7 +440,7 @@
   width: 18px;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1180px) {
   .page {
     padding: 18px 12px 36px;
   }
@@ -509,6 +551,10 @@
 @media (max-width: 520px) {
   .summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .summary-card span {
+    white-space: normal;
   }
 
   .table-card,

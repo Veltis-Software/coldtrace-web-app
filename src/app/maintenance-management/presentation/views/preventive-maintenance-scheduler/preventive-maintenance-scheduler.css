@@ -85,9 +85,11 @@
 
 .status-select-field {
   align-items: center;
+  border: 1px solid rgba(16, 24, 40, 0.06);
   border-radius: 16px;
   cursor: pointer;
   display: inline-flex;
+  font: 800 11px/16px Inter, Arial, sans-serif;
   gap: 6px;
   min-height: 26px;
   padding: 3px 8px;
@@ -123,7 +125,7 @@
   opacity: 0.65;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1180px) {
   .form-grid {
     grid-template-columns: 1fr;
   }

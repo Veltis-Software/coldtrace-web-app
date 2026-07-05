@@ -319,7 +319,7 @@
   width: 17px;
 }
 
-@media (max-width: 840px) {
+@media (max-width: 1180px) {
   .user-form {
     grid-template-columns: 1fr;
   }

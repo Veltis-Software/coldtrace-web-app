@@ -100,7 +100,7 @@
   color: #b42318;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1180px) {
   .operational-filter,
   .settings-grid {
     grid-template-columns: 1fr;

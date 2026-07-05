@@ -227,7 +227,7 @@
   white-space: nowrap;
 }
 
-@media (max-width: 840px) {
+@media (max-width: 1180px) {
   .table-heading {
     align-items: flex-start;
     flex-direction: column;
