@@ -69,6 +69,17 @@ export class AuthSessionStore {
   }
 
   private browserStorage(): Storage | null {
-    return typeof window === 'undefined' ? null : window.localStorage;
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    const storage = window.localStorage;
+
+    return storage &&
+      typeof storage.getItem === 'function' &&
+      typeof storage.setItem === 'function' &&
+      typeof storage.removeItem === 'function'
+      ? storage
+      : null;
   }
 }

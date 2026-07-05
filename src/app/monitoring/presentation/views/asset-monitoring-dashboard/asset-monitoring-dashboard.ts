@@ -56,6 +56,11 @@ export class AssetMonitoringDashboard implements OnInit {
     { type: AssetType.Transport, labelKey: 'monitoring.asset-monitoring.tabs.transport' },
   ];
   protected readonly activeType = signal<AssetType>(AssetType.ColdRoom);
+  protected readonly subtitleKey = computed(() =>
+    this.activeType() === AssetType.Transport
+      ? 'monitoring.asset-monitoring.transport-subtitle'
+      : 'monitoring.asset-monitoring.subtitle',
+  );
 
   protected readonly activeOrganizationId = computed(() => {
     return this.identityStore.currentOrganizationIdFrom(this.identityStore.users());

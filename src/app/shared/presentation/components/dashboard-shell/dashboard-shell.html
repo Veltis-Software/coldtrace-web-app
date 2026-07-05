@@ -1,5 +1,14 @@
-<main class="access-page">
-  <aside class="side-panel">
+<main class="access-page" [class.mobile-navigation-open]="mobileNavigationOpen()">
+  @if (mobileNavigationOpen()) {
+    <button
+      class="mobile-nav-backdrop"
+      type="button"
+      [attr.aria-label]="'dashboard-shell.close-navigation' | translate"
+      (click)="closeMobileNavigation()"
+    ></button>
+  }
+
+  <aside class="side-panel" [class.mobile-open]="mobileNavigationOpen()">
     <div class="sidebar-top">
       <div class="brand-section">
         <img src="coldtrace-icon.png" alt="ColdTrace" class="logo-img" />
@@ -15,6 +24,7 @@
           routerLink="/identity-access/dashboard"
           [queryParams]="contextQueryParams"
           routerLinkActive="active"
+          (click)="closeMobileNavigationAfterNavigation()"
         >
           <mat-icon class="menu-icon">dashboard</mat-icon>
           <span class="menu-label">{{ 'dashboard-shell.nav-main' | translate }}</span>
@@ -25,6 +35,7 @@
           routerLink="/asset-management/assets"
           [queryParams]="contextQueryParams"
           routerLinkActive="active"
+          (click)="closeMobileNavigationAfterNavigation()"
         >
           <mat-icon class="menu-icon">inventory_2</mat-icon>
           <span class="menu-label">{{ 'dashboard-shell.nav-assets' | translate }}</span>
@@ -39,6 +50,7 @@
             routerLink="/monitoring/assets"
             [queryParams]="contextQueryParams"
             routerLinkActive="active"
+            (click)="closeMobileNavigationAfterNavigation()"
           >
             <mat-icon class="menu-icon">sensors</mat-icon>
             <span class="menu-label">{{ 'dashboard-shell.nav-monitoring' | translate }}</span>
@@ -50,6 +62,8 @@
           routerLink="/alerts/incidents"
           [queryParams]="contextQueryParams"
           routerLinkActive="active"
+          [class.alerts-active]="isAlertsRoute()"
+          (click)="closeMobileNavigationAfterNavigation()"
         >
           <mat-icon class="menu-icon">warning</mat-icon>
           <span class="menu-label">{{ 'dashboard-shell.nav-alerts' | translate }}</span>
@@ -68,44 +82,49 @@
             class="menu-item menu-trigger"
             type="button"
             [attr.aria-expanded]="isAccessDropdownOpen(accessGroup.isActive)"
-            (click)="toggleAccessDropdown(accessGroup.isActive)"
+            (click)="toggleAccessDropdown()"
           >
             <mat-icon class="menu-icon">admin_panel_settings</mat-icon>
             <span class="menu-label">{{ 'dashboard-shell.nav-access' | translate }}</span>
             <mat-icon class="dropdown-icon">expand_more</mat-icon>
           </button>
-          @if (isAccessDropdownOpen(accessGroup.isActive)) {
-            <div class="sub-menu" aria-label="Access navigation">
+          <div
+            class="sub-menu"
+            [attr.aria-label]="'dashboard-shell.nav-access' | translate"
+            [attr.aria-hidden]="!isAccessDropdownOpen(accessGroup.isActive)"
+          >
+            <a
+              class="sub-menu-link"
+              routerLink="/identity-access/users"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-users' | translate }}
+            </a>
+            @if (canManageUsers) {
               <a
                 class="sub-menu-link"
-                routerLink="/identity-access/users"
+                routerLink="/identity-access/roles-permissions/users/new"
                 [queryParams]="contextQueryParams"
                 routerLinkActive="active"
+                (click)="closeMobileNavigationAfterNavigation()"
               >
-                {{ 'dashboard-shell.nav-users' | translate }}
+                {{ 'dashboard-shell.nav-new-user' | translate }}
               </a>
-              @if (canManageUsers) {
-                <a
-                  class="sub-menu-link"
-                  routerLink="/identity-access/roles-permissions/users/new"
-                  [queryParams]="contextQueryParams"
-                  routerLinkActive="active"
-                >
-                  {{ 'dashboard-shell.nav-new-user' | translate }}
-                </a>
-              }
-              @if (canManageAccess) {
-                <a
-                  class="sub-menu-link"
-                  routerLink="/identity-access/roles-permissions/permissions"
-                  [queryParams]="contextQueryParams"
-                  routerLinkActive="active"
-                >
-                  {{ 'dashboard-shell.nav-permissions' | translate }}
-                </a>
-              }
-            </div>
-          }
+            }
+            @if (canManageAccess) {
+              <a
+                class="sub-menu-link"
+                routerLink="/identity-access/roles-permissions/permissions"
+                [queryParams]="contextQueryParams"
+                routerLinkActive="active"
+                (click)="closeMobileNavigationAfterNavigation()"
+              >
+                {{ 'dashboard-shell.nav-permissions' | translate }}
+              </a>
+            }
+          </div>
         </div>
 
         <div
@@ -118,56 +137,63 @@
             class="menu-item menu-trigger"
             type="button"
             [attr.aria-expanded]="isSettingsDropdownOpen(settingsGroup.isActive)"
-            (click)="toggleSettingsDropdown(settingsGroup.isActive)"
+            (click)="toggleSettingsDropdown()"
           >
             <mat-icon class="menu-icon">settings</mat-icon>
             <span class="menu-label">{{ 'dashboard-shell.nav-settings' | translate }}</span>
             <mat-icon class="dropdown-icon">expand_more</mat-icon>
           </button>
-          @if (isSettingsDropdownOpen(settingsGroup.isActive)) {
-            <div class="sub-menu" aria-label="Settings navigation">
-              <a
-                class="sub-menu-link"
-                routerLink="/asset-management/safety-ranges"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-safety-ranges' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/asset-management/operational-parameters"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-operational-parameters' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/maintenance/preventive"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-preventive-maintenance' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/maintenance/technical-service"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-technical-service' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/settings/billing"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-billing' | translate }}
-              </a>
-            </div>
-          }
+          <div
+            class="sub-menu"
+            [attr.aria-label]="'dashboard-shell.nav-settings' | translate"
+            [attr.aria-hidden]="!isSettingsDropdownOpen(settingsGroup.isActive)"
+          >
+            <a
+              class="sub-menu-link"
+              routerLink="/asset-management/safety-ranges"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-safety-ranges' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/asset-management/operational-parameters"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-operational-parameters' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/maintenance/preventive"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-preventive-maintenance' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/maintenance/technical-service"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-technical-service' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/settings/billing"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-billing' | translate }}
+            </a>
+          </div>
         </div>
 
         <div
@@ -180,72 +206,81 @@
             class="menu-item menu-trigger"
             type="button"
             [attr.aria-expanded]="isReportsDropdownOpen(reportsGroup.isActive)"
-            (click)="toggleReportsDropdown(reportsGroup.isActive)"
+            (click)="toggleReportsDropdown()"
           >
             <mat-icon class="menu-icon">description</mat-icon>
             <span class="menu-label">{{ 'dashboard-shell.nav-reports' | translate }}</span>
             <mat-icon class="dropdown-icon">expand_more</mat-icon>
           </button>
-          @if (isReportsDropdownOpen(reportsGroup.isActive)) {
-            <div class="sub-menu" aria-label="Reports navigation">
-              <a
-                class="sub-menu-link"
-                routerLink="/reports/daily-log"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-daily-log' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/reports/monthly"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-monthly-report' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/reports/history"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-history' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/reports/compliance"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-compliance' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/reports/ai-summary"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-ai-summary' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/reports/findings"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-findings' | translate }}
-              </a>
-              <a
-                class="sub-menu-link"
-                routerLink="/reports/audit-evidence"
-                [queryParams]="contextQueryParams"
-                routerLinkActive="active"
-              >
-                {{ 'dashboard-shell.nav-audit-evidence' | translate }}
-              </a>
-            </div>
-          }
+          <div
+            class="sub-menu"
+            [attr.aria-label]="'dashboard-shell.nav-reports' | translate"
+            [attr.aria-hidden]="!isReportsDropdownOpen(reportsGroup.isActive)"
+          >
+            <a
+              class="sub-menu-link"
+              routerLink="/reports/daily-log"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-daily-log' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/reports/monthly"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-monthly-report' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/reports/history"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-history' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/reports/compliance"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-compliance' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/reports/ai-summary"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-ai-summary' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/reports/findings"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-findings' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/reports/audit-evidence"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-audit-evidence' | translate }}
+            </a>
+          </div>
         </div>
 
         <a
@@ -253,6 +288,7 @@
           routerLink="/alerts/notifications"
           [queryParams]="contextQueryParams"
           routerLinkActive="active"
+          (click)="closeMobileNavigationAfterNavigation()"
         >
           <mat-icon class="menu-icon">notifications</mat-icon>
           <span class="menu-label">{{ 'dashboard-shell.nav-notifications' | translate }}</span>
@@ -261,6 +297,7 @@
           }
         </a>
       </nav>
+
       @if (organizationMembers.length) {
         <section class="team-card" aria-label="Organization members">
           <div class="team-card-header">
@@ -270,6 +307,7 @@
               routerLink="/identity-access/roles-permissions"
               [queryParams]="contextQueryParams"
               [attr.aria-label]="'dashboard-shell.team-manage' | translate"
+              (click)="closeMobileNavigationAfterNavigation()"
             >
               <mat-icon>manage_accounts</mat-icon>
             </a>
@@ -280,6 +318,7 @@
                 class="team-member"
                 routerLink="/identity-access/roles-permissions"
                 [queryParams]="contextQueryParams"
+                (click)="closeMobileNavigationAfterNavigation()"
               >
                 <span class="member-avatar">{{ member.initials }}</span>
                 <span class="member-copy">
@@ -314,9 +353,22 @@
     </div>
   </aside>
 
-  <!-- WORKSPACE -->
   <section class="workspace">
     <header class="topbar">
+      <button
+        class="mobile-nav-toggle"
+        type="button"
+        [attr.aria-label]="
+          (mobileNavigationOpen()
+            ? 'dashboard-shell.close-navigation'
+            : 'dashboard-shell.open-navigation') | translate
+        "
+        [attr.aria-expanded]="mobileNavigationOpen()"
+        (click)="toggleMobileNavigation()"
+      >
+        <mat-icon>{{ mobileNavigationOpen() ? 'close' : 'menu' }}</mat-icon>
+      </button>
+
       <nav class="context-nav" aria-label="Section navigation">
         @for (link of contextualLinks(); track link.path) {
           @if (link.visible) {
@@ -368,6 +420,10 @@
               <mat-icon>logout</mat-icon>
             </button>
           </div>
+        </div>
+
+        <div class="topbar-language-switcher">
+          <app-language-switcher />
         </div>
       </div>
     </header>

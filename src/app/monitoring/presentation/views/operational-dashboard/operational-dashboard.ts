@@ -101,7 +101,26 @@ export class OperationalDashboard implements OnInit {
   protected readonly organizationReadings = computed(() => {
     const since = new Date();
     since.setHours(since.getHours() - 24);
-    return this.monitoringStore.readingsForAssetIdsSince(this.organizationAssetIds(), since);
+    const assetIds = this.organizationAssetIds();
+    const recentReadings = this.monitoringStore.readingsForAssetIdsSince(assetIds, since);
+
+    if (recentReadings.length) {
+      return recentReadings;
+    }
+
+    const availableReadings = this.monitoringStore.readingsForAssetIds(assetIds);
+    const latestReadingTime = this.latestReadingTimeFrom(availableReadings);
+
+    if (!latestReadingTime) {
+      return [];
+    }
+
+    const fallbackSinceTime = latestReadingTime - 24 * 60 * 60 * 1000;
+
+    return availableReadings.filter((reading) => {
+      const readingTime = new Date(reading.recordedAt).getTime();
+      return readingTime >= fallbackSinceTime && readingTime <= latestReadingTime;
+    });
   });
   protected readonly organizationIncidents = computed(() => this.alertsStore.incidents());
   protected readonly activeIncidents = computed(() =>
@@ -404,7 +423,7 @@ export class OperationalDashboard implements OnInit {
       return [];
     }
 
-    const now = new Date();
+    const now = new Date(this.latestReadingTimeFrom(readings) ?? Date.now());
     const initialTemperature =
       [...readings].sort(
         (left, right) => new Date(left.recordedAt).getTime() - new Date(right.recordedAt).getTime(),
@@ -513,6 +532,15 @@ export class OperationalDashboard implements OnInit {
     });
 
     return readingsByAssetId;
+  }
+
+  private latestReadingTimeFrom(readings: SensorReading[]): number | null {
+    const latestTime = readings.reduce((latest, reading) => {
+      const readingTime = new Date(reading.recordedAt).getTime();
+      return Number.isFinite(readingTime) ? Math.max(latest, readingTime) : latest;
+    }, 0);
+
+    return latestTime > 0 ? latestTime : null;
   }
 
   private thermalStateForAsset(

@@ -53,6 +53,7 @@ export class AlertsStore {
   private readonly recognizingIdSignal = signal<number | null>(null);
   private readonly closingIdSignal = signal<number | null>(null);
   private readonly stabilizingIdSignal = signal<number | null>(null);
+  private readonly reviewingEscalationIdSignal = signal<number | null>(null);
   private readonly feedbackSignal = signal<string | null>(null);
   private incidentsRequestInFlight = false;
   private incidentsLoadedForOrganizationId: number | null = null;
@@ -88,6 +89,7 @@ export class AlertsStore {
   readonly recognizingId = this.recognizingIdSignal.asReadonly();
   readonly closingId = this.closingIdSignal.asReadonly();
   readonly stabilizingId = this.stabilizingIdSignal.asReadonly();
+  readonly reviewingEscalationId = this.reviewingEscalationIdSignal.asReadonly();
   readonly feedback = this.feedbackSignal.asReadonly();
 
   readonly openIncidents = computed(() => this.incidents().filter((i) => i.isOpen));
@@ -318,6 +320,36 @@ export class AlertsStore {
     );
   }
 
+  /**
+   * @summary Marks an escalation as reviewed by the responsible user.
+   */
+  reviewEscalation(incident: Incident, responsibleUserName: string): Observable<Incident> {
+    const reviewed = this.incidentWith(incident, {
+      escalationStatus: 'reviewed',
+      escalationReviewedBy: responsibleUserName,
+      escalationReviewedAt: new Date().toISOString(),
+    });
+
+    this.reviewingEscalationIdSignal.set(incident.id);
+    this.feedbackSignal.set(null);
+
+    return this.updateIncidentWithRetry(reviewed).pipe(
+      tap({
+        next: (updated) => {
+          this.incidentsSignal.update((current) =>
+            current.map((i) => (i.id === updated.id ? updated : i)),
+          );
+          this.refreshNotifications();
+          this.reviewingEscalationIdSignal.set(null);
+          this.feedbackSignal.set('alerts.incident-list.feedback-escalation-reviewed');
+        },
+        error: () => {
+          this.reviewingEscalationIdSignal.set(null);
+          this.feedbackSignal.set('alerts.incident-list.feedback-error');
+        },
+      }),
+    );
+  }
   /**
    * @summary Registers an in-range reading for the incident asset and marks the condition as stable.
    */

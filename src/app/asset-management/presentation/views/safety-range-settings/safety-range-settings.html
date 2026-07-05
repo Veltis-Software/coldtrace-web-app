@@ -1,4 +1,4 @@
-<section class="page" aria-labelledby="safety-ranges-title">
+<section class="page" aria-labelledby="settings-title">
   @if (loading()) {
     <div class="loading-overlay">
       <mat-spinner diameter="40"></mat-spinner>
@@ -7,10 +7,35 @@
 
   <div class="page-heading">
     <div>
-      <span class="section-kicker">{{ activeOrganizationName() }}</span>
-      <h1 id="safety-ranges-title">{{ 'asset-management.safety-ranges.title' | translate }}</h1>
+      <h1 id="settings-title">{{ 'dashboard-shell.nav-settings' | translate }}</h1>
       <p>{{ 'asset-management.safety-ranges.subtitle' | translate }}</p>
     </div>
+
+  </div>
+
+  <div class="settings-workbar">
+    <nav class="setting-tabs" aria-label="Settings sections">
+      <a
+        routerLink="/asset-management/safety-ranges"
+        [queryParams]="{ organizationId: activeOrganizationId() }"
+        class="active"
+        >{{ 'dashboard-shell.nav-safety-ranges' | translate }}</a
+      >
+      <a
+        routerLink="/asset-management/operational-parameters"
+        [queryParams]="{ organizationId: activeOrganizationId() }"
+        >{{ 'dashboard-shell.nav-operational-parameters' | translate }}</a
+      >
+      <a routerLink="/maintenance/preventive" [queryParams]="{ organizationId: activeOrganizationId() }">{{
+        'dashboard-shell.nav-preventive-maintenance' | translate
+      }}</a>
+      <a
+        routerLink="/maintenance/technical-service"
+        [queryParams]="{ organizationId: activeOrganizationId() }"
+        >{{ 'dashboard-shell.nav-technical-service' | translate }}</a
+      >
+      <a routerLink="/settings/billing">{{ 'dashboard-shell.nav-billing' | translate }}</a>
+    </nav>
 
     <div class="heading-actions">
       <button mat-stroked-button type="button" class="secondary-action" (click)="loadPageData()">
@@ -211,6 +236,13 @@
 
     <div class="table-wrapper">
       <table class="data-table">
+        <colgroup>
+          <col class="scope-column" />
+          <col class="location-column" />
+          <col class="temperature-column" />
+          <col class="humidity-column" />
+          <col class="status-column" />
+        </colgroup>
         <thead>
           <tr>
             <th>{{ 'asset-management.safety-ranges.table.scope' | translate }}</th>
@@ -223,7 +255,7 @@
         <tbody>
           @for (settings of paginatedProfiles(); track settings.id) {
             <tr>
-              <td>
+              <td [attr.data-label]="'asset-management.safety-ranges.table.scope' | translate">
                 <strong>
                   {{
                     settings.assetId === null
@@ -233,22 +265,22 @@
                 </strong>
                 <span>{{ settings.uuid }}</span>
               </td>
-              <td>
+              <td [attr.data-label]="'asset-management.safety-ranges.table.location' | translate">
                 {{
                   settings.assetId === null
                     ? (scopeLocationFor(settings) | translate)
                     : scopeLocationFor(settings)
                 }}
               </td>
-              <td>
+              <td [attr.data-label]="'asset-management.safety-ranges.table.temperature' | translate">
                 {{ settings.minimumTemperature }}{{ settings.temperatureUnit }} -
                 {{ settings.maximumTemperature }}{{ settings.temperatureUnit }}
               </td>
-              <td>
+              <td [attr.data-label]="'asset-management.safety-ranges.table.humidity' | translate">
                 {{ settings.minimumHumidity }}{{ settings.humidityUnit }} -
                 {{ settings.maximumHumidity }}{{ settings.humidityUnit }}
               </td>
-              <td>
+              <td [attr.data-label]="'asset-management.safety-ranges.table.status' | translate">
                 <span class="status-pill" [ngClass]="settingStatusClass(settings)">
                   {{ settingStatusKey(settings) | translate }}
                 </span>

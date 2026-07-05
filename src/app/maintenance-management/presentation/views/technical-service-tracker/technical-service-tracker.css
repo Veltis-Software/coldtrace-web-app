@@ -4,14 +4,24 @@
   display: grid;
   gap: 20px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 20px;
-  max-width: 1180px;
+  margin-top: 0;
+  max-width: none;
+  width: 100%;
 }
 
 .service-card,
 .service-form {
   display: grid;
   gap: 16px;
+}
+
+.service-card {
+  min-height: 0;
+  padding: 22px 24px;
+}
+
+.service-form {
+  align-content: start;
 }
 
 .service-form .primary-action {
@@ -43,8 +53,28 @@
   min-width: 1160px;
 }
 
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table td {
+  height: 58px;
+  line-height: 18px;
+  vertical-align: top;
+}
+
 @media (max-width: 1080px) {
   .forms-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .data-table {
+    min-width: 0;
+  }
+
+  .table-wrapper {
+    overflow-x: visible;
   }
 }

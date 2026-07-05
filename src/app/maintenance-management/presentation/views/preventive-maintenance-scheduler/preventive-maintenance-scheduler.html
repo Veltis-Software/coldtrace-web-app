@@ -1,4 +1,4 @@
-<section class="page" aria-labelledby="preventive-maintenance-title">
+<section class="page" aria-labelledby="settings-title">
   @if (loading()) {
     <div class="loading-overlay">
       <mat-spinner diameter="40"></mat-spinner>
@@ -7,12 +7,35 @@
 
   <div class="page-heading">
     <div>
-      <span class="section-kicker">{{ activeOrganizationName() }}</span>
-      <h1 id="preventive-maintenance-title">
-        {{ 'maintenance.preventive.title' | translate }}
-      </h1>
+      <h1 id="settings-title">{{ 'dashboard-shell.nav-settings' | translate }}</h1>
       <p>{{ 'maintenance.preventive.subtitle' | translate }}</p>
     </div>
+
+  </div>
+
+  <div class="settings-workbar">
+    <nav class="setting-tabs" aria-label="Settings sections">
+      <a routerLink="/asset-management/safety-ranges" [queryParams]="{ organizationId: activeOrganizationId() }">{{
+        'dashboard-shell.nav-safety-ranges' | translate
+      }}</a>
+      <a
+        routerLink="/asset-management/operational-parameters"
+        [queryParams]="{ organizationId: activeOrganizationId() }"
+        >{{ 'dashboard-shell.nav-operational-parameters' | translate }}</a
+      >
+      <a
+        routerLink="/maintenance/preventive"
+        [queryParams]="{ organizationId: activeOrganizationId() }"
+        class="active"
+        >{{ 'dashboard-shell.nav-preventive-maintenance' | translate }}</a
+      >
+      <a
+        routerLink="/maintenance/technical-service"
+        [queryParams]="{ organizationId: activeOrganizationId() }"
+        >{{ 'dashboard-shell.nav-technical-service' | translate }}</a
+      >
+      <a routerLink="/settings/billing">{{ 'dashboard-shell.nav-billing' | translate }}</a>
+    </nav>
 
     <div class="heading-actions">
       <button mat-stroked-button type="button" class="secondary-action" (click)="loadPageData()">
@@ -201,19 +224,19 @@
         <tbody>
           @for (schedule of paginatedSchedules(); track schedule.id) {
             <tr>
-              <td>{{ schedule.uuid }}</td>
-              <td>{{ assetNameFor(schedule) }}</td>
-              <td>
+              <td [attr.data-label]="'maintenance.preventive.table.id' | translate">{{ schedule.uuid }}</td>
+              <td [attr.data-label]="'maintenance.preventive.table.asset' | translate">{{ assetNameFor(schedule) }}</td>
+              <td [attr.data-label]="'maintenance.preventive.table.device' | translate">
                 @if (schedule.iotDeviceId) {
                   {{ deviceNameFor(schedule) }}
                 } @else {
                   {{ deviceNameFor(schedule) | translate }}
                 }
               </td>
-              <td>{{ assetLocationFor(schedule) }}</td>
-              <td>{{ schedule.scheduledDate }}</td>
-              <td>{{ schedule.period }}</td>
-              <td>
+              <td [attr.data-label]="'maintenance.preventive.table.location' | translate">{{ assetLocationFor(schedule) }}</td>
+              <td [attr.data-label]="'maintenance.preventive.table.date' | translate">{{ schedule.scheduledDate }}</td>
+              <td [attr.data-label]="'maintenance.preventive.table.period' | translate">{{ schedule.period }}</td>
+              <td [attr.data-label]="'maintenance.preventive.table.status' | translate">
                 @if (canScheduleMaintenance()) {
                   <label
                     class="status-select-field"

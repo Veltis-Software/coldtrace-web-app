@@ -1,16 +1,26 @@
+.gauge-content,
+.asset-details,
+.detail-item,
+.detail-value {
+  min-width: 0;
+}
+
 .gauge-content {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 16px 24px;
+  justify-content: flex-start;
+  gap: clamp(10px, 2.6vw, 20px);
+  padding: 16px clamp(14px, 3vw, 24px);
   height: 100%;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .gauge-container {
   position: relative;
-  width: 150px;
-  height: 150px;
-  flex-shrink: 0;
+  width: clamp(112px, 28vw, 150px);
+  height: clamp(112px, 28vw, 150px);
+  flex: 0 0 clamp(112px, 28vw, 150px);
 }
 
 .gauge-svg {
@@ -30,8 +40,9 @@
 }
 
 .temperature-value {
-  font-size: 24px;
+  font-size: clamp(18px, 4.5vw, 24px);
   font-weight: 800;
+  line-height: 1;
   color: #0F172A;
   font-family: 'Inter', sans-serif;
 }
@@ -39,14 +50,16 @@
 .asset-details {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  min-width: 220px;
+  gap: 10px;
+  flex: 1 1 0;
 }
 
 .detail-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 16px minmax(66px, max-content) minmax(0, 1fr);
+  align-items: start;
+  column-gap: 8px;
+  row-gap: 2px;
   font-family: 'Inter', sans-serif;
 }
 
@@ -59,13 +72,76 @@
 
 .detail-label {
   font-size: 12px;
+  line-height: 1.35;
   color: #64748B;
   font-weight: 500;
-  min-width: 80px;
+  min-width: 0;
 }
 
 .detail-value {
   font-size: 12px;
+  line-height: 1.35;
   color: #0F172A;
   font-weight: 700;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1180px) {
+  .gauge-content {
+    justify-content: center;
+    gap: clamp(24px, 5vw, 44px);
+  }
+
+  .asset-details {
+    flex: 0 1 340px;
+    max-width: 340px;
+  }
+
+  .detail-item {
+    grid-template-columns: 16px minmax(92px, max-content) minmax(0, 1fr);
+    column-gap: 12px;
+  }
+}
+
+@media (max-width: 760px) {
+  .gauge-content {
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px 22px;
+    justify-content: flex-start;
+    padding: 16px 14px;
+  }
+
+  .gauge-container {
+    flex-basis: 112px;
+    height: 112px;
+    width: 112px;
+  }
+
+  .asset-details {
+    flex: 1 1 230px;
+    max-width: none;
+  }
+
+  .detail-item {
+    grid-template-columns: 16px minmax(86px, max-content) minmax(0, 1fr);
+    column-gap: 9px;
+  }
+}
+
+@media (max-width: 440px) {
+  .gauge-content {
+    justify-content: center;
+  }
+
+  .asset-details {
+    flex-basis: 100%;
+  }
+
+  .detail-label,
+  .detail-value {
+    font-size: 11px;
+  }
 }

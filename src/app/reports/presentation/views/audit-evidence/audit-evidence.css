@@ -1,11 +1,62 @@
 @import '../sanitary-compliance/sanitary-compliance.css';
 
 .filter-card {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(3, minmax(170px, 1fr)) minmax(0, 1fr) auto;
+}
+
+.report-card-actions {
+  grid-column: 5;
+}
+
+@media (max-width: 820px) {
+  .filter-card {
+    grid-template-columns: 1fr;
+  }
+
+  .report-card-actions {
+    grid-column: auto;
+  }
 }
 
 .checklist-table {
   min-width: 760px;
+  table-layout: fixed;
+}
+
+.checklist-table th:first-child,
+.checklist-table td:first-child {
+  width: 26%;
+}
+
+.checklist-table th:nth-child(2),
+.checklist-table td:nth-child(2) {
+  width: 56%;
+}
+
+.checklist-table th:nth-child(3),
+.checklist-table td:nth-child(3) {
+  width: 18%;
+}
+
+.checklist-table td {
+  overflow-wrap: anywhere;
+}
+
+@container (max-width: 1040px) {
+  .checklist-table {
+    min-width: 0;
+    table-layout: auto;
+    width: 100%;
+  }
+
+  .checklist-table th:first-child,
+  .checklist-table td:first-child,
+  .checklist-table th:nth-child(2),
+  .checklist-table td:nth-child(2),
+  .checklist-table th:nth-child(3),
+  .checklist-table td:nth-child(3) {
+    width: 100%;
+  }
 }
 
 .evidence-grid {
@@ -13,7 +64,8 @@
   gap: 16px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 20px;
-  max-width: 1180px;
+  max-width: none;
+  width: 100%;
 }
 
 .evidence-panel {
@@ -50,6 +102,8 @@
 .evidence-row strong,
 .evidence-row span {
   display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .evidence-row strong {

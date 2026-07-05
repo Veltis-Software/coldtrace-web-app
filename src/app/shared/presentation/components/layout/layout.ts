@@ -313,6 +313,9 @@ export class Layout implements OnInit {
     this.identityAccessStore.loadUsers();
     this.identityAccessStore.loadOrganizations();
     this.identityAccessStore.loadRoles();
+    this.assetManagementStore.loadAssets();
+    this.assetManagementStore.loadIoTDevices();
+    this.assetManagementStore.loadGateways();
     this.alertsStore.loadIncidents({ silent: true });
   }
 

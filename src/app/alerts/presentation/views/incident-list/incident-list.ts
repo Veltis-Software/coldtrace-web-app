@@ -1,15 +1,18 @@
-import { Component, computed, effect, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule } from '@ngx-translate/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { IdentityAccessStore } from '../../../../identity-access/application/identity-access.store';
 import { ListPagination } from '../../../../shared/presentation/components/list-pagination/list-pagination';
 import { AlertsStore } from '../../../application/alerts.store';
 import { Incident } from '../../../domain/model/incident.entity';
 import { Notification } from '../../../domain/model/notification.entity';
+
+type IncidentPanel = 'incidents' | 'closure';
 
 /**
  * @summary Presents the incident list user interface in the alerts bounded context.
@@ -31,13 +34,16 @@ export class IncidentList implements OnInit {
   protected readonly alertsStore = inject(AlertsStore);
   private readonly identityStore = inject(IdentityAccessStore);
   private readonly fb = inject(FormBuilder);
-  @ViewChild('closureCard') private closureCard?: ElementRef<HTMLElement>;
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   protected readonly closureSubmitted = signal(false);
   protected readonly selectedNotificationIncident = signal<Incident | null>(null);
   protected readonly incidentNotifications = signal<Notification[]>([]);
   protected readonly loadingIncidentNotifications = signal(false);
   protected readonly pageSize = 10;
   protected readonly currentPage = signal(1);
+  protected readonly searchTerm = signal('');
+  protected readonly selectedIncidentPanel = signal<IncidentPanel>('incidents');
   protected readonly canResolveAlerts = computed(() => this.alertsStore.canResolveAlerts());
   protected readonly profileUserName = computed(() =>
     this.identityStore.currentUserNameFrom(this.identityStore.users()),
@@ -45,8 +51,27 @@ export class IncidentList implements OnInit {
   protected readonly activeIncidents = computed(() =>
     this.alertsStore.incidents().filter((incident) => !incident.isClosed),
   );
+  protected readonly filteredIncidents = computed(() => {
+    const searchValue = this.searchTerm().trim().toLowerCase();
+    const incidents = this.activeIncidents();
+
+    if (!searchValue) {
+      return incidents;
+    }
+
+    return incidents.filter((incident) => [
+      incident.assetName,
+      incident.type,
+      incident.value,
+      incident.status,
+      incident.conditionKey,
+      incident.severity,
+      incident.recognizedBy ?? '',
+      incident.escalationStatus,
+    ].some((value) => String(value ?? '').toLowerCase().includes(searchValue)));
+  });
   protected readonly paginatedIncidents = computed(() =>
-    this.paginate(this.activeIncidents(), this.currentPage()),
+    this.paginate(this.filteredIncidents(), this.currentPage()),
   );
   protected readonly pendingClosureIncidents = computed(() =>
     this.activeIncidents().filter((incident) => incident.isRecognized),
@@ -80,6 +105,10 @@ export class IncidentList implements OnInit {
    * @summary Initializes the incident list view state.
    */
   ngOnInit(): void {
+    if (this.route.snapshot.queryParamMap.get('panel') === 'closure') {
+      this.selectedIncidentPanel.set('closure');
+    }
+
     this.alertsStore.loadIncidents({ evaluateReadings: true });
   }
 
@@ -91,6 +120,28 @@ export class IncidentList implements OnInit {
     this.alertsStore.recognizeIncident(incident, userName).subscribe({
       error: () => undefined,
     });
+  }
+
+  protected updateSearchTerm(value: string): void {
+    this.searchTerm.set(value);
+    this.currentPage.set(1);
+  }
+
+  protected selectIncidentPanel(panel: IncidentPanel): void {
+    this.selectedIncidentPanel.set(panel);
+    this.currentPage.set(1);
+  }
+
+  protected subtitleKey(): string {
+    return this.selectedIncidentPanel() === 'closure'
+      ? 'alerts.incident-list.closure-subtitle'
+      : 'alerts.incident-list.incidents-subtitle';
+  }
+
+  protected openAiGuidance(): void {
+    const { panel: _panel, ...queryParams } = this.route.snapshot.queryParams;
+
+    void this.router.navigate(['/alerts/ai-guidance'], { queryParams });
   }
 
   protected updatePage(page: number): void {
@@ -145,19 +196,6 @@ export class IncidentList implements OnInit {
       });
   }
 
-  protected selectIncidentForClosure(incident: Incident): void {
-    if (!incident.isRecognized) {
-      return;
-    }
-
-    this.closureForm.controls.incidentId.setValue(incident.id);
-    this.alertsStore.clearFeedback();
-    queueMicrotask(() => this.closureCard?.nativeElement.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    }));
-  }
-
   protected reviewIncidentNotifications(incident: Incident): void {
     this.selectedNotificationIncident.set(incident);
     this.incidentNotifications.set([]);
@@ -168,7 +206,7 @@ export class IncidentList implements OnInit {
       .pipe(finalize(() => this.loadingIncidentNotifications.set(false)))
       .subscribe({
         next: (notifications) => this.incidentNotifications.set(notifications),
-        error: () => this.alertsStore.setFeedback('alerts.incident-list.feedback-error'),
+        error: () => this.incidentNotifications.set([]),
       });
   }
 
@@ -214,6 +252,7 @@ export class IncidentList implements OnInit {
       'alerts.incident-list.feedback-recognized',
       'alerts.incident-list.feedback-closed',
       'alerts.incident-list.feedback-stabilized',
+      'alerts.incident-list.feedback-escalation-reviewed',
     ].includes(feedback);
   }
 
