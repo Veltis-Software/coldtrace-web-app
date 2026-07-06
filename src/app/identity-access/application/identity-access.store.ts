@@ -126,19 +126,24 @@ export class IdentityAccessStore {
     private organizationScope: OrganizationScopeStore,
     private authSession: AuthSessionStore,
   ) {
-    this.restoreCurrentUserFromSession();
+    this.restoreSessionContext();
   }
 
-   /**
+  /**
    * @summary Loads users data into local state.
    */
   loadUsers(options: LoadOptions = {}): void {
-    const organizationId = this.organizationScope.activeOrganizationId();
+    const organizationId =
+      this.organizationScope.activeOrganizationId() ??
+      this.authSession.user()?.organizationId ??
+      null;
 
     if (!organizationId) {
       this.usersSignal.set([]);
       return;
     }
+
+    this.organizationScope.setActiveOrganizationId(organizationId);
 
     if (
       !options.force &&
@@ -166,7 +171,7 @@ export class IdentityAccessStore {
     });
   }
 
-   /**
+  /**
    * @summary Loads organizations data into local state.
    */
   loadOrganizations(options: LoadOptions = {}): void {
@@ -188,7 +193,7 @@ export class IdentityAccessStore {
     });
   }
 
-   /**
+  /**
    * @summary Loads roles data into local state.
    */
   loadRoles(options: LoadOptions = {}): void {
@@ -296,16 +301,21 @@ export class IdentityAccessStore {
     this.usersRequestInFlightForOrganizationId = null;
   }
 
-  private restoreCurrentUserFromSession(): void {
+  /**
+   * @summary Restores the dashboard identity context from the persisted JWT session.
+   */
+  restoreSessionContext(): boolean {
     const user = this.authSession.user();
 
     if (!user) {
-      return;
+      return false;
     }
 
     this.currentUserIdSignal.set(user.id);
     this.currentUserNameSignal.set(user.fullName);
     this.organizationScope.setActiveOrganizationId(user.organizationId);
+
+    return true;
   }
 
   /**
@@ -323,7 +333,12 @@ export class IdentityAccessStore {
    * @summary Resolves the organization id assigned to the current user.
    */
   currentOrganizationIdFrom(users: User[]): number | null {
-    return this.currentUserFrom(users)?.organizationId ?? null;
+    return (
+      this.currentUserFrom(users)?.organizationId ??
+      this.organizationScope.activeOrganizationId() ??
+      this.authSession.user()?.organizationId ??
+      null
+    );
   }
 
   /**

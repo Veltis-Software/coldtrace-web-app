@@ -305,6 +305,10 @@ export class Layout implements OnInit {
 
   private loadShellData(): void {
     if (!this.identityAccessStore.currentUserId()) {
+      this.identityAccessStore.restoreSessionContext();
+    }
+
+    if (!this.identityAccessStore.currentUserId()) {
       this.redirectToSignIn();
       return;
     }
@@ -356,7 +360,8 @@ export class Layout implements OnInit {
     const userId = this.identityAccessStore.currentUserId();
 
     return (
-      this.identityAccessStore.users().find((user) => user.id === userId)?.organizationId ?? null
+      this.identityAccessStore.users().find((user) => user.id === userId)?.organizationId ??
+      this.activeOrganizationId()
     );
   }
 
