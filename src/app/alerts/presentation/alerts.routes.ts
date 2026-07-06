@@ -2,10 +2,8 @@ import { Routes } from '@angular/router';
 
 const incidentList = () =>
   import('./views/incident-list/incident-list').then((m) => m.IncidentList);
-const aiGuidancePrototype = () =>
-  import('./views/ai-guidance-prototype/ai-guidance-prototype').then(
-    (m) => m.AiGuidancePrototype,
-  );
+const aiGuidance = () =>
+  import('./views/ai-guidance/ai-guidance').then((m) => m.AiGuidance);
 const notificationList = () =>
   import('./views/notification-list/notification-list').then((m) => m.NotificationList);
 
@@ -20,7 +18,7 @@ export const alertsRoutes: Routes = [
   },
   {
     path: 'ai-guidance',
-    loadComponent: aiGuidancePrototype,
+    loadComponent: aiGuidance,
     title: 'ColdTrace - AI Guidance',
   },
   {

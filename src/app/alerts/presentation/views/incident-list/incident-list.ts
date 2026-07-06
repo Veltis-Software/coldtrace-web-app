@@ -138,10 +138,15 @@ export class IncidentList implements OnInit {
       : 'alerts.incident-list.incidents-subtitle';
   }
 
-  protected openAiGuidance(): void {
+  protected openAiGuidance(incident?: Incident): void {
     const { panel: _panel, ...queryParams } = this.route.snapshot.queryParams;
 
-    void this.router.navigate(['/alerts/ai-guidance'], { queryParams });
+    void this.router.navigate(['/alerts/ai-guidance'], {
+      queryParams: {
+        ...queryParams,
+        ...(incident ? { incidentId: incident.id } : {}),
+      },
+    });
   }
 
   protected updatePage(page: number): void {
