@@ -272,7 +272,7 @@ export class Layout implements OnInit {
 
   protected logout(): void {
     this.identityAccessStore.clearCurrentUser();
-    void this.router.navigate(['/identity-access/sign-in']);
+    this.navigateToSignIn();
   }
 
   protected downloadCurrentMonthReport(): void {
@@ -329,7 +329,18 @@ export class Layout implements OnInit {
 
   private redirectToSignIn(): void {
     this.identityAccessStore.clearCurrentUser();
-    void this.router.navigate(['/identity-access/sign-in'], { replaceUrl: true });
+    this.navigateToSignIn();
+  }
+
+  private navigateToSignIn(): void {
+    const signInPath = '/identity-access/sign-in';
+
+    this.currentUrl.set(signInPath);
+    void this.router.navigateByUrl(signInPath, { replaceUrl: true }).catch(() => {
+      if (typeof window !== 'undefined') {
+        window.location.assign(signInPath);
+      }
+    });
   }
 
   private keepDashboardContextInUrl(): void {
