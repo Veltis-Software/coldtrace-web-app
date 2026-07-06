@@ -1,4 +1,10 @@
 <section class="summary-page" aria-labelledby="summary-title">
+  @if (loading() || generating()) {
+    <div class="loading-overlay">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  }
+
   <div class="page-heading">
     <div>
       <h1 id="summary-title">{{ 'dashboard-shell.nav-reports' | translate }}</h1>
@@ -8,113 +14,223 @@
 
   <div class="reports-workbar">
     <nav class="report-tabs" aria-label="Reports navigation">
-      <a routerLink="/reports/daily-log">{{ 'dashboard-shell.nav-daily-log' | translate }}</a>
-      <a routerLink="/reports/monthly">{{ 'dashboard-shell.nav-monthly-report' | translate }}</a>
-      <a routerLink="/reports/history">{{ 'dashboard-shell.nav-history' | translate }}</a>
-      <a routerLink="/reports/compliance">{{ 'dashboard-shell.nav-compliance' | translate }}</a>
-      <a routerLink="/reports/ai-summary" class="active">{{ 'dashboard-shell.nav-ai-summary' | translate }}</a>
-      <a routerLink="/reports/findings">{{ 'dashboard-shell.nav-findings' | translate }}</a>
-      <a routerLink="/reports/audit-evidence">{{ 'dashboard-shell.nav-audit-evidence' | translate }}</a>
+      <a routerLink="/reports/daily-log" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-daily-log' | translate }}</a>
+      <a routerLink="/reports/monthly" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-monthly-report' | translate }}</a>
+      <a routerLink="/reports/history" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-history' | translate }}</a>
+      <a routerLink="/reports/compliance" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-compliance' | translate }}</a>
+      <a routerLink="/reports/ai-summary" [queryParams]="{ organizationId: activeOrganizationId() }" class="active">{{ 'dashboard-shell.nav-ai-summary' | translate }}</a>
+      <a routerLink="/reports/findings" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-findings' | translate }}</a>
+      <a routerLink="/reports/audit-evidence" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-audit-evidence' | translate }}</a>
     </nav>
 
     <div class="heading-actions">
-      <button type="button" class="secondary-action" (click)="showInsufficientState()">
-        <mat-icon aria-hidden="true">rule</mat-icon>
-        {{ 'reports.ai-summary.preview-insufficient' | translate }}
+      <button type="button" class="secondary-action" (click)="loadPageData()" [disabled]="loading() || generating()">
+        <mat-icon aria-hidden="true">refresh</mat-icon>
+        {{ 'reports.ai-summary.reload' | translate }}
       </button>
-      <button type="button" class="primary-action" (click)="generateSummary()">
+      <button
+        type="button"
+        class="primary-action"
+        (click)="generateSummary()"
+        [disabled]="loading() || generating() || !selectedReport() || aiSummaryLocked()"
+      >
         <mat-icon aria-hidden="true">auto_awesome</mat-icon>
         {{ 'reports.ai-summary.generate' | translate }}
       </button>
     </div>
   </div>
 
+  @if (feedback().key) {
+    <p class="feedback" [class.success]="feedback().kind === 'success'" [class.error]="feedback().kind === 'error'">
+      {{ feedback().key | translate }}
+    </p>
+  }
+
+  @if (subscriptionError()) {
+    <section class="access-banner warning" aria-live="polite">
+      <mat-icon aria-hidden="true">warning</mat-icon>
+      <div>
+        <h2>{{ 'reports.ai-summary.subscription-error-title' | translate }}</h2>
+        <p>{{ 'reports.ai-summary.subscription-error-description' | translate }}</p>
+      </div>
+    </section>
+  }
+
+  @if (aiSummaryLocked()) {
+    <section class="access-banner" aria-live="polite">
+      <mat-icon aria-hidden="true">lock</mat-icon>
+      <div>
+        <h2>{{ 'reports.ai-summary.plan-locked-title' | translate }}</h2>
+        <p>{{ 'reports.ai-summary.plan-locked-description' | translate }}</p>
+      </div>
+      <button type="button" class="primary-action" (click)="openBilling()">
+        {{ 'reports.ai-summary.view-plans' | translate }}
+      </button>
+    </section>
+  }
+
   <section class="filter-card" aria-label="Report selection">
     <label class="field">
       <span>{{ 'reports.ai-summary.report-label' | translate }}</span>
-      <select [value]="selectedReport()" (change)="selectReport($any($event.target).value)">
-        <option value="reports.ai-summary.report-june">
-          {{ 'reports.ai-summary.report-june' | translate }}
-        </option>
-        <option value="reports.ai-summary.report-may">
-          {{ 'reports.ai-summary.report-may' | translate }}
-        </option>
-        <option value="reports.ai-summary.report-daily">
-          {{ 'reports.ai-summary.report-daily' | translate }}
-        </option>
+      <select
+        [value]="selectedReport()?.id ?? 0"
+        (change)="selectReport($any($event.target).value)"
+        [disabled]="!reports().length || generating()"
+      >
+        @if (!reports().length) {
+          <option [value]="0">{{ 'reports.ai-summary.no-reports-option' | translate }}</option>
+        }
+
+        @for (report of reports(); track report.id) {
+          <option [value]="report.id">
+            {{ report.title }} - {{ formatDate(report.generatedAt) }}
+          </option>
+        }
       </select>
     </label>
+
     <div class="filter-meta">
-      <span>{{ 'reports.ai-summary.interpretation' | translate }}</span>
-      <strong>
-        {{
-          (state() === 'insufficient'
-            ? 'reports.ai-summary.state-blocked'
-            : 'reports.ai-summary.state-ready'
-          ) | translate
-        }}
-      </strong>
+      <span>{{ 'reports.ai-summary.selected-type' | translate }}</span>
+      <strong>{{ reportTypeLabelKey(selectedReport()?.type) | translate }}</strong>
     </div>
   </section>
 
-  <section class="summary-grid" aria-label="Report metrics">
-    @for (metric of metrics; track metric.labelKey) {
-      <article class="summary-card" [class.accent-blue]="metric.tone === 'blue'" [class.accent-green]="metric.tone === 'green'" [class.accent-amber]="metric.tone === 'amber'" [class.accent-red]="metric.tone === 'red'">
-        <span>{{ metric.labelKey | translate }}</span>
-        <strong>{{ metric.value }}</strong>
-      </article>
-    }
-  </section>
-
-  <section class="insight-layout">
-    <article class="narrative-card" [class.warning-card]="state() === 'insufficient'">
-      <div class="section-heading">
-        <div>
-          <h2>
-            {{
-              (state() === 'insufficient'
-                ? 'reports.ai-summary.unavailable-title'
-                : 'reports.ai-summary.generated-title'
-              ) | translate
-            }}
-          </h2>
-          <p>{{ 'reports.ai-summary.generated-subtitle' | translate }}</p>
-        </div>
+  @if (!reports().length && !loading()) {
+    <section class="empty-state">
+      <mat-icon aria-hidden="true">description</mat-icon>
+      <div>
+        <h2>{{ 'reports.ai-summary.empty-title' | translate }}</h2>
+        <p>{{ 'reports.ai-summary.empty-description' | translate }}</p>
       </div>
-
-      <p class="narrative-text">{{ generatedSummary() | translate }}</p>
-
-      @if (state() !== 'insufficient') {
-        <div class="next-steps">
-          <h3>{{ 'reports.ai-summary.follow-up-title' | translate }}</h3>
-          <ul>
-            <li>{{ 'reports.ai-summary.follow-up-evidence' | translate }}</li>
-            <li>{{ 'reports.ai-summary.follow-up-procedure' | translate }}</li>
-            <li>{{ 'reports.ai-summary.follow-up-calibration' | translate }}</li>
-          </ul>
-        </div>
+    </section>
+  } @else {
+    <section class="summary-grid" aria-label="Report source metrics">
+      @for (metric of sourceMetrics(); track metric.labelKey) {
+        <article class="summary-card" [class.accent-blue]="metric.tone === 'blue'" [class.accent-green]="metric.tone === 'green'" [class.accent-amber]="metric.tone === 'amber'" [class.accent-red]="metric.tone === 'red'">
+          <span>{{ metric.labelKey | translate }}</span>
+          <strong>{{ metric.value }}</strong>
+        </article>
       }
-    </article>
+    </section>
 
-    <aside class="risk-card">
-      <div class="section-heading compact-heading">
-        <div>
-          <h2>{{ 'reports.ai-summary.risks-title' | translate }}</h2>
-          <p>{{ 'reports.ai-summary.risks-subtitle' | translate }}</p>
-        </div>
-      </div>
-
-      <div class="risk-list">
-        @for (risk of risks; track risk.titleKey) {
-          <article class="risk-item" [class.high-risk]="risk.severity === 'high'">
-            <mat-icon aria-hidden="true">{{ risk.severity === 'high' ? 'priority_high' : 'report_problem' }}</mat-icon>
+    @if (summary(); as currentSummary) {
+      <section class="insight-layout">
+        <article class="narrative-card">
+          <div class="section-heading">
             <div>
-              <strong>{{ risk.titleKey | translate }}</strong>
-              <p>{{ risk.descriptionKey | translate }}</p>
+              <h2>{{ 'reports.ai-summary.generated-title' | translate }}</h2>
+              <p>
+                {{
+                  'reports.ai-summary.generated-meta'
+                    | translate: {
+                      date: formatDate(currentSummary.summaryGeneratedAt),
+                      provider: currentSummary.modelProvider,
+                      model: currentSummary.modelName
+                    }
+                }}
+              </p>
             </div>
-          </article>
+          </div>
+
+          <p class="narrative-text">{{ currentSummary.executiveSummary }}</p>
+        </article>
+
+        <aside class="source-card">
+          <h2>{{ 'reports.ai-summary.source-title' | translate }}</h2>
+          <dl>
+            <div>
+              <dt>{{ 'reports.ai-summary.source-report' | translate }}</dt>
+              <dd>{{ currentSummary.reportTitle }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'reports.ai-summary.source-type' | translate }}</dt>
+              <dd>{{ reportTypeLabelKey(currentSummary.reportType) | translate }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'reports.ai-summary.source-date' | translate }}</dt>
+              <dd>{{ formatDate(currentSummary.sourceReport.generatedAt) }}</dd>
+            </div>
+          </dl>
+        </aside>
+      </section>
+
+      <section class="findings-card">
+        <div class="section-heading">
+          <div>
+            <h2>{{ 'reports.ai-summary.findings-title' | translate }}</h2>
+            <p>{{ 'reports.ai-summary.findings-subtitle' | translate }}</p>
+          </div>
+        </div>
+
+        @if (!currentSummary.findings.length) {
+          <p class="muted-copy">{{ 'reports.ai-summary.findings-empty' | translate }}</p>
         }
-      </div>
-    </aside>
-  </section>
+
+        <div class="finding-list">
+          @for (finding of currentSummary.findings; track finding.area + finding.status) {
+            <article [class]="'finding-item ' + findingStatusClass(finding.status)">
+              <div class="finding-header">
+                <span>{{ finding.area }}</span>
+                <strong>{{ finding.status }}</strong>
+              </div>
+              <p>{{ finding.evidence }}</p>
+              <div class="recommendation">
+                <mat-icon aria-hidden="true">checklist</mat-icon>
+                <span>{{ finding.recommendation }}</span>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="support-grid">
+        <article class="support-card">
+          <h2>{{ 'reports.ai-summary.evidence-gaps-title' | translate }}</h2>
+          @if (currentSummary.evidenceGaps.length) {
+            <ul>
+              @for (gap of currentSummary.evidenceGaps; track gap) {
+                <li>{{ gap }}</li>
+              }
+            </ul>
+          } @else {
+            <p>{{ 'reports.ai-summary.no-evidence-gaps' | translate }}</p>
+          }
+        </article>
+
+        <article class="support-card">
+          <h2>{{ 'reports.ai-summary.actions-title' | translate }}</h2>
+          @if (currentSummary.recommendedActions.length) {
+            <ol>
+              @for (action of currentSummary.recommendedActions; track action) {
+                <li>{{ action }}</li>
+              }
+            </ol>
+          } @else {
+            <p>{{ 'reports.ai-summary.no-actions' | translate }}</p>
+          }
+        </article>
+
+        <article class="support-card">
+          <h2>{{ 'reports.ai-summary.uncertainty-title' | translate }}</h2>
+          @if (currentSummary.uncertaintyNotes.length) {
+            <ul>
+              @for (note of currentSummary.uncertaintyNotes; track note) {
+                <li>{{ note }}</li>
+              }
+            </ul>
+          } @else {
+            <p>{{ 'reports.ai-summary.no-uncertainty' | translate }}</p>
+          }
+        </article>
+      </section>
+    } @else {
+      <section class="ready-state">
+        <mat-icon aria-hidden="true">auto_awesome</mat-icon>
+        <div>
+          <h2>{{ 'reports.ai-summary.ready-title' | translate }}</h2>
+          <p>{{ 'reports.ai-summary.ready-description' | translate }}</p>
+        </div>
+      </section>
+    }
+  }
 </section>
