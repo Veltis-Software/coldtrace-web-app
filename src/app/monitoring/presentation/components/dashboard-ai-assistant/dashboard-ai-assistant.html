@@ -46,147 +46,146 @@
     </span>
 
     <div class="ai-body">
-      @if (loading() && !interpretation()) {
+      @if (chatTurns().length === 0) {
         <article class="ai-state">
-          <mat-icon aria-hidden="true">hourglass_top</mat-icon>
+          <mat-icon aria-hidden="true">chat</mat-icon>
           <div>
-            <h3>{{ 'monitoring.operational.ai-loading-title' | translate }}</h3>
-            <p>{{ 'monitoring.operational.ai-loading-body' | translate }}</p>
+            <h3>{{ 'monitoring.operational.ai-empty-title' | translate }}</h3>
+            <p>{{ 'monitoring.operational.ai-empty-body' | translate }}</p>
           </div>
         </article>
-      } @else {
-        @if (hasFailure()) {
-          <article class="ai-state error">
-            <mat-icon aria-hidden="true">error</mat-icon>
-            <div>
-              <h3>{{ failureTitleKey() | translate }}</h3>
-              <p>{{ failureBodyKey() | translate }}</p>
+      }
 
-              @if (failure() === 'plan-locked') {
-                <a class="ai-state-action" routerLink="/settings/billing">
-                  {{ 'monitoring.operational.ai-upgrade' | translate }}
-                </a>
-              } @else if (failure() === 'auth-required') {
-                <a class="ai-state-action" routerLink="/identity-access/sign-in">
-                  {{ 'monitoring.operational.ai-sign-in' | translate }}
-                </a>
-              } @else {
-                <button class="ai-state-action" type="button" (click)="retry()">
-                  {{ 'monitoring.operational.ai-retry' | translate }}
-                </button>
-              }
-            </div>
-          </article>
-        }
+      @if (chatTurns().length > 0) {
+        <section class="ai-chat" aria-labelledby="ai-chat-title">
+          <h3 id="ai-chat-title">{{ 'monitoring.operational.ai-chat-title' | translate }}</h3>
 
-        @if (hasGeneratedContent()) {
-          <article class="ai-summary">
-            <div>
-              <span>{{ 'monitoring.operational.ai-summary-title' | translate }}</span>
-              <h3>{{ interpretation()?.overallReading }}</h3>
-            </div>
+          <div class="ai-chat-list">
+            @for (turn of chatTurns(); track turn.id) {
+              <article class="ai-message user">
+                <span>{{ 'monitoring.operational.ai-chat-user' | translate }}</span>
+                <p>{{ turn.question }}</p>
+              </article>
 
-            @if (formattedGeneratedAt()) {
-              <p class="ai-metadata">
-                {{ 'monitoring.operational.ai-generated-at' | translate }}
-                {{ formattedGeneratedAt() }}
-              </p>
+              <article class="ai-message assistant">
+                <span>{{ 'monitoring.operational.ai-chat-assistant' | translate }}</span>
+
+                @if (turn.loading) {
+                  <p>{{ 'monitoring.operational.ai-chat-loading' | translate }}</p>
+                } @else if (turn.localAnswer) {
+                  <p>{{ turn.localAnswer }}</p>
+                } @else if (turn.failure !== 'none') {
+                  <strong>{{ failureTitleKeyFor(turn.failure) | translate }}</strong>
+                  <p>{{ failureBodyKeyFor(turn.failure) | translate }}</p>
+                  <button class="ai-chat-action" type="button" (click)="retryChatTurn(turn)">
+                    {{ 'monitoring.operational.ai-retry' | translate }}
+                  </button>
+                } @else if (turn.answer; as answer) {
+                  <article class="ai-summary compact">
+                    <div>
+                      <span>{{ 'monitoring.operational.ai-answer-title' | translate }}</span>
+                      <h3>{{ answer.overallReading }}</h3>
+                    </div>
+
+                    @if (formattedGeneratedAtFor(answer)) {
+                      <p class="ai-metadata">
+                        {{ 'monitoring.operational.ai-generated-at' | translate }}
+                        {{ formattedGeneratedAtFor(answer) }}
+                      </p>
+                    }
+                  </article>
+
+                  @if (visibleMetricInsightsFor(answer).length > 0) {
+                    <div class="ai-insight-list compact">
+                      @for (insight of visibleMetricInsightsFor(answer); track insight.title) {
+                        <article
+                          class="ai-insight"
+                          [class.ok]="metricTone(insight) === 'ok'"
+                          [class.warning]="metricTone(insight) === 'warning'"
+                          [class.critical]="metricTone(insight) === 'critical'"
+                        >
+                          <span>{{ metricInsightLabel(insight) }}</span>
+                          <strong>{{ insight.title }}</strong>
+                          <p>{{ insight.interpretation }}</p>
+                        </article>
+                      }
+                    </div>
+                  }
+
+                  <details class="ai-details compact">
+                    <summary>{{ 'monitoring.operational.ai-details-title' | translate }}</summary>
+
+                    <div class="ai-details-body">
+                      @if (answer.risks.length > 0) {
+                        <section class="ai-section compact">
+                          <h3>{{ 'monitoring.operational.ai-risks-title' | translate }}</h3>
+                          <ul class="ai-list">
+                            @for (risk of answer.risks; track $index) {
+                              <li>{{ risk }}</li>
+                            }
+                          </ul>
+                        </section>
+                      }
+
+                      @if (answer.recommendedActions.length > 0) {
+                        <section class="ai-section compact">
+                          <h3>{{ 'monitoring.operational.ai-actions-title' | translate }}</h3>
+                          <ol class="ai-list numbered">
+                            @for (action of answer.recommendedActions; track $index) {
+                              <li>{{ action }}</li>
+                            }
+                          </ol>
+                        </section>
+                      }
+
+                      @if (answer.uncertaintyNotes.length > 0) {
+                        <section class="ai-section compact">
+                          <h3>{{ 'monitoring.operational.ai-uncertainty-title' | translate }}</h3>
+                          <ul class="ai-list muted">
+                            @for (note of answer.uncertaintyNotes; track $index) {
+                              <li>{{ note }}</li>
+                            }
+                          </ul>
+                        </section>
+                      }
+
+                      @if (visibleSourceMetricsFor(answer).length > 0) {
+                        <section class="ai-section compact">
+                          <h3>{{ 'monitoring.operational.ai-source-metrics-title' | translate }}</h3>
+
+                          <div class="ai-source-grid">
+                            @for (metric of visibleSourceMetricsFor(answer); track metric.name) {
+                              <article class="ai-source-metric">
+                                <span>{{ sourceMetricLabel(metric) }}</span>
+                                <strong>{{ formatSourceMetric(metric) }}</strong>
+                              </article>
+                            }
+                          </div>
+
+                          @if (hiddenSourceMetricCountFor(answer) > 0) {
+                            <p class="ai-source-note">
+                              {{
+                                'monitoring.operational.ai-source-metrics-extra'
+                                  | translate: { count: hiddenSourceMetricCountFor(answer) }
+                              }}
+                            </p>
+                          }
+                        </section>
+                      }
+
+                      @if (answer.modelProvider || answer.modelName) {
+                        <p class="ai-model">
+                          {{ 'monitoring.operational.ai-model-label' | translate }}
+                          {{ answer.modelProvider }} {{ answer.modelName }}
+                        </p>
+                      }
+                    </div>
+                  </details>
+                }
+              </article>
             }
-          </article>
-
-          @if ((interpretation()?.metricInsights ?? []).length > 0) {
-            <section class="ai-section" aria-labelledby="ai-metric-insights-title">
-              <h3 id="ai-metric-insights-title">
-                {{ 'monitoring.operational.ai-metric-insights-title' | translate }}
-              </h3>
-
-              <div class="ai-insight-list">
-                @for (insight of interpretation()?.metricInsights ?? []; track insight.title) {
-                  <article
-                    class="ai-insight"
-                    [class.ok]="metricTone(insight) === 'ok'"
-                    [class.warning]="metricTone(insight) === 'warning'"
-                    [class.critical]="metricTone(insight) === 'critical'"
-                  >
-                    <span>{{ insight.metric }}</span>
-                    <strong>{{ insight.title }}</strong>
-                    <p>{{ insight.interpretation }}</p>
-                  </article>
-                }
-              </div>
-            </section>
-          }
-
-          @if ((interpretation()?.risks ?? []).length > 0) {
-            <section class="ai-section" aria-labelledby="ai-risks-title">
-              <h3 id="ai-risks-title">{{ 'monitoring.operational.ai-risks-title' | translate }}</h3>
-              <ul class="ai-list">
-                @for (risk of interpretation()?.risks ?? []; track $index) {
-                  <li>{{ risk }}</li>
-                }
-              </ul>
-            </section>
-          }
-
-          @if ((interpretation()?.recommendedActions ?? []).length > 0) {
-            <section class="ai-section" aria-labelledby="ai-actions-title">
-              <h3 id="ai-actions-title">
-                {{ 'monitoring.operational.ai-actions-title' | translate }}
-              </h3>
-              <ol class="ai-list numbered">
-                @for (action of interpretation()?.recommendedActions ?? []; track $index) {
-                  <li>{{ action }}</li>
-                }
-              </ol>
-            </section>
-          }
-
-          @if ((interpretation()?.uncertaintyNotes ?? []).length > 0) {
-            <section class="ai-section" aria-labelledby="ai-uncertainty-title">
-              <h3 id="ai-uncertainty-title">
-                {{ 'monitoring.operational.ai-uncertainty-title' | translate }}
-              </h3>
-              <ul class="ai-list muted">
-                @for (note of interpretation()?.uncertaintyNotes ?? []; track $index) {
-                  <li>{{ note }}</li>
-                }
-              </ul>
-            </section>
-          }
-
-          @if ((interpretation()?.sourceMetrics ?? []).length > 0) {
-            <section class="ai-section" aria-labelledby="ai-source-metrics-title">
-              <h3 id="ai-source-metrics-title">
-                {{ 'monitoring.operational.ai-source-metrics-title' | translate }}
-              </h3>
-
-              <div class="ai-source-grid">
-                @for (metric of interpretation()?.sourceMetrics ?? []; track metric.name) {
-                  <article class="ai-source-metric">
-                    <span>{{ metric.name }}</span>
-                    <strong>{{ formatSourceMetric(metric) }}</strong>
-                    <p>{{ metric.description }}</p>
-                  </article>
-                }
-              </div>
-            </section>
-          }
-
-          @if (interpretation()?.modelProvider || interpretation()?.modelName) {
-            <p class="ai-model">
-              {{ 'monitoring.operational.ai-model-label' | translate }}
-              {{ interpretation()?.modelProvider }} {{ interpretation()?.modelName }}
-            </p>
-          }
-        } @else if (!hasFailure()) {
-          <article class="ai-state">
-            <mat-icon aria-hidden="true">insights</mat-icon>
-            <div>
-              <h3>{{ 'monitoring.operational.ai-empty-title' | translate }}</h3>
-              <p>{{ 'monitoring.operational.ai-empty-body' | translate }}</p>
-            </div>
-          </article>
-        }
+          </div>
+        </section>
       }
 
       <section class="ai-qa" aria-labelledby="ai-qa-title">
@@ -195,7 +194,7 @@
         <div class="ai-prompts" aria-label="Suggested dashboard questions">
           @for (prompt of suggestedQuestions; track prompt.id) {
             <button type="button" (click)="askSuggestedQuestion(prompt)" [disabled]="loading()">
-              {{ prompt.textKey | translate }}
+              {{ prompt.textKey | translate: prompt.params }}
             </button>
           }
         </div>
