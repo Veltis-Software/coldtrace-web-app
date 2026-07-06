@@ -1,0 +1,341 @@
+<section class="ai-page" aria-labelledby="ai-guidance-title">
+  <header class="alerts-header">
+    <div class="view-header">
+      <div class="header-text">
+        <h1 id="ai-guidance-title" class="view-title">
+          {{ 'dashboard-shell.nav-alerts' | translate }}
+        </h1>
+        <p class="view-subtitle">{{ 'alerts.incident-list.ai-guidance-subtitle' | translate }}</p>
+      </div>
+    </div>
+
+    <div class="incident-workbar">
+      <nav class="incident-section-tabs" aria-label="Incident workflow sections">
+        <button type="button" (click)="openIncidents()">
+          {{ 'dashboard-shell.nav-incidents' | translate }}
+        </button>
+        <button type="button" (click)="openIncidents('closure')">
+          {{ 'alerts.incident-list.closure-title' | translate }}
+        </button>
+        <button type="button" class="active">
+          {{ 'dashboard-shell.nav-ai-guidance' | translate }}
+        </button>
+      </nav>
+
+      <div class="incident-toolbar">
+        <label class="search-box ai-incident-select">
+          <mat-icon class="search-icon" aria-hidden="true">warning</mat-icon>
+          <select
+            [value]="selectedIncident()?.id ?? 0"
+            (change)="selectIncident($any($event.target).value)"
+          >
+            @for (incident of activeIncidents(); track incident.id) {
+              <option [value]="incident.id">INC-{{ incident.id }} · {{ incident.assetName }}</option>
+            }
+          </select>
+        </label>
+
+        <button
+          type="button"
+          class="primary-action"
+          [disabled]="
+            generating() ||
+            loadingPlans() ||
+            subscriptionLoading() ||
+            aiGuidanceLocked() ||
+            !selectedIncident()
+          "
+          (click)="generatePlan()"
+        >
+          @if (generating()) {
+            <mat-spinner diameter="14" />
+          } @else {
+            <mat-icon aria-hidden="true">auto_awesome</mat-icon>
+          }
+          {{ (generating() ? 'alerts.ai-guidance.generating' : 'alerts.ai-guidance.generate') | translate }}
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section
+    class="feedback-banner"
+    [class.feedback-approved]="feedback().kind === 'success'"
+    [class.feedback-rejected]="feedback().kind === 'error'"
+  >
+    <mat-icon aria-hidden="true">{{
+      feedback().kind === 'success'
+        ? 'task_alt'
+        : feedback().kind === 'error'
+          ? 'error_outline'
+          : 'info'
+    }}</mat-icon>
+    <span>{{ feedback().key | translate }}</span>
+  </section>
+
+  @if (alertsStore.loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (!selectedIncident()) {
+    <section class="panel empty-panel">
+      <mat-icon aria-hidden="true">check_circle</mat-icon>
+      <h2>{{ 'alerts.ai-guidance.empty-title' | translate }}</h2>
+      <p>{{ 'alerts.ai-guidance.empty-description' | translate }}</p>
+    </section>
+  } @else {
+    @if (selectedIncident(); as incident) {
+      <section class="incident-strip" aria-label="Incident selector">
+        <article class="incident-summary">
+          <span>{{ 'alerts.incident-list.col-asset' | translate }}</span>
+          <strong>{{ incident.assetName }}</strong>
+          <small>INC-{{ incident.id }}</small>
+        </article>
+        <article class="incident-summary">
+          <span>{{ 'alerts.incident-list.col-value' | translate }}</span>
+          <strong>{{ incident.value }}</strong>
+          <small>{{ typeLabelKey(incident.type) | translate }}</small>
+        </article>
+        <article class="incident-summary">
+          <span>{{ 'alerts.incident-list.col-status' | translate }}</span>
+          <strong>{{ incidentStatusLabelKey(incident.status) | translate }}</strong>
+          <small>{{ conditionLabelKey(incident.isConditionStable) | translate }}</small>
+        </article>
+        <article class="incident-summary">
+          <span>{{ 'alerts.incident-list.col-detected' | translate }}</span>
+          <strong>{{ formatDate(incident.detectedAt) }}</strong>
+          <small>{{ escalationLabelKey(incident.escalationStatus) | translate }}</small>
+        </article>
+      </section>
+
+      @if (subscriptionLoading()) {
+        <section class="panel state-panel">
+          <mat-spinner diameter="26" />
+          <div>
+            <h2>{{ 'alerts.ai-guidance.subscription-loading-title' | translate }}</h2>
+            <p>{{ 'alerts.ai-guidance.subscription-loading-description' | translate }}</p>
+          </div>
+        </section>
+      } @else if (subscriptionError()) {
+        <section class="panel state-panel state-panel-warning">
+          <mat-icon aria-hidden="true">wifi_off</mat-icon>
+          <div>
+            <h2>{{ 'alerts.ai-guidance.subscription-error-title' | translate }}</h2>
+            <p>{{ 'alerts.ai-guidance.subscription-error-description' | translate }}</p>
+          </div>
+          <button type="button" class="secondary-action" (click)="retrySubscription()">
+            {{ 'alerts.ai-guidance.retry' | translate }}
+          </button>
+        </section>
+      } @else if (aiGuidanceLocked()) {
+        <section class="panel state-panel state-panel-warning">
+          <mat-icon aria-hidden="true">lock</mat-icon>
+          <div>
+            <h2>{{ 'alerts.ai-guidance.locked-title' | translate }}</h2>
+            <p>{{ 'alerts.ai-guidance.locked-description' | translate }}</p>
+          </div>
+          <button type="button" class="primary-action" (click)="openBilling()">
+            <mat-icon aria-hidden="true">workspace_premium</mat-icon>
+            {{ 'alerts.ai-guidance.upgrade' | translate }}
+          </button>
+        </section>
+      }
+
+      @if (loadingPlans()) {
+        <div class="loading-container">
+          <mat-spinner diameter="32" />
+        </div>
+      } @else if (!activePlan()) {
+        <section class="panel empty-panel">
+          <mat-icon aria-hidden="true">auto_awesome</mat-icon>
+          <h2>{{ 'alerts.ai-guidance.no-plan-title' | translate }}</h2>
+          <p>{{ 'alerts.ai-guidance.no-plan-description' | translate }}</p>
+        </section>
+      } @else if (activePlan(); as plan) {
+        <section class="ai-grid">
+          <article class="panel plan-panel">
+            <div class="panel-heading">
+              <div>
+                <h2>{{ 'alerts.ai-guidance.plan-title' | translate }}</h2>
+                <p>{{ 'alerts.ai-guidance.plan-description' | translate }}</p>
+              </div>
+              <span
+                class="status-pill"
+                [class.status-approved]="plan.status === 'approved'"
+                [class.status-rejected]="plan.status === 'rejected'"
+              >
+                <mat-icon aria-hidden="true">{{ statusIcon(plan.status) }}</mat-icon>
+                {{ planStatusLabelKey(plan.status) | translate }}
+              </span>
+            </div>
+
+            <div class="plan-cause">
+              <mat-icon aria-hidden="true">psychology</mat-icon>
+              <div>
+                <span>{{ 'alerts.ai-guidance.probable-cause' | translate }}</span>
+                <strong>{{ plan.probableCause }}</strong>
+                <p>{{ plan.summary }}</p>
+                <small>
+                  {{ 'alerts.ai-guidance.generated-at' | translate }} {{ formatDate(plan.generatedAt) }}
+                  · {{ plan.modelProvider }} {{ plan.modelName }}
+                </small>
+              </div>
+            </div>
+
+            <div class="step-list">
+              @for (step of plan.recommendedSteps; track step.sequence) {
+                <article class="step-card">
+                  <div class="step-index">{{ step.sequence }}</div>
+                  <div>
+                    <h3>{{ step.action }}</h3>
+                    <p>{{ step.rationale }}</p>
+                    <small>{{ step.expectedOutcome }}</small>
+                  </div>
+                </article>
+              }
+            </div>
+
+            <div class="support-grid">
+              <article class="support-card">
+                <h3>{{ 'alerts.ai-guidance.required-evidence' | translate }}</h3>
+                <ul>
+                  @for (evidence of plan.requiredEvidence; track evidence) {
+                    <li>{{ evidence }}</li>
+                  }
+                </ul>
+              </article>
+              <article class="support-card">
+                <h3>{{ 'alerts.ai-guidance.uncertainty-notes' | translate }}</h3>
+                <ul>
+                  @for (note of plan.uncertaintyNotes; track note) {
+                    <li>{{ note }}</li>
+                  }
+                </ul>
+              </article>
+              <article class="support-card">
+                <h3>{{ 'alerts.ai-guidance.escalation' | translate }}</h3>
+                <p>
+                  {{
+                    (plan.escalationRecommended
+                      ? 'alerts.ai-guidance.escalation-recommended'
+                      : 'alerts.ai-guidance.escalation-not-required') | translate
+                  }}
+                </p>
+                <small>{{ escalationUrgencyLabelKey(plan.escalationUrgency) | translate }}</small>
+                @if (plan.escalationReason) {
+                  <p>{{ plan.escalationReason }}</p>
+                }
+              </article>
+            </div>
+          </article>
+
+          <aside class="panel decision-panel">
+            <h2>{{ 'alerts.ai-guidance.decision-title' | translate }}</h2>
+            <p>{{ 'alerts.ai-guidance.decision-description' | translate }}</p>
+
+            @if (plan.status === 'pending') {
+              <form [formGroup]="approvalForm" (ngSubmit)="approvePlan()">
+                <label class="field">
+                  <span>{{ 'alerts.ai-guidance.final-corrective-action' | translate }}</span>
+                  <textarea rows="5" formControlName="finalCorrectiveAction"></textarea>
+                  @if (hasApprovalControlError('finalCorrectiveAction')) {
+                    <small>{{ 'alerts.ai-guidance.final-corrective-action-error' | translate }}</small>
+                  }
+                </label>
+
+                <label class="field">
+                  <span>{{ 'alerts.ai-guidance.final-resolution-notes' | translate }}</span>
+                  <textarea rows="4" formControlName="finalResolutionNotes"></textarea>
+                  @if (hasApprovalControlError('finalResolutionNotes')) {
+                    <small>{{ 'alerts.ai-guidance.final-resolution-notes-error' | translate }}</small>
+                  }
+                </label>
+
+                <button
+                  type="submit"
+                  class="primary-action"
+                  [disabled]="!canSubmitDecision() || isDecisionInProgress(plan)"
+                >
+                  @if (isDecisionInProgress(plan)) {
+                    <mat-spinner diameter="14" />
+                  } @else {
+                    <mat-icon aria-hidden="true">assignment_turned_in</mat-icon>
+                  }
+                  {{ 'alerts.ai-guidance.approve' | translate }}
+                </button>
+              </form>
+
+              <form [formGroup]="rejectionForm" (ngSubmit)="rejectPlan()">
+                <label class="field rejection-field">
+                  <span>{{ 'alerts.ai-guidance.rejection-reason' | translate }}</span>
+                  <textarea
+                    rows="3"
+                    formControlName="rejectionReason"
+                    [placeholder]="'alerts.ai-guidance.rejection-placeholder' | translate"
+                  ></textarea>
+                  @if (hasRejectionControlError()) {
+                    <small>{{ 'alerts.ai-guidance.rejection-reason-error' | translate }}</small>
+                  }
+                </label>
+
+                <button
+                  type="submit"
+                  class="secondary-action danger-action"
+                  [disabled]="!canSubmitDecision() || isDecisionInProgress(plan)"
+                >
+                  <mat-icon aria-hidden="true">do_not_disturb_on</mat-icon>
+                  {{ 'alerts.ai-guidance.reject' | translate }}
+                </button>
+              </form>
+            } @else {
+              <div class="decision-result">
+                <mat-icon aria-hidden="true">{{ statusIcon(plan.status) }}</mat-icon>
+                <strong>{{ planStatusLabelKey(plan.status) | translate }}</strong>
+                @if (plan.status === 'approved') {
+                  <p>{{ plan.finalCorrectiveAction }}</p>
+                  <small>{{ plan.approvedBy }} · {{ formatDate(plan.approvedAt) }}</small>
+                } @else {
+                  <p>{{ plan.rejectionReason }}</p>
+                  <small>{{ plan.rejectedBy }} · {{ formatDate(plan.rejectedAt) }}</small>
+                }
+              </div>
+            }
+          </aside>
+        </section>
+      }
+
+      <section class="panel history-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>{{ 'alerts.ai-guidance.history-title' | translate }}</h2>
+            <p>{{ 'alerts.ai-guidance.history-description' | translate }}</p>
+          </div>
+          <button type="button" class="secondary-action" (click)="retryHistory()">
+            {{ 'alerts.ai-guidance.reload' | translate }}
+          </button>
+        </div>
+
+        <div class="history-list">
+          @for (item of sortedPlans(); track item.id) {
+            <article
+              class="history-item"
+              [class.history-approved]="item.status === 'approved'"
+              [class.history-rejected]="item.status === 'rejected'"
+            >
+              <mat-icon aria-hidden="true">{{ statusIcon(item.status) }}</mat-icon>
+              <div>
+                <strong>{{ planStatusLabelKey(item.status) | translate }}</strong>
+                <p>{{ item.summary }}</p>
+                <small>{{ formatDate(item.generatedAt) }}</small>
+              </div>
+            </article>
+          } @empty {
+            <div class="history-empty">
+              {{ 'alerts.ai-guidance.history-empty' | translate }}
+            </div>
+          }
+        </div>
+      </section>
+    }
+  }
+</section>

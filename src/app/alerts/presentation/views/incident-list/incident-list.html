@@ -324,6 +324,15 @@
 
                         <button
                           type="button"
+                          class="ai-guidance-action-btn"
+                          [attr.aria-label]="'alerts.incident-list.action-ai-guidance' | translate"
+                          (click)="openAiGuidance(incident)"
+                        >
+                          <mat-icon aria-hidden="true">auto_awesome</mat-icon>
+                        </button>
+
+                        <button
+                          type="button"
                           class="notifications-action-btn"
                           [attr.aria-label]="'alerts.incident-list.action-notifications' | translate"
                           (click)="reviewIncidentNotifications(incident)"

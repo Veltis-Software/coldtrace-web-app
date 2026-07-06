@@ -263,6 +263,7 @@
 }
 
 .recognize-btn,
+.ai-guidance-action-btn,
 .notifications-action-btn {
   align-items: center;
   background: transparent;
@@ -298,6 +299,14 @@
   min-width: 120px;
 }
 
+.ai-guidance-action-btn {
+  border-color: #c7d2fe;
+  color: #2563eb;
+  height: 34px;
+  min-width: 34px;
+  padding: 0;
+}
+
 .notifications-action-btn {
   border-color: #c7d2fe;
   color: #2563eb;
@@ -306,6 +315,7 @@
   padding: 0;
 }
 
+.ai-guidance-action-btn mat-icon,
 .notifications-action-btn mat-icon {
   font-size: 18px;
   height: 18px;
