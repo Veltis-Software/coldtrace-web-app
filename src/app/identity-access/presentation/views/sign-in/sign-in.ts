@@ -17,7 +17,8 @@ type SignInFeedback =
   | 'success'
   | 'server-error'
   | 'onboarding-required'
-  | 'social-unavailable';
+  | 'social-unavailable'
+  | 'social-validation-failed';
 
 type SocialProviderCode = 'google' | 'apple';
 
@@ -219,6 +220,14 @@ export class SignIn {
     provider?: SocialProviderCode,
   ): void {
     this.signingIn.set(false);
+
+    if (
+      provider &&
+      (error.status === 401 || error.error?.code === 'PROVIDER_VALIDATION_FAILED')
+    ) {
+      this.feedback.set('social-validation-failed');
+      return;
+    }
 
     if (error.status === 401) {
       this.feedback.set('invalid-credentials');

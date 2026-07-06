@@ -72,6 +72,10 @@
         <p class="form-feedback error">{{ 'sign-in.error.social-unavailable' | translate }}</p>
       }
 
+      @if (feedback() === 'social-validation-failed') {
+        <p class="form-feedback error">{{ 'sign-in.error.social-validation-failed' | translate }}</p>
+      }
+
       <button class="primary-action" type="submit" [disabled]="signingIn()">
         {{ (signingIn() ? 'sign-in.signing-in' : 'sign-in.login') | translate }}
       </button>

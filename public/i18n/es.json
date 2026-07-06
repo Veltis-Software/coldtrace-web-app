@@ -32,7 +32,8 @@
       "revoked-access": "Acceso revocado. Contacta al administrador de tu organización.",
       "server-error": "No se pudo validar la cuenta. Inténtalo nuevamente.",
       "onboarding-required": "Completa el registro de organización antes de acceder a ColdTrace.",
-      "social-unavailable": "No se pudo iniciar esta opción de acceso. Inténtalo nuevamente."
+      "social-unavailable": "No se pudo iniciar esta opción de acceso. Inténtalo nuevamente.",
+      "social-validation-failed": "Google o Apple no pudo validar este inicio de sesión. Inténtalo nuevamente o usa correo y contraseña."
     }
   },
   "password-recovery": {
