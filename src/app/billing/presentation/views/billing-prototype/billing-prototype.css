@@ -56,6 +56,7 @@
 
 .page-heading,
 .billing-status,
+.loading-panel,
 .plan-grid,
 .dashboard-grid {
   max-width: none;
@@ -154,6 +155,7 @@ button:disabled {
 }
 
 .billing-status,
+.loading-panel,
 .plan-card,
 .panel {
   background: #fff;
@@ -173,8 +175,48 @@ button:disabled {
   padding: 13px 15px;
 }
 
+.billing-status strong {
+  color: var(--color-text);
+  flex-basis: 100%;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.status-success {
+  background: var(--color-success-soft);
+  border-color: rgba(16, 185, 129, 0.2);
+  color: var(--color-success);
+}
+
+.status-warning {
+  background: #fffbeb;
+  border-color: rgba(217, 119, 6, 0.24);
+  color: var(--color-warning);
+}
+
+.status-error {
+  background: #fff1f2;
+  border-color: rgba(220, 38, 38, 0.24);
+  color: var(--color-danger);
+}
+
 .inline-action {
   margin-left: auto;
+}
+
+.loading-panel {
+  align-items: center;
+  color: var(--color-text-muted);
+  display: flex;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 10px;
+  min-height: 72px;
+  padding: 18px;
+}
+
+.empty-panel {
+  grid-column: 1 / -1;
 }
 
 .plan-grid {
@@ -199,13 +241,19 @@ button:disabled {
 }
 
 .current-badge,
-.status-pill {
+.status-pill,
+.recommended-badge {
   background: var(--color-success-soft);
   border-radius: 8px;
   color: var(--color-success);
   font-size: 12px;
   font-weight: 800;
   padding: 6px 10px;
+}
+
+.recommended-badge {
+  background: #eff4ff;
+  color: var(--color-primary);
 }
 
 .plan-price {
@@ -219,10 +267,15 @@ button:disabled {
   gap: 8px;
 }
 
+.compact-list {
+  gap: 7px;
+}
+
 .plan-list > span,
 .subscription-meta span,
 .usage-item span,
-.locked-item small {
+.locked-item small,
+.section-label {
   color: #667085;
   font-size: 12px;
   font-weight: 800;
@@ -237,6 +290,18 @@ button:disabled {
   gap: 8px;
 }
 
+.plan-list-item strong {
+  color: var(--color-text);
+  font-size: 12px;
+  min-width: 72px;
+}
+
+.plan-list-item small {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .plan-list-item mat-icon {
   color: var(--color-success);
   font-size: 18px;
@@ -246,6 +311,14 @@ button:disabled {
 
 .plan-list-item.muted mat-icon {
   color: var(--color-text-subtle);
+}
+
+.plan-list-item.disabled-feature {
+  color: var(--color-text-subtle);
+}
+
+.plan-list-item.disabled-feature mat-icon {
+  color: var(--color-danger);
 }
 
 .dashboard-grid {
@@ -264,6 +337,20 @@ button:disabled {
   border-top: 1px solid var(--color-border);
   margin-top: 18px;
   padding: 16px 0;
+}
+
+.subscription-warning {
+  align-items: center;
+  background: #fffbeb;
+  border: 1px solid rgba(217, 119, 6, 0.24);
+  border-radius: 8px;
+  color: var(--color-warning);
+  display: flex;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 10px 12px;
 }
 
 .subscription-meta div {
@@ -340,15 +427,23 @@ button:disabled {
   border-color: #e4e7ec;
 }
 
-.locked-usage div:first-child span {
+.locked-usage div:first-child span,
+.unlimited-usage div:first-child span {
   background: #f3f4f6;
   border-color: #e4e7ec;
   color: var(--color-text-muted);
 }
 
-.locked-usage .usage-bar span {
+.locked-usage .usage-bar span,
+.unlimited-usage .usage-bar span {
   background: #cbd5e1;
   min-width: 0;
+}
+
+.entitlement-section {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
 }
 
 .locked-item {
@@ -364,10 +459,22 @@ button:disabled {
   color: var(--color-warning);
 }
 
+.available-item mat-icon {
+  color: var(--color-success);
+}
+
 .locked-item strong {
   color: var(--color-text);
   font-size: 13px;
   font-weight: 800;
+}
+
+.empty-copy {
+  color: var(--color-text-subtle);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 20px;
+  margin: 0;
 }
 
 .full-action {

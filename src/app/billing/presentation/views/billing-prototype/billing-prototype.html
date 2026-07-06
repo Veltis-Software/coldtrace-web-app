@@ -2,7 +2,7 @@
   <div class="page-heading">
     <div>
       <h1 id="settings-title">{{ 'dashboard-shell.nav-settings' | translate }}</h1>
-      <p>Preview plan selection, current subscription, Stripe Checkout, Customer Portal, and locked states.</p>
+      <p>Manage the organization subscription, plan limits, Stripe Checkout, and Customer Portal access.</p>
     </div>
   </div>
 
@@ -26,131 +26,224 @@
     </nav>
 
     <div class="heading-actions">
-      <button type="button" class="secondary-action" (click)="openPortal()">
+      <button
+        type="button"
+        class="secondary-action"
+        [disabled]="loading() || portalLoading() || !canOpenPortal()"
+        (click)="openPortal()"
+      >
         <mat-icon aria-hidden="true">receipt_long</mat-icon>
-        Customer Portal
+        {{ portalLoading() ? 'Opening portal' : 'Customer Portal' }}
       </button>
     </div>
   </div>
 
-  <section class="billing-status" aria-live="polite">
-    <mat-icon aria-hidden="true">info</mat-icon>
-    <span>{{ checkoutMessage() }}</span>
-    @if (checkoutState() === 'checkout') {
-      <button type="button" class="inline-action" (click)="confirmWebhook()">Simulate webhook confirmation</button>
+  <section
+    class="billing-status"
+    [class.status-success]="statusKind() === 'success'"
+    [class.status-warning]="statusKind() === 'warning'"
+    [class.status-error]="statusKind() === 'error'"
+    aria-live="polite"
+  >
+    <mat-icon aria-hidden="true">
+      {{ statusKind() === 'error' ? 'error' : statusKind() === 'success' ? 'check_circle' : 'info' }}
+    </mat-icon>
+    <span>{{ statusMessage() }}</span>
+    @if (errorMessage()) {
+      <strong>{{ errorMessage() }}</strong>
+    }
+    @if (errorMessage()) {
+      <button type="button" class="inline-action" (click)="loadBilling()">Retry</button>
     }
   </section>
 
-  <section class="plan-grid" aria-label="Plan comparison">
-    @for (plan of plans; track plan.id) {
-      <article class="plan-card" [class.plan-featured]="plan.highlighted" [class.plan-selected]="selectedPlanId() === plan.id">
-        <div class="plan-header">
-          <div>
-            <h2>{{ plan.name }}</h2>
-            <p>{{ plan.description }}</p>
+  @if (loading()) {
+    <section class="loading-panel" aria-live="polite">
+      <mat-icon aria-hidden="true">hourglass_top</mat-icon>
+      <span>Loading subscription plans and current organization billing state.</span>
+    </section>
+  } @else {
+    <section class="plan-grid" aria-label="Plan comparison">
+      @for (plan of visiblePlans(); track plan.code) {
+        <article
+          class="plan-card"
+          [class.plan-featured]="plan.recommended"
+          [class.plan-selected]="isCurrentPlan(plan)"
+        >
+          <div class="plan-header">
+            <div>
+              <h2>{{ plan.displayName }}</h2>
+              <p>{{ plan.description }}</p>
+            </div>
+            @if (isCurrentPlan(plan)) {
+              <span class="current-badge">Current</span>
+            } @else if (plan.recommended) {
+              <span class="recommended-badge">{{ plan.recommendedLabel || 'Recommended' }}</span>
+            }
           </div>
-          @if (currentPlanId() === plan.id) {
-            <span class="current-badge">Current</span>
-          }
+
+          <strong class="plan-price">{{ formatPrice(plan) }}</strong>
+
+          <div class="plan-list">
+            <span>Includes</span>
+            @for (feature of plan.includedFeatures; track feature) {
+              <div class="plan-list-item">
+                <mat-icon aria-hidden="true">check_circle</mat-icon>
+                {{ feature }}
+              </div>
+            }
+          </div>
+
+          <div class="plan-list compact-list">
+            <span>Limits</span>
+            @for (limit of planLimits(plan); track limit.label) {
+              <div class="plan-list-item muted">
+                <mat-icon aria-hidden="true">tune</mat-icon>
+                <strong>{{ limit.label }}</strong>
+                <small>{{ limit.value }}</small>
+              </div>
+            }
+          </div>
+
+          <div class="plan-list compact-list">
+            <span>Capabilities</span>
+            @for (featureFlag of featureFlags(plan); track featureFlag.label) {
+              <div class="plan-list-item muted" [class.disabled-feature]="!featureFlag.enabled">
+                <mat-icon aria-hidden="true">
+                  {{ featureFlag.enabled ? 'check_circle' : 'block' }}
+                </mat-icon>
+                {{ featureFlag.label }}
+              </div>
+            }
+          </div>
+
+          <div class="plan-actions">
+            <button
+              type="button"
+              class="primary-action"
+              [disabled]="isPlanActionDisabled(plan)"
+              (click)="startCheckout(plan)"
+            >
+              {{ planActionLabel(plan) }}
+            </button>
+          </div>
+        </article>
+      } @empty {
+        <section class="loading-panel empty-panel">
+          <mat-icon aria-hidden="true">inventory_2</mat-icon>
+          <span>No visible plans were returned by the backend.</span>
+        </section>
+      }
+    </section>
+  }
+
+  @if (subscription(); as currentSubscription) {
+    <section class="dashboard-grid">
+      <article class="panel subscription-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Current subscription</h2>
+            <p>Organization-level billing state and limits returned by the backend.</p>
+          </div>
+          <span class="status-pill">{{ currentSubscription.status }}</span>
         </div>
 
-        <strong class="plan-price">{{ plan.price }}</strong>
-
-        <div class="plan-list">
-          <span>Includes</span>
-          @for (feature of plan.features; track feature) {
-            <div class="plan-list-item">
-              <mat-icon aria-hidden="true">check_circle</mat-icon>
-              {{ feature }}
-            </div>
-          }
+        <div class="subscription-meta">
+          <div>
+            <span>Plan</span>
+            <strong>{{ currentSubscription.plan.displayName }}</strong>
+          </div>
+          <div>
+            <span>Next renewal</span>
+            <strong>{{ formatDate(currentSubscription.currentPeriodEnd) }}</strong>
+          </div>
+          <div>
+            <span>Provider</span>
+            <strong>{{ currentSubscription.provider }}</strong>
+          </div>
+          <div>
+            <span>Stripe customer</span>
+            <strong>{{ currentSubscription.providerCustomerId || 'Not created yet' }}</strong>
+          </div>
         </div>
 
-        <div class="plan-list">
-          <span>Limits</span>
-          @for (limit of plan.limits; track limit) {
-            <div class="plan-list-item muted">
-              <mat-icon aria-hidden="true">tune</mat-icon>
-              {{ limit }}
-            </div>
-          }
-        </div>
+        @if (currentSubscription.cancelAtPeriodEnd) {
+          <div class="subscription-warning">
+            <mat-icon aria-hidden="true">event_busy</mat-icon>
+            <span>This subscription is scheduled to cancel at the end of the current period.</span>
+          </div>
+        }
 
-        <div class="plan-actions">
-          <button type="button" class="secondary-action" (click)="selectPlan(plan.id)">Preview</button>
-          <button type="button" class="primary-action" [disabled]="currentPlanId() === plan.id" (click)="startCheckout(plan.id)">
-            {{ currentPlanId() === plan.id ? 'Current plan' : plan.cta }}
-          </button>
+        <div class="usage-list">
+          @for (item of usageItems(); track item.label) {
+            <article class="usage-item" [class.unlimited-usage]="item.limit === null">
+              <div>
+                <strong>{{ item.label }}</strong>
+                <span>{{ usageLabel(item) }}</span>
+              </div>
+              <div class="usage-bar">
+                <span [style.width.%]="usagePercent(item)"></span>
+              </div>
+            </article>
+          }
         </div>
       </article>
-    }
-  </section>
 
-  <section class="dashboard-grid">
-    <article class="panel subscription-panel">
-      <div class="panel-heading">
-        <div>
-          <h2>Current subscription</h2>
-          <p>Organization-level billing state and entitlements.</p>
+      <aside class="panel locked-panel">
+        <div class="panel-heading compact-heading">
+          <div>
+            <h2>Plan entitlements</h2>
+            <p>Frontend gates AI, exports, and limits using this backend response.</p>
+          </div>
         </div>
-        <span class="status-pill">Active</span>
-      </div>
 
-      <div class="subscription-meta">
-        <div>
-          <span>Plan</span>
-          <strong>{{ currentPlan().name }}</strong>
+        <div class="entitlement-section">
+          <span class="section-label">Available</span>
+          <div class="locked-list">
+            @for (entitlement of enabledEntitlements(); track entitlement.key) {
+              <article class="locked-item available-item">
+                <mat-icon aria-hidden="true">check_circle</mat-icon>
+                <div>
+                  <strong>{{ entitlementLabel(entitlement) }}</strong>
+                  <p>{{ entitlementUsage(entitlement) }}</p>
+                </div>
+              </article>
+            } @empty {
+              <p class="empty-copy">No available entitlements were returned.</p>
+            }
+          </div>
         </div>
-        <div>
-          <span>Next renewal</span>
-          <strong>Jul 22, 2026</strong>
-        </div>
-        <div>
-          <span>Stripe customer</span>
-          <strong>CUS-CT-4812</strong>
-        </div>
-      </div>
 
-      <div class="usage-list">
-        @for (item of usage; track item.label) {
-          <article class="usage-item" [class.locked-usage]="item.limit === 0">
-            <div>
-              <strong>{{ item.label }}</strong>
-              <span>{{ item.limit === 0 ? 'Not included' : item.used + ' / ' + item.limit }}</span>
-            </div>
-            <div class="usage-bar">
-              <span [style.width.%]="usagePercent(item)"></span>
-            </div>
-          </article>
+        <div class="entitlement-section">
+          <span class="section-label">Locked</span>
+          <div class="locked-list">
+            @for (entitlement of lockedEntitlements(); track entitlement.key) {
+              <article class="locked-item">
+                <mat-icon aria-hidden="true">lock</mat-icon>
+                <div>
+                  <strong>{{ entitlementLabel(entitlement) }}</strong>
+                  <p>{{ entitlement.lockedReason || 'Upgrade required for this capability.' }}</p>
+                  <small>{{ entitlement.category }}</small>
+                </div>
+              </article>
+            } @empty {
+              <p class="empty-copy">All returned entitlements are available for this plan.</p>
+            }
+          </div>
+        </div>
+
+        @if (visiblePlans().length) {
+          <button
+            type="button"
+            class="primary-action full-action"
+            [disabled]="checkoutPlanCode() !== null"
+            (click)="startCheckout(visiblePlans()[visiblePlans().length - 1])"
+          >
+            <mat-icon aria-hidden="true">upgrade</mat-icon>
+            Upgrade to unlock more
+          </button>
         }
-      </div>
-    </article>
-
-    <aside class="panel locked-panel">
-      <div class="panel-heading compact-heading">
-        <div>
-          <h2>Locked feature preview</h2>
-          <p>What users see when the active plan does not include a feature.</p>
-        </div>
-      </div>
-
-      <div class="locked-list">
-        @for (feature of lockedFeatures; track feature.name) {
-          <article class="locked-item">
-            <mat-icon aria-hidden="true">lock</mat-icon>
-            <div>
-              <strong>{{ feature.name }}</strong>
-              <p>{{ feature.reason }}</p>
-              <small>Upgrade required: {{ feature.requiredPlan }}</small>
-            </div>
-          </article>
-        }
-      </div>
-
-      <button type="button" class="primary-action full-action" (click)="startCheckout('compliance')">
-        <mat-icon aria-hidden="true">upgrade</mat-icon>
-        Upgrade to unlock AI
-      </button>
-    </aside>
-  </section>
+      </aside>
+    </section>
+  }
 </section>
