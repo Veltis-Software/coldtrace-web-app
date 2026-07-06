@@ -31,13 +31,13 @@ interface FeatureFlagItem {
 }
 
 @Component({
-  selector: 'app-billing-prototype',
+  selector: 'app-billing-management',
   standalone: true,
   imports: [MatIcon, RouterLink, TranslatePipe],
-  templateUrl: './billing-prototype.html',
-  styleUrl: './billing-prototype.css',
+  templateUrl: './billing-management.html',
+  styleUrl: './billing-management.css',
 })
-export class BillingPrototype implements OnInit {
+export class BillingManagement implements OnInit {
   private readonly billingApi = inject(BillingApi);
   private readonly route = inject(ActivatedRoute);
 

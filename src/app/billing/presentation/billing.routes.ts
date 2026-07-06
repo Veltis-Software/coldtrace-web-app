@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 
-const billingPrototype = () =>
-  import('./views/billing-prototype/billing-prototype').then((m) => m.BillingPrototype);
+const billingManagement = () =>
+  import('./views/billing-management/billing-management').then((m) => m.BillingManagement);
 
 /**
  * @summary Defines the lazy-loaded routes for the billing bounded context.
@@ -9,7 +9,7 @@ const billingPrototype = () =>
 export const billingRoutes: Routes = [
   {
     path: 'billing',
-    loadComponent: billingPrototype,
+    loadComponent: billingManagement,
     title: 'ColdTrace - Billing',
   },
   { path: '', redirectTo: 'billing', pathMatch: 'full' },
