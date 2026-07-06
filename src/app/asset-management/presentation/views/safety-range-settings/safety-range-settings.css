@@ -1,11 +1,21 @@
-@import '../../../../reports/presentation/views/sanitary-compliance/sanitary-compliance.css';
+@import '../settings-section.css';
 
 .safety-filter {
-  grid-template-columns: minmax(260px, 420px) minmax(180px, 1fr);
+  align-items: center;
+  grid-template-columns: minmax(260px, 420px) max-content;
+  justify-content: space-between;
 }
 
 .scope-field {
   max-width: 420px;
+}
+
+.safety-filter .filter-meta {
+  justify-self: end;
+  justify-items: end;
+  min-width: 160px;
+  text-align: right;
+  width: auto !important;
 }
 
 .settings-card {
@@ -37,15 +47,7 @@
   min-height: 62px;
 }
 
-.primary-action,
-.secondary-action {
-  box-shadow: none;
-  width: auto;
-}
-
 .primary-action {
-  border: 1px solid #2563eb !important;
-  font-family: 'Varela Round', Arial, sans-serif;
   height: 48px;
   line-height: 24px;
 }
@@ -54,33 +56,37 @@
   line-height: 32px;
 }
 
-.primary-action mat-icon,
-.secondary-action mat-icon {
-  font-size: 24px;
-  height: 24px;
-  line-height: 24px;
-  width: 24px;
-}
-
 .save-actions .primary-action {
   min-width: 138px;
-}
-
-.accent-blue {
-  --accent-text: #2563eb;
 }
 
 .data-table {
   min-width: 880px;
 }
 
-.empty-state {
-  color: #98a2b3;
-  font-weight: 800;
-  text-align: center;
+.scope-column {
+  width: 20%;
 }
 
-@media (max-width: 980px) {
+.location-column {
+  width: 28%;
+}
+
+.temperature-column,
+.humidity-column {
+  width: 18%;
+}
+
+.status-column {
+  width: 13%;
+}
+
+.data-table .status-pill {
+  min-width: 0;
+  width: auto;
+}
+
+@media (max-width: 1180px) {
   .safety-filter,
   .settings-grid {
     grid-template-columns: 1fr;

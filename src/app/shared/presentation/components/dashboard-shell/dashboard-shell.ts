@@ -1,8 +1,10 @@
-import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { filter } from 'rxjs';
 import { LanguageSwitcher } from '../language-switcher/language-switcher';
 
 interface ContextLink {
@@ -38,6 +40,8 @@ export interface OrganizationMemberSummary {
 })
 export class DashboardShell {
   private readonly router = inject(Router);
+  private currentNavigationPath = this.pathFromUrl(this.router.url);
+  private mobileNavigationCloseTimeout: ReturnType<typeof window.setTimeout> | null = null;
 
   @Input() activeOrganizationName = 'ColdTrace';
   @Input() pageTitleKey = '';
@@ -60,99 +64,26 @@ export class DashboardShell {
   protected reportsDropdownTouched = false;
   protected settingsDropdownOpen = false;
   protected settingsDropdownTouched = false;
+  protected readonly mobileNavigationOpen = signal(false);
 
-  protected isAccessDropdownOpen(isActive: boolean): boolean {
-    return this.accessDropdownTouched ? this.accessDropdownOpen : isActive || this.isAccessRoute();
-  }
+  constructor() {
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe((event) => {
+        const nextPath = this.pathFromUrl(event.urlAfterRedirects);
 
-  protected isReportsDropdownOpen(isActive: boolean): boolean {
-    return this.reportsDropdownTouched
-      ? this.reportsDropdownOpen
-      : isActive || this.isReportsRoute();
-  }
+        if (nextPath !== this.currentNavigationPath) {
+          this.closeMobileNavigation();
+        }
 
-  protected isSettingsDropdownOpen(isActive: boolean): boolean {
-    return this.settingsDropdownTouched
-      ? this.settingsDropdownOpen
-      : isActive || this.isSettingsRoute();
-  }
-
-  protected toggleAccessDropdown(isActive: boolean): void {
-    this.accessDropdownOpen = !this.isAccessDropdownOpen(isActive);
-    this.accessDropdownTouched = true;
-  }
-
-  protected toggleReportsDropdown(isActive: boolean): void {
-    this.reportsDropdownOpen = !this.isReportsDropdownOpen(isActive);
-    this.reportsDropdownTouched = true;
-  }
-
-  protected toggleSettingsDropdown(isActive: boolean): void {
-    this.settingsDropdownOpen = !this.isSettingsDropdownOpen(isActive);
-    this.settingsDropdownTouched = true;
+        this.currentNavigationPath = nextPath;
+      });
   }
 
   protected contextualLinks(): ContextLink[] {
-    if (this.isAccessRoute()) {
-      return [
-        {
-          path: '/identity-access/users',
-          labelKey: 'dashboard-shell.nav-users',
-          visible: true,
-        },
-        {
-          path: '/identity-access/roles-permissions/users/new',
-          labelKey: 'dashboard-shell.nav-new-user',
-          visible: this.canManageUsers,
-        },
-        {
-          path: '/identity-access/roles-permissions/permissions',
-          labelKey: 'dashboard-shell.nav-permissions',
-          visible: this.canManageAccess,
-        },
-      ];
-    }
-
-    if (this.isSettingsRoute()) {
-      return [
-        {
-          path: '/asset-management/safety-ranges',
-          labelKey: 'dashboard-shell.nav-safety-ranges',
-          visible: true,
-        },
-        {
-          path: '/asset-management/operational-parameters',
-          labelKey: 'dashboard-shell.nav-operational-parameters',
-          visible: true,
-        },
-        {
-          path: '/maintenance/preventive',
-          labelKey: 'dashboard-shell.nav-preventive-maintenance',
-          visible: true,
-        },
-        {
-          path: '/maintenance/technical-service',
-          labelKey: 'dashboard-shell.nav-technical-service',
-          visible: true,
-        },
-      ];
-    }
-
-    if (this.isReportsRoute()) {
-      return [
-        { path: '/reports/daily-log', labelKey: 'dashboard-shell.nav-daily-log', visible: true },
-        { path: '/reports/monthly', labelKey: 'dashboard-shell.nav-monthly-report', visible: true },
-        { path: '/reports/history', labelKey: 'dashboard-shell.nav-history', visible: true },
-        { path: '/reports/compliance', labelKey: 'dashboard-shell.nav-compliance', visible: true },
-        { path: '/reports/findings', labelKey: 'dashboard-shell.nav-findings', visible: true },
-        {
-          path: '/reports/audit-evidence',
-          labelKey: 'dashboard-shell.nav-audit-evidence',
-          visible: true,
-        },
-      ];
-    }
-
     return [];
   }
 
@@ -174,13 +105,94 @@ export class DashboardShell {
     return expectedParams.every(([key, value]) => queryParams.get(key) === value);
   }
 
+  protected isAccessDropdownOpen(isActive: boolean): boolean {
+    return this.accessDropdownTouched ? this.accessDropdownOpen : isActive || this.isAccessRoute();
+  }
+
+  protected isReportsDropdownOpen(isActive: boolean): boolean {
+    return this.reportsDropdownTouched
+      ? this.reportsDropdownOpen
+      : isActive || this.isReportsRoute();
+  }
+
+  protected isSettingsDropdownOpen(isActive: boolean): boolean {
+    return this.settingsDropdownTouched
+      ? this.settingsDropdownOpen
+      : isActive || this.isSettingsRoute();
+  }
+
+  protected toggleAccessDropdown(): void {
+    this.accessDropdownOpen = this.accessDropdownTouched
+      ? !this.accessDropdownOpen
+      : !this.isAccessRoute();
+    this.accessDropdownTouched = true;
+    this.reportsDropdownOpen = false;
+    this.reportsDropdownTouched = true;
+    this.settingsDropdownOpen = false;
+    this.settingsDropdownTouched = true;
+  }
+
+  protected toggleReportsDropdown(): void {
+    this.reportsDropdownOpen = this.reportsDropdownTouched
+      ? !this.reportsDropdownOpen
+      : !this.isReportsRoute();
+    this.reportsDropdownTouched = true;
+    this.accessDropdownOpen = false;
+    this.accessDropdownTouched = true;
+    this.settingsDropdownOpen = false;
+    this.settingsDropdownTouched = true;
+  }
+
+  protected toggleSettingsDropdown(): void {
+    this.settingsDropdownOpen = this.settingsDropdownTouched
+      ? !this.settingsDropdownOpen
+      : !this.isSettingsRoute();
+    this.settingsDropdownTouched = true;
+    this.accessDropdownOpen = false;
+    this.accessDropdownTouched = true;
+    this.reportsDropdownOpen = false;
+    this.reportsDropdownTouched = true;
+  }
+
+  protected toggleMobileNavigation(): void {
+    this.clearMobileNavigationCloseTimeout();
+
+    if (this.mobileNavigationOpen()) {
+      this.closeMobileNavigation();
+      return;
+    }
+
+    this.mobileNavigationOpen.set(true);
+  }
+
+  protected closeMobileNavigation(): void {
+    this.clearMobileNavigationCloseTimeout();
+    this.mobileNavigationOpen.set(false);
+    this.accessDropdownOpen = false;
+    this.accessDropdownTouched = false;
+    this.reportsDropdownOpen = false;
+    this.reportsDropdownTouched = false;
+    this.settingsDropdownOpen = false;
+    this.settingsDropdownTouched = false;
+  }
+
+  protected closeMobileNavigationAfterNavigation(): void {
+    this.clearMobileNavigationCloseTimeout();
+    this.mobileNavigationCloseTimeout = window.setTimeout(() => {
+      this.mobileNavigationCloseTimeout = null;
+      this.closeMobileNavigation();
+    }, 180);
+  }
+
   protected openSettings(): void {
+    this.closeMobileNavigation();
     void this.router.navigate(['/asset-management/safety-ranges'], {
       queryParams: this.contextQueryParams,
     });
   }
 
   protected logout(): void {
+    this.closeMobileNavigation();
     this.signedOut.emit();
   }
 
@@ -202,13 +214,33 @@ export class DashboardShell {
     return url.includes('/reports') || url.includes('/identity-access/reports');
   }
 
+  protected isAlertsRoute(): boolean {
+    const url = this.router.url;
+
+    return url.includes('/alerts') && !url.includes('/alerts/notifications');
+  }
+
   protected isSettingsRoute(): boolean {
     const url = this.router.url;
 
     return (
       url.includes('/asset-management/safety-ranges') ||
       url.includes('/asset-management/operational-parameters') ||
-      url.includes('/maintenance')
+      url.includes('/maintenance') ||
+      url.includes('/settings')
     );
+  }
+
+  private pathFromUrl(url: string): string {
+    return url.split('?')[0].split('#')[0];
+  }
+
+  private clearMobileNavigationCloseTimeout(): void {
+    if (!this.mobileNavigationCloseTimeout) {
+      return;
+    }
+
+    window.clearTimeout(this.mobileNavigationCloseTimeout);
+    this.mobileNavigationCloseTimeout = null;
   }
 }

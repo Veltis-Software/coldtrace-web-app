@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  min-height: calc(100dvh - 72px);
+  min-height: 100dvh;
   padding: clamp(124px, 18vh, 184px) 24px 64px;
   text-align: center;
 }

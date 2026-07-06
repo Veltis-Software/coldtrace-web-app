@@ -7,10 +7,21 @@
 
   <div class="page-heading">
     <div>
-      <span class="section-kicker">{{ activeOrganizationName() }}</span>
-      <h1 id="monthly-title">{{ 'reports.monthly.title' | translate }}</h1>
+      <h1 id="monthly-title">{{ 'dashboard-shell.nav-reports' | translate }}</h1>
       <p>{{ 'reports.monthly.subtitle' | translate }}</p>
     </div>
+  </div>
+
+  <div class="reports-workbar">
+  <nav class="report-tabs" aria-label="Reports navigation">
+    <a routerLink="/reports/daily-log" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-daily-log' | translate }}</a>
+    <a routerLink="/reports/monthly" [queryParams]="{ organizationId: activeOrganizationId() }" class="active">{{ 'dashboard-shell.nav-monthly-report' | translate }}</a>
+    <a routerLink="/reports/history" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-history' | translate }}</a>
+    <a routerLink="/reports/compliance" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-compliance' | translate }}</a>
+    <a routerLink="/reports/ai-summary" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-ai-summary' | translate }}</a>
+    <a routerLink="/reports/findings" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-findings' | translate }}</a>
+    <a routerLink="/reports/audit-evidence" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-audit-evidence' | translate }}</a>
+  </nav>
   </div>
 
   @if (feedback() === 'downloaded') {
@@ -133,12 +144,12 @@
             <tbody>
               @for (row of paginatedRows(); track trackRow($index, row)) {
                 <tr>
-                  <td>
+                  <td [attr.data-label]="'reports.monthly.table.asset' | translate">
                     <strong>{{ row.assetName }}</strong>
                     <span>#{{ row.assetId }}</span>
                   </td>
-                  <td>{{ row.assetLocation }}</td>
-                  <td>
+                  <td [attr.data-label]="'reports.monthly.table.location' | translate">{{ row.assetLocation }}</td>
+                  <td [attr.data-label]="'reports.monthly.table.readings' | translate">
                     <strong>{{ row.totalReadings }}</strong>
                     <small>
                       {{
@@ -146,9 +157,9 @@
                       }}
                     </small>
                   </td>
-                  <td>{{ formatTemperature(row.averageTemperature) }}</td>
-                  <td>{{ formatHumidity(row.averageHumidity) }}</td>
-                  <td>
+                  <td [attr.data-label]="'reports.monthly.table.temperature' | translate">{{ formatTemperature(row.averageTemperature) }}</td>
+                  <td [attr.data-label]="'reports.monthly.table.humidity' | translate">{{ formatHumidity(row.averageHumidity) }}</td>
+                  <td [attr.data-label]="'reports.monthly.table.incidents' | translate">
                     <strong>{{ row.incidentCount }}</strong>
                     <small>
                       {{
@@ -157,9 +168,9 @@
                       }}
                     </small>
                   </td>
-                  <td>{{ row.complianceRate }}%</td>
-                  <td>{{ formatTimeRange(row) }}</td>
-                  <td>
+                  <td [attr.data-label]="'reports.monthly.table.compliance' | translate">{{ row.complianceRate }}%</td>
+                  <td [attr.data-label]="'reports.monthly.table.window' | translate">{{ formatTimeRange(row) }}</td>
+                  <td [attr.data-label]="'reports.monthly.table.status' | translate">
                     <span class="status-pill" [ngClass]="statusClass(row.status)">
                       {{ statusLabelKey(row.status) | translate }}
                     </span>

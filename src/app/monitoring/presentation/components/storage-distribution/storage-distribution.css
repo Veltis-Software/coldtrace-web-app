@@ -67,10 +67,11 @@
   display: grid;
   flex: 1;
   gap: clamp(16px, 4cqw, 28px);
-  grid-template-columns: minmax(120px, 172px) minmax(0, 1fr);
+  grid-template-columns: minmax(104px, 172px) minmax(0, 1fr);
   justify-content: start;
   min-height: 0;
   min-width: 0;
+  overflow: hidden;
 }
 
 .chart-container {
@@ -98,6 +99,21 @@
   padding-top: 2px;
   min-width: 0;
   width: 100%;
+}
+
+@container (max-width: 360px) {
+  .distribution-card {
+    padding: 18px;
+  }
+
+  .card-body {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .legend-container {
+    width: min(100%, 220px);
+  }
 }
 
 .legend-row {

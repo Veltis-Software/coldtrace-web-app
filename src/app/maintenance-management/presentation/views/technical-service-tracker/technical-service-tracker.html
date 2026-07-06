@@ -1,4 +1,4 @@
-<section class="page" aria-labelledby="technical-service-title">
+<section class="page" aria-labelledby="settings-title">
   @if (loading()) {
     <div class="loading-overlay">
       <mat-spinner diameter="40"></mat-spinner>
@@ -7,12 +7,33 @@
 
   <div class="page-heading">
     <div>
-      <span class="section-kicker">{{ activeOrganizationName() }}</span>
-      <h1 id="technical-service-title">
-        {{ 'maintenance.technical-service.title' | translate }}
-      </h1>
+      <h1 id="settings-title">{{ 'dashboard-shell.nav-settings' | translate }}</h1>
       <p>{{ 'maintenance.technical-service.subtitle' | translate }}</p>
     </div>
+
+  </div>
+
+  <div class="settings-workbar">
+    <nav class="setting-tabs" aria-label="Settings sections">
+      <a routerLink="/asset-management/safety-ranges" [queryParams]="{ organizationId: activeOrganizationId() }">{{
+        'dashboard-shell.nav-safety-ranges' | translate
+      }}</a>
+      <a
+        routerLink="/asset-management/operational-parameters"
+        [queryParams]="{ organizationId: activeOrganizationId() }"
+        >{{ 'dashboard-shell.nav-operational-parameters' | translate }}</a
+      >
+      <a routerLink="/maintenance/preventive" [queryParams]="{ organizationId: activeOrganizationId() }">{{
+        'dashboard-shell.nav-preventive-maintenance' | translate
+      }}</a>
+      <a
+        routerLink="/maintenance/technical-service"
+        [queryParams]="{ organizationId: activeOrganizationId() }"
+        class="active"
+        >{{ 'dashboard-shell.nav-technical-service' | translate }}</a
+      >
+      <a routerLink="/settings/billing">{{ 'dashboard-shell.nav-billing' | translate }}</a>
+    </nav>
 
     <div class="heading-actions">
       <button type="button" class="secondary-action" (click)="loadPageData()">
@@ -285,21 +306,21 @@
         <tbody>
           @for (request of paginatedRequests(); track request.id) {
             <tr>
-              <td>
+              <td [attr.data-label]="'maintenance.technical-service.table.id' | translate">
                 <strong>{{ request.uuid }}</strong>
                 <small>{{ request.requestedDate }}</small>
               </td>
-              <td>
+              <td [attr.data-label]="'maintenance.technical-service.table.asset' | translate">
                 <strong>{{ assetNameFor(request.assetId) }}</strong>
                 <small>{{ assetLocationFor(request.assetId) }}</small>
               </td>
-              <td>{{ priorityKey(request.priority) | translate }}</td>
-              <td>{{ request.issueDescription }}</td>
-              <td>
+              <td [attr.data-label]="'maintenance.technical-service.table.priority' | translate">{{ priorityKey(request.priority) | translate }}</td>
+              <td [attr.data-label]="'maintenance.technical-service.table.issue' | translate">{{ request.issueDescription }}</td>
+              <td [attr.data-label]="'maintenance.technical-service.table.result' | translate">
                 <strong>{{ resultLabelFor(request) | translate }}</strong>
                 <small>{{ request.resultNotes || 'N/A' }}</small>
               </td>
-              <td>
+              <td [attr.data-label]="'maintenance.technical-service.table.status' | translate">
                 <span class="status-pill" [ngClass]="requestStatusClass(request.status)">
                   {{ requestStatusKey(request.status) | translate }}
                 </span>

@@ -1,36 +1,96 @@
 <div class="incident-list-view">
-  <div class="view-header">
-    <div class="header-text">
-      <h1 class="view-title">{{ 'alerts.incident-list.title' | translate }}</h1>
-      <p class="view-subtitle">{{ 'alerts.incident-list.subtitle' | translate }}</p>
+  <header class="alerts-header">
+    <div class="view-header">
+      <div class="header-text">
+        <h1 class="view-title">{{ 'dashboard-shell.nav-alerts' | translate }}</h1>
+        <p class="view-subtitle">{{ subtitleKey() | translate }}</p>
+      </div>
     </div>
 
-    @if (alertsStore.feedback()) {
-      <div
-        class="feedback-banner"
-        [class.feedback-success]="isSuccessFeedback(alertsStore.feedback()!)"
-        [class.feedback-error]="!isSuccessFeedback(alertsStore.feedback()!)"
-      >
-        <mat-icon>{{ isSuccessFeedback(alertsStore.feedback()!) ? 'check_circle' : 'error_outline' }}</mat-icon>
-        <span>{{ alertsStore.feedback()! | translate }}</span>
+    <div class="incident-workbar">
+      <nav class="incident-section-tabs" aria-label="Incident workflow sections">
+        <button
+          type="button"
+          [class.active]="selectedIncidentPanel() === 'incidents'"
+          (click)="selectIncidentPanel('incidents')"
+        >
+          {{ 'dashboard-shell.nav-incidents' | translate }}
+        </button>
+
+        @if (canResolveAlerts()) {
+          <button
+            type="button"
+            [class.active]="selectedIncidentPanel() === 'closure'"
+            (click)="selectIncidentPanel('closure')"
+          >
+            {{ 'alerts.incident-list.closure-title' | translate }}
+          </button>
+        }
+
+        <button type="button" (click)="openAiGuidance()">
+          {{ 'dashboard-shell.nav-ai-guidance' | translate }}
+        </button>
+      </nav>
+
+      <div class="incident-toolbar">
+        <label class="search-box">
+          <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
+          <input
+            type="search"
+            [value]="searchTerm()"
+            placeholder="Search incidents by asset, type, value or status..."
+            (input)="updateSearchTerm($any($event.target).value)"
+          />
+        </label>
+
+        <div class="incident-metrics" aria-label="Incident summary">
+          <span class="metric-pill metric-open">
+            {{ alertsStore.openIncidentsCount() }}
+            {{ 'alerts.incident-list.status-open' | translate }}
+          </span>
+          <span class="metric-pill metric-escalated">
+            {{ alertsStore.escalatedIncidentsCount() }}
+            {{ 'alerts.incident-list.escalated-count' | translate }}
+          </span>
+          <span class="metric-pill metric-pending">
+            {{ pendingClosureIncidents().length }}
+            {{ 'alerts.incident-list.closure-pending' | translate }}
+          </span>
+        </div>
       </div>
-    }
-  </div>
+    </div>
+  </header>
+
+  @if (alertsStore.feedback()) {
+    <div
+      class="feedback-banner"
+      [class.feedback-success]="isSuccessFeedback(alertsStore.feedback()!)"
+      [class.feedback-error]="!isSuccessFeedback(alertsStore.feedback()!)"
+    >
+      <mat-icon>{{
+        isSuccessFeedback(alertsStore.feedback()!) ? 'check_circle' : 'error_outline'
+      }}</mat-icon>
+      <span>{{ alertsStore.feedback()! | translate }}</span>
+    </div>
+  }
 
   @if (alertsStore.loading()) {
     <div class="loading-container">
       <mat-spinner diameter="40" />
     </div>
   } @else {
-    @if (canResolveAlerts()) {
-      <div #closureCard class="premium-card closure-card">
+    @if (canResolveAlerts() && selectedIncidentPanel() === 'closure') {
+      <div class="premium-card closure-card">
         <div class="card-header closure-header">
           <div>
             <h3 class="card-title">{{ 'alerts.incident-list.closure-title' | translate }}</h3>
-            <p class="closure-subtitle">{{ 'alerts.incident-list.closure-subtitle' | translate }}</p>
+            <p class="closure-subtitle">
+              {{ 'alerts.incident-list.closure-subtitle' | translate }}
+            </p>
           </div>
           <span class="closure-count">
-            {{ pendingClosureIncidents().length }} {{ 'alerts.incident-list.closure-pending' | translate }}
+            {{ pendingClosureIncidents().length }}
+            {{ 'alerts.incident-list.closure-pending' | translate }}
           </span>
         </div>
 
@@ -122,223 +182,237 @@
         </form>
       </div>
     }
+    @if (selectedIncidentPanel() === 'incidents') {
+      <div class="premium-card table-card">
+        <div class="card-header">
+          <h3 class="card-title">{{ 'alerts.incident-list.title' | translate }}</h3>
+        </div>
 
-    <div class="premium-card table-card">
-      <div class="card-header">
-        <h3 class="card-title">{{ 'alerts.incident-list.title' | translate }}</h3>
-        <span class="open-count">
-          {{ alertsStore.openIncidentsCount() }} {{ 'alerts.incident-list.status-open' | translate }}
-        </span>
-        <span class="escalated-count">
-          {{ alertsStore.escalatedIncidentsCount() }} {{ 'alerts.incident-list.escalated-count' | translate }}
-        </span>
-      </div>
-
-      <div class="table-container">
-        <table class="premium-table">
-          <thead>
-            <tr>
-              <th>{{ 'alerts.incident-list.col-asset' | translate }}</th>
-              <th>{{ 'alerts.incident-list.col-type' | translate }}</th>
-              <th>{{ 'alerts.incident-list.col-value' | translate }}</th>
-              <th>{{ 'alerts.incident-list.col-detected' | translate }}</th>
-              <th>{{ 'alerts.incident-list.col-status' | translate }}</th>
-              <th>{{ 'alerts.incident-list.col-condition' | translate }}</th>
-              <th>{{ 'alerts.incident-list.col-source' | translate }}</th>
-              <th>{{ 'alerts.incident-list.col-escalation' | translate }}</th>
-              <th>{{ 'alerts.incident-list.col-recognized-by' | translate }}</th>
-              <th>{{ 'alerts.incident-list.col-actions' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (incident of paginatedIncidents(); track incident.id) {
-              <tr [class.recognized-row]="incident.isRecognized">
-                <td class="asset-name">{{ incident.assetName }}</td>
-                <td>
-                  <div class="type-cell" [class.crit]="incident.severity === 'critical'" [class.warn]="incident.severity === 'warning'">
-                    <mat-icon>{{ severityIcon(incident) }}</mat-icon>
-                    <span>{{ typeLabelKey(incident) | translate }}</span>
-                  </div>
-                </td>
-                <td class="value">{{ incident.value }}</td>
-                <td class="date">{{ formatDate(incident.detectedAt) }}</td>
-                <td>
-                  <span
-                    class="badge"
-                    [class.badge-open]="incident.status === 'open'"
-                    [class.badge-recognized]="incident.status === 'recognized'"
-                    [class.badge-closed]="incident.status === 'closed'"
-                  >
-                    {{ statusLabelKey(incident) | translate }}
-                  </span>
-                </td>
-                <td>
-                  <span
-                    class="condition-pill"
-                    [class.condition-stable]="incident.isConditionStable"
-                    [class.condition-active]="!incident.isConditionStable"
-                  >
-                    {{ conditionLabelKey(incident) | translate }}
-                  </span>
-                </td>
-                <td>
-                  <span
-                    class="source-pill"
-                    [class.source-generated]="incident.isGenerated && !incident.isPendingReview"
-                    [class.source-initial]="!incident.isGenerated && !incident.isPendingReview"
-                    [class.source-pending]="incident.isPendingReview"
-                  >
-                    {{ sourceLabelKey(incident) | translate }}
-                  </span>
-                </td>
-                <td>
-                  <div class="escalation-cell">
-                    <span
-                      class="escalation-pill"
-                      [class.escalation-none]="incident.escalationStatus === 'none'"
-                      [class.escalation-pending]="incident.isPendingEscalationConfiguration"
-                      [class.escalation-escalated]="incident.isEscalated"
-                      [class.escalation-reviewed]="incident.escalationStatus === 'reviewed'"
-                    >
-                      {{ escalationLabelKey(incident) | translate }}
-                    </span>
-                    @if (incident.isEscalated) {
-                      <small>
-                        {{ 'alerts.incident-list.escalation-level' | translate }} {{ incident.escalationLevel }}
-                        · {{ escalationTargetLabelKey(incident) | translate }}
-                      </small>
-                    } @else if (incident.isPendingEscalationConfiguration) {
-                      <small>{{ 'alerts.incident-list.escalation-no-policy' | translate }}</small>
-                    } @else if (incident.escalationPolicyMinutes) {
-                      <small>
-                        {{ incident.escalationPolicyMinutes }} {{ 'alerts.incident-list.escalation-minutes' | translate }}
-                      </small>
-                    }
-                  </div>
-                </td>
-                <td class="recognized-by">{{ incident.recognizedBy ?? '—' }}</td>
-                <td>
-                  <div class="action-stack">
-                    <button
-                      type="button"
-                      class="recognize-btn notifications-btn"
-                      [class.active]="selectedNotificationIncident()?.id === incident.id"
-                      [disabled]="loadingIncidentNotifications()"
-                      (click)="reviewIncidentNotifications(incident)"
-                    >
-                      <mat-icon>notifications</mat-icon>
-                      {{ 'alerts.incident-list.action-notifications' | translate }}
-                    </button>
-                    @if (canResolveAlerts()) {
-                    @if (incident.isOpen) {
-                      <button
-                        id="recognize-incident-{{ incident.id }}"
-                        class="recognize-btn"
-                        [disabled]="alertsStore.recognizingId() === incident.id"
-                        (click)="recognize(incident)"
-                      >
-                        @if (alertsStore.recognizingId() === incident.id) {
-                          <mat-spinner diameter="14" />
-                        } @else {
-                          {{ 'alerts.incident-list.action-recognize' | translate }}
-                        }
-                      </button>
-                    } @else if (!incident.isClosed) {
-                      <button
-                        id="close-incident-shortcut-{{ incident.id }}"
-                        class="close-shortcut-btn"
-                        [disabled]="alertsStore.closingId() === incident.id"
-                        (click)="selectIncidentForClosure(incident)"
-                      >
-                        {{ 'alerts.incident-list.action-prepare-close' | translate }}
-                      </button>
-                    } @else {
-                      <span class="action-done">
-                        <mat-icon>check</mat-icon>
-                      </span>
-                    }
-                    }
-                  </div>
-                </td>
-              </tr>
-            } @empty {
+        <div class="table-container">
+          <table class="premium-table">
+            <colgroup>
+              <col style="width: 9%" />
+              <col style="width: 8%" />
+              <col style="width: 12%" />
+              <col style="width: 12%" />
+              <col style="width: 8%" />
+              <col style="width: 8%" />
+              <col style="width: 9%" />
+              <col style="width: 13%" />
+              <col style="width: 9%" />
+              @if (canResolveAlerts()) {
+                <col style="width: 12%" />
+              }
+            </colgroup>
+            <thead>
               <tr>
-                <td colspan="10" class="empty-cell">
-                  <mat-icon class="empty-icon">check_circle</mat-icon>
-                  <p class="empty-title">{{ 'alerts.incident-list.empty-title' | translate }}</p>
-                  <p class="empty-description">{{ 'alerts.incident-list.empty-description' | translate }}</p>
-                </td>
+                <th>{{ 'alerts.incident-list.col-asset' | translate }}</th>
+                <th>{{ 'alerts.incident-list.col-type' | translate }}</th>
+                <th>{{ 'alerts.incident-list.col-value' | translate }}</th>
+                <th>{{ 'alerts.incident-list.col-detected' | translate }}</th>
+                <th>{{ 'alerts.incident-list.col-status' | translate }}</th>
+                <th>{{ 'alerts.incident-list.col-condition' | translate }}</th>
+                <th>{{ 'alerts.incident-list.col-source' | translate }}</th>
+                <th>{{ 'alerts.incident-list.col-escalation' | translate }}</th>
+                <th>{{ 'alerts.incident-list.col-recognized-by' | translate }}</th>
+                @if (canResolveAlerts()) {
+                  <th>{{ 'alerts.incident-list.col-actions' | translate }}</th>
+                }
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (incident of paginatedIncidents(); track incident.id) {
+                <tr [class.recognized-row]="incident.isRecognized">
+                  <td class="asset-name" [attr.data-label]="'alerts.incident-list.col-asset' | translate">
+                    {{ incident.assetName }}
+                  </td>
+                  <td [attr.data-label]="'alerts.incident-list.col-type' | translate">
+                    <div
+                      class="type-cell"
+                      [class.crit]="incident.severity === 'critical'"
+                      [class.warn]="incident.severity === 'warning'"
+                    >
+                      <mat-icon>{{ severityIcon(incident) }}</mat-icon>
+                      <span>{{ typeLabelKey(incident) | translate }}</span>
+                    </div>
+                  </td>
+                  <td class="value" [attr.data-label]="'alerts.incident-list.col-value' | translate">
+                    {{ incident.value }}
+                  </td>
+                  <td class="date" [attr.data-label]="'alerts.incident-list.col-detected' | translate">
+                    {{ formatDate(incident.detectedAt) }}
+                  </td>
+                  <td [attr.data-label]="'alerts.incident-list.col-status' | translate">
+                    <span
+                      class="badge"
+                      [class.badge-open]="incident.status === 'open'"
+                      [class.badge-recognized]="incident.status === 'recognized'"
+                      [class.badge-closed]="incident.status === 'closed'"
+                    >
+                      {{ statusLabelKey(incident) | translate }}
+                    </span>
+                  </td>
+                  <td [attr.data-label]="'alerts.incident-list.col-condition' | translate">
+                    <span
+                      class="condition-pill"
+                      [class.condition-stable]="incident.isConditionStable"
+                      [class.condition-active]="!incident.isConditionStable"
+                    >
+                      {{ conditionLabelKey(incident) | translate }}
+                    </span>
+                  </td>
+                  <td [attr.data-label]="'alerts.incident-list.col-source' | translate">
+                    <span
+                      class="source-pill"
+                      [class.source-generated]="incident.isGenerated && !incident.isPendingReview"
+                      [class.source-initial]="!incident.isGenerated && !incident.isPendingReview"
+                      [class.source-pending]="incident.isPendingReview"
+                    >
+                      {{ sourceLabelKey(incident) | translate }}
+                    </span>
+                  </td>
+                  <td [attr.data-label]="'alerts.incident-list.col-escalation' | translate">
+                    <div class="escalation-cell">
+                      <span
+                        class="escalation-pill"
+                        [class.escalation-none]="incident.escalationStatus === 'none'"
+                        [class.escalation-pending]="incident.isPendingEscalationConfiguration"
+                        [class.escalation-escalated]="incident.isEscalated"
+                        [class.escalation-reviewed]="incident.escalationStatus === 'reviewed'"
+                      >
+                        {{ escalationLabelKey(incident) | translate }}
+                      </span>
+                      @if (incident.isEscalated) {
+                        <small>
+                          {{ 'alerts.incident-list.escalation-level' | translate }}
+                          {{ incident.escalationLevel }} ·
+                          {{ escalationTargetLabelKey(incident) | translate }}
+                        </small>
+                      } @else if (incident.isPendingEscalationConfiguration) {
+                        <small>{{ 'alerts.incident-list.escalation-no-policy' | translate }}</small>
+                      } @else if (incident.escalationPolicyMinutes) {
+                        <small>
+                          {{ incident.escalationPolicyMinutes }}
+                          {{ 'alerts.incident-list.escalation-minutes' | translate }}
+                        </small>
+                      }
+                    </div>
+                  </td>
+                  <td
+                    class="recognized-by"
+                    [attr.data-label]="'alerts.incident-list.col-recognized-by' | translate"
+                  >
+                    {{ incident.recognizedBy ?? '—' }}
+                  </td>
+                  @if (canResolveAlerts()) {
+                    <td [attr.data-label]="'alerts.incident-list.col-actions' | translate">
+                      <div class="incident-action-stack">
+                        @if (incident.isOpen && !incident.isRecognized) {
+                          <button
+                            id="recognize-incident-{{ incident.id }}"
+                            class="recognize-btn"
+                            [disabled]="alertsStore.recognizingId() === incident.id"
+                            (click)="recognize(incident)"
+                          >
+                            @if (alertsStore.recognizingId() === incident.id) {
+                              <mat-spinner diameter="14" />
+                            } @else {
+                              {{ 'alerts.incident-list.action-recognize' | translate }}
+                            }
+                          </button>
+                        }
+
+                        <button
+                          type="button"
+                          class="ai-guidance-action-btn"
+                          [attr.aria-label]="'alerts.incident-list.action-ai-guidance' | translate"
+                          (click)="openAiGuidance(incident)"
+                        >
+                          <mat-icon aria-hidden="true">auto_awesome</mat-icon>
+                        </button>
+
+                        <button
+                          type="button"
+                          class="notifications-action-btn"
+                          [attr.aria-label]="'alerts.incident-list.action-notifications' | translate"
+                          (click)="reviewIncidentNotifications(incident)"
+                        >
+                          <mat-icon aria-hidden="true">notifications</mat-icon>
+                        </button>
+                      </div>
+                    </td>
+                  }
+                </tr>
+              } @empty {
+                <tr>
+                  <td [attr.colspan]="canResolveAlerts() ? 10 : 9" class="empty-cell">
+                    <mat-icon class="empty-icon">check_circle</mat-icon>
+                    <p class="empty-title">{{ 'alerts.incident-list.empty-title' | translate }}</p>
+                    <p class="empty-description">
+                      {{ 'alerts.incident-list.empty-description' | translate }}
+                    </p>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (filteredIncidents().length > 0) {
+          <app-list-pagination
+            [page]="currentPage()"
+            [total]="filteredIncidents().length"
+            [pageSize]="pageSize"
+            (pageChange)="updatePage($event)"
+          />
+        }
+
+        @if (!canResolveAlerts()) {
+          <div class="access-notice">
+            <mat-icon>lock</mat-icon>
+            <span>{{ 'alerts.incident-list.access-description' | translate }}</span>
+          </div>
+        }
       </div>
 
-      @if (selectedNotificationIncident(); as selectedIncident) {
-        <section class="incident-notifications-panel" aria-live="polite">
-          <div class="incident-notifications-header">
+      @if (selectedNotificationIncident(); as notificationIncident) {
+        <aside class="premium-card table-card incident-notification-panel">
+          <div class="card-header">
             <div>
-              <h4 class="card-title">{{ 'alerts.incident-list.notifications-title' | translate }}</h4>
-              <p>
-                {{ selectedIncident.assetName }} ·
-                {{ typeLabelKey(selectedIncident) | translate }}
+              <h3 class="card-title">{{ 'alerts.incident-list.notifications-title' | translate }}</h3>
+              <p class="notification-panel-subtitle">
+                INC-{{ notificationIncident.id }} · {{ notificationIncident.assetName }}
               </p>
             </div>
-            @if (loadingIncidentNotifications()) {
-              <mat-spinner diameter="22" />
-            }
           </div>
 
-          <div class="incident-notifications-list">
-            @for (notification of incidentNotifications(); track notification.id) {
-              <article class="incident-notification-row">
-                <div>
-                  <strong>{{ notificationChannelLabelKey(notification) | translate }}</strong>
-                  <p>{{ notification.message }}</p>
-                  <small>
-                    {{ 'alerts.notification-list.recipient' | translate }}
-                    {{ notification.recipient }}
-                  </small>
-                </div>
-                <div class="incident-notification-meta">
-                  <span
-                    class="badge"
-                    [class.badge-recognized]="notification.isSent"
-                    [class.source-pending]="notification.isPending"
-                    [class.badge-open]="notification.isFailed"
-                  >
-                    {{ notificationStatusLabelKey(notification) | translate }}
-                  </span>
-                  <small>{{ formatDate(notification.createdAt) }}</small>
-                </div>
-              </article>
-            } @empty {
-              @if (!loadingIncidentNotifications()) {
-                <div class="access-notice">
-                  <mat-icon>notifications_off</mat-icon>
-                  <p>{{ 'alerts.incident-list.notifications-empty' | translate }}</p>
+          @if (loadingIncidentNotifications()) {
+            <div class="notification-panel-empty">
+              <mat-spinner diameter="24" />
+            </div>
+          } @else {
+            <div class="incident-notification-list">
+              @for (notification of incidentNotifications(); track notification.id) {
+                <article class="incident-notification-row">
+                  <div>
+                    <strong>{{ notificationChannelLabelKey(notification) | translate }}</strong>
+                    <p>{{ notification.message }}</p>
+                    <small>
+                      {{ 'alerts.notification-list.recipient' | translate }}
+                      {{ notification.recipient }} ·
+                      {{ notificationStatusLabelKey(notification) | translate }}
+                    </small>
+                  </div>
+                </article>
+              } @empty {
+                <div class="notification-panel-empty">
+                  {{ 'alerts.incident-list.notifications-empty' | translate }}
                 </div>
               }
-            }
-          </div>
-        </section>
+            </div>
+          }
+        </aside>
       }
-
-      @if (activeIncidents().length > 0) {
-        <app-list-pagination
-          [page]="currentPage()"
-          [total]="activeIncidents().length"
-          [pageSize]="pageSize"
-          (pageChange)="updatePage($event)"
-        />
-      }
-
-      @if (!canResolveAlerts()) {
-        <div class="access-notice">
-          <mat-icon>lock</mat-icon>
-          <span>{{ 'alerts.incident-list.access-description' | translate }}</span>
-        </div>
-      }
-    </div>
+    }
   }
 </div>

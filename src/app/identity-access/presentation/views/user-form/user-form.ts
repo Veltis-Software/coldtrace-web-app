@@ -39,6 +39,7 @@ export class UserForm implements OnInit {
   protected readonly userForm = this.fb.nonNullable.group({
     fullName: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(8)]],
     roleId: [0, [Validators.required, Validators.min(1)]],
   });
 
@@ -113,6 +114,7 @@ export class UserForm implements OnInit {
     }
 
     const email = this.userForm.controls.email.value.trim().toLowerCase();
+    const password = this.userForm.controls.password.value;
     const { firstName, lastName } = this.getNameParts(this.userForm.controls.fullName.value);
 
     this.creating.set(true);
@@ -143,6 +145,7 @@ export class UserForm implements OnInit {
               `USR-${nextId}`,
               nextOrganizationUserId,
             ),
+            password,
           );
         }),
         finalize(() => this.creating.set(false)),
@@ -155,6 +158,7 @@ export class UserForm implements OnInit {
           this.userForm.reset({
             fullName: '',
             email: '',
+            password: '',
             roleId: this.assignableRoles()[0]?.id ?? 0,
           });
         },

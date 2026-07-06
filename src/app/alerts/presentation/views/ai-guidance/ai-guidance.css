@@ -1,0 +1,503 @@
+@import '../alerts-workflow.css';
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.ai-page {
+  background: var(--color-background);
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: 24px 18px 44px;
+}
+
+.ai-page,
+.ai-page > *,
+.field,
+.panel,
+.incident-summary,
+.step-card,
+.history-item,
+.support-card,
+.decision-result {
+  min-width: 0;
+}
+
+.panel-heading,
+.incident-strip,
+.ai-grid {
+  max-width: none;
+}
+
+.panel-heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1 {
+  color: var(--color-text);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+h2 {
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+h3 {
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.panel-heading p,
+.decision-panel p,
+.plan-cause p,
+.step-card p,
+.history-item p,
+.support-card p,
+.empty-panel p,
+.state-panel p {
+  color: var(--color-text-subtle);
+  font-size: 12px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.primary-action,
+.secondary-action {
+  align-items: center;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 8px;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 13px;
+}
+
+.primary-action {
+  background: var(--color-primary);
+  border: 0;
+  color: #fff;
+}
+
+.secondary-action {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.danger-action {
+  color: var(--color-danger);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.feedback-banner,
+.incident-summary,
+.panel,
+.field select,
+.field textarea,
+.ai-incident-select select {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.feedback-banner {
+  align-items: center;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  display: flex;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 10px;
+  margin-top: 18px;
+  max-width: none;
+  padding: 12px 14px;
+  width: 100%;
+}
+
+.feedback-approved {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.feedback-rejected {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.incident-strip {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+}
+
+.field span,
+.incident-summary span,
+.plan-cause span {
+  color: #667085;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.field select,
+.field textarea,
+.ai-incident-select select {
+  appearance: none;
+  background: #fff;
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 12px;
+}
+
+.ai-incident-select select {
+  border: 0;
+  height: 100%;
+  min-height: 38px;
+  outline: 0;
+  padding-left: 38px;
+  width: 100%;
+}
+
+.ai-incident-select .search-icon {
+  pointer-events: none;
+  z-index: 1;
+}
+
+.field small {
+  color: var(--color-danger);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.decision-panel form {
+  display: grid;
+  gap: 12px;
+}
+
+.incident-summary {
+  background: #fff;
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+}
+
+.incident-summary strong {
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.incident-summary small {
+  color: var(--color-text-subtle);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.ai-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.8fr);
+  margin-top: 18px;
+}
+
+.panel {
+  background: #fff;
+  box-shadow: var(--shadow-card);
+  padding: 22px;
+}
+
+.status-pill {
+  align-items: center;
+  background: var(--color-warning-soft);
+  border-radius: 8px;
+  color: var(--color-warning);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 6px;
+  padding: 6px 10px;
+  text-transform: capitalize;
+}
+
+.status-pill mat-icon {
+  font-size: 16px;
+  height: 16px;
+  width: 16px;
+}
+
+.status-approved {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.status-rejected {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.plan-cause {
+  align-items: flex-start;
+  background: var(--color-surface-muted);
+  border-radius: 8px;
+  display: flex;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 14px;
+}
+
+.plan-cause mat-icon {
+  color: var(--color-primary);
+}
+
+.plan-cause strong {
+  color: var(--color-text);
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+.step-list,
+.decision-panel,
+.history-list,
+.support-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.step-list {
+  margin-top: 16px;
+}
+
+.step-card {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 34px minmax(0, 1fr);
+  padding: 13px;
+}
+
+.step-index {
+  align-items: center;
+  background: var(--color-primary-soft);
+  border-radius: 999px;
+  color: var(--color-primary);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 800;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.step-card small,
+.history-item small,
+.support-card small,
+.decision-result small,
+.plan-cause small {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.support-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 16px;
+}
+
+.support-card,
+.decision-result,
+.empty-panel,
+.state-panel {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.support-card {
+  background: var(--color-surface-muted);
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.support-card ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.support-card li,
+.support-card p {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.empty-panel,
+.state-panel {
+  align-items: center;
+  background: #fff;
+  display: flex;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 18px;
+}
+
+.empty-panel {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.empty-panel mat-icon,
+.state-panel mat-icon {
+  color: var(--color-primary);
+}
+
+.state-panel {
+  justify-content: space-between;
+}
+
+.state-panel-warning {
+  background: #fffaf0;
+  border-color: #fdecc8;
+}
+
+.state-panel-warning mat-icon {
+  color: var(--color-warning);
+}
+
+.decision-result {
+  align-items: flex-start;
+  background: var(--color-surface-muted);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  padding: 14px;
+}
+
+.decision-result mat-icon {
+  color: var(--color-primary);
+  grid-row: span 3;
+}
+
+.history-panel {
+  margin-top: 18px;
+  max-width: none;
+  width: 100%;
+}
+
+.history-item {
+  align-items: flex-start;
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+}
+
+.history-item strong {
+  color: var(--color-text);
+  font-weight: 800;
+}
+
+.history-approved mat-icon {
+  color: var(--color-success);
+}
+
+.history-rejected mat-icon {
+  color: var(--color-danger);
+}
+
+.history-empty {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 14px 0 0;
+}
+
+.loading-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  padding: 70px 0;
+}
+
+@media (max-width: 1180px) {
+  .panel-heading {
+    flex-direction: column;
+  }
+
+  .incident-strip,
+  .ai-grid,
+  .support-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .state-panel {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .ai-page {
+    padding: 18px 12px 34px;
+  }
+
+  .primary-action,
+  .secondary-action,
+  .field select,
+  .field textarea {
+    width: 100%;
+  }
+
+  .feedback-banner,
+  .panel,
+  .incident-summary,
+  .plan-cause,
+  .step-card,
+  .history-item {
+    padding: 14px;
+  }
+
+  .panel-heading,
+  .plan-cause,
+  .history-item {
+    gap: 12px;
+  }
+}

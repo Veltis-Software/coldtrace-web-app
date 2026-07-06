@@ -1,0 +1,249 @@
+<section class="billing-page" aria-labelledby="settings-title">
+  <div class="page-heading">
+    <div>
+      <h1 id="settings-title">{{ 'dashboard-shell.nav-settings' | translate }}</h1>
+      <p>Manage the organization subscription, plan limits, Stripe Checkout, and Customer Portal access.</p>
+    </div>
+  </div>
+
+  <div class="settings-workbar">
+    <nav class="setting-tabs" aria-label="Settings sections">
+      <a routerLink="/asset-management/safety-ranges">{{
+        'dashboard-shell.nav-safety-ranges' | translate
+      }}</a>
+      <a routerLink="/asset-management/operational-parameters">{{
+        'dashboard-shell.nav-operational-parameters' | translate
+      }}</a>
+      <a routerLink="/maintenance/preventive">{{
+        'dashboard-shell.nav-preventive-maintenance' | translate
+      }}</a>
+      <a routerLink="/maintenance/technical-service">{{
+        'dashboard-shell.nav-technical-service' | translate
+      }}</a>
+      <a routerLink="/settings/billing" class="active">{{
+        'dashboard-shell.nav-billing' | translate
+      }}</a>
+    </nav>
+
+    <div class="heading-actions">
+      <button
+        type="button"
+        class="secondary-action"
+        [disabled]="loading() || portalLoading() || !canOpenPortal()"
+        (click)="openPortal()"
+      >
+        <mat-icon aria-hidden="true">receipt_long</mat-icon>
+        {{ portalLoading() ? 'Opening portal' : 'Customer Portal' }}
+      </button>
+    </div>
+  </div>
+
+  <section
+    class="billing-status"
+    [class.status-success]="statusKind() === 'success'"
+    [class.status-warning]="statusKind() === 'warning'"
+    [class.status-error]="statusKind() === 'error'"
+    aria-live="polite"
+  >
+    <mat-icon aria-hidden="true">
+      {{ statusKind() === 'error' ? 'error' : statusKind() === 'success' ? 'check_circle' : 'info' }}
+    </mat-icon>
+    <span>{{ statusMessage() }}</span>
+    @if (errorMessage()) {
+      <strong>{{ errorMessage() }}</strong>
+    }
+    @if (errorMessage()) {
+      <button type="button" class="inline-action" (click)="loadBilling()">Retry</button>
+    }
+  </section>
+
+  @if (loading()) {
+    <section class="loading-panel" aria-live="polite">
+      <mat-icon aria-hidden="true">hourglass_top</mat-icon>
+      <span>Loading subscription plans and current organization billing state.</span>
+    </section>
+  } @else {
+    <section class="plan-grid" aria-label="Plan comparison">
+      @for (plan of visiblePlans(); track plan.code) {
+        <article
+          class="plan-card"
+          [class.plan-featured]="plan.recommended"
+          [class.plan-selected]="isCurrentPlan(plan)"
+        >
+          <div class="plan-header">
+            <div>
+              <h2>{{ plan.displayName }}</h2>
+              <p>{{ plan.description }}</p>
+            </div>
+            @if (isCurrentPlan(plan)) {
+              <span class="current-badge">Current</span>
+            } @else if (plan.recommended) {
+              <span class="recommended-badge">{{ plan.recommendedLabel || 'Recommended' }}</span>
+            }
+          </div>
+
+          <strong class="plan-price">{{ formatPrice(plan) }}</strong>
+
+          <div class="plan-list">
+            <span>Includes</span>
+            @for (feature of plan.includedFeatures; track feature) {
+              <div class="plan-list-item">
+                <mat-icon aria-hidden="true">check_circle</mat-icon>
+                {{ feature }}
+              </div>
+            }
+          </div>
+
+          <div class="plan-list compact-list">
+            <span>Limits</span>
+            @for (limit of planLimits(plan); track limit.label) {
+              <div class="plan-list-item muted">
+                <mat-icon aria-hidden="true">tune</mat-icon>
+                <strong>{{ limit.label }}</strong>
+                <small>{{ limit.value }}</small>
+              </div>
+            }
+          </div>
+
+          <div class="plan-list compact-list">
+            <span>Capabilities</span>
+            @for (featureFlag of featureFlags(plan); track featureFlag.label) {
+              <div class="plan-list-item muted" [class.disabled-feature]="!featureFlag.enabled">
+                <mat-icon aria-hidden="true">
+                  {{ featureFlag.enabled ? 'check_circle' : 'block' }}
+                </mat-icon>
+                {{ featureFlag.label }}
+              </div>
+            }
+          </div>
+
+          <div class="plan-actions">
+            <button
+              type="button"
+              class="primary-action"
+              [disabled]="isPlanActionDisabled(plan)"
+              (click)="startCheckout(plan)"
+            >
+              {{ planActionLabel(plan) }}
+            </button>
+          </div>
+        </article>
+      } @empty {
+        <section class="loading-panel empty-panel">
+          <mat-icon aria-hidden="true">inventory_2</mat-icon>
+          <span>No visible plans were returned by the backend.</span>
+        </section>
+      }
+    </section>
+  }
+
+  @if (subscription(); as currentSubscription) {
+    <section class="dashboard-grid">
+      <article class="panel subscription-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Current subscription</h2>
+            <p>Organization-level billing state and limits returned by the backend.</p>
+          </div>
+          <span class="status-pill">{{ currentSubscription.status }}</span>
+        </div>
+
+        <div class="subscription-meta">
+          <div>
+            <span>Plan</span>
+            <strong>{{ currentSubscription.plan.displayName }}</strong>
+          </div>
+          <div>
+            <span>Next renewal</span>
+            <strong>{{ formatDate(currentSubscription.currentPeriodEnd) }}</strong>
+          </div>
+          <div>
+            <span>Provider</span>
+            <strong>{{ currentSubscription.provider }}</strong>
+          </div>
+          <div>
+            <span>Stripe customer</span>
+            <strong>{{ currentSubscription.providerCustomerId || 'Not created yet' }}</strong>
+          </div>
+        </div>
+
+        @if (currentSubscription.cancelAtPeriodEnd) {
+          <div class="subscription-warning">
+            <mat-icon aria-hidden="true">event_busy</mat-icon>
+            <span>This subscription is scheduled to cancel at the end of the current period.</span>
+          </div>
+        }
+
+        <div class="usage-list">
+          @for (item of usageItems(); track item.label) {
+            <article class="usage-item" [class.unlimited-usage]="item.limit === null">
+              <div>
+                <strong>{{ item.label }}</strong>
+                <span>{{ usageLabel(item) }}</span>
+              </div>
+              <div class="usage-bar">
+                <span [style.width.%]="usagePercent(item)"></span>
+              </div>
+            </article>
+          }
+        </div>
+      </article>
+
+      <aside class="panel locked-panel">
+        <div class="panel-heading compact-heading">
+          <div>
+            <h2>Plan entitlements</h2>
+            <p>Frontend gates AI, exports, and limits using this backend response.</p>
+          </div>
+        </div>
+
+        <div class="entitlement-section">
+          <span class="section-label">Available</span>
+          <div class="locked-list">
+            @for (entitlement of enabledEntitlements(); track entitlement.key) {
+              <article class="locked-item available-item">
+                <mat-icon aria-hidden="true">check_circle</mat-icon>
+                <div>
+                  <strong>{{ entitlementLabel(entitlement) }}</strong>
+                  <p>{{ entitlementUsage(entitlement) }}</p>
+                </div>
+              </article>
+            } @empty {
+              <p class="empty-copy">No available entitlements were returned.</p>
+            }
+          </div>
+        </div>
+
+        <div class="entitlement-section">
+          <span class="section-label">Locked</span>
+          <div class="locked-list">
+            @for (entitlement of lockedEntitlements(); track entitlement.key) {
+              <article class="locked-item">
+                <mat-icon aria-hidden="true">lock</mat-icon>
+                <div>
+                  <strong>{{ entitlementLabel(entitlement) }}</strong>
+                  <p>{{ entitlement.lockedReason || 'Upgrade required for this capability.' }}</p>
+                  <small>{{ entitlement.category }}</small>
+                </div>
+              </article>
+            } @empty {
+              <p class="empty-copy">All returned entitlements are available for this plan.</p>
+            }
+          </div>
+        </div>
+
+        @if (visiblePlans().length) {
+          <button
+            type="button"
+            class="primary-action full-action"
+            [disabled]="checkoutPlanCode() !== null"
+            (click)="startCheckout(visiblePlans()[visiblePlans().length - 1])"
+          >
+            <mat-icon aria-hidden="true">upgrade</mat-icon>
+            Upgrade to unlock more
+          </button>
+        }
+      </aside>
+    </section>
+  }
+</section>

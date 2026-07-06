@@ -42,6 +42,7 @@ export class Layout implements OnInit {
     '/identity-access/reports',
     '/identity-access/users',
     '/identity-access/roles-permissions',
+    '/settings',
     '/alerts',
     '/monitoring',
     '/reports',
@@ -81,12 +82,20 @@ export class Layout implements OnInit {
       return 'maintenance.technical-service.page-title';
     }
 
+    if (currentUrl.includes('/settings/billing')) {
+      return 'dashboard-shell.nav-billing';
+    }
+
     if (currentUrl.includes('/monitoring/assets')) {
       return 'monitoring.asset-monitoring.page-title';
     }
 
     if (currentUrl.includes('/monitoring')) {
       return 'monitoring.operational.title';
+    }
+
+    if (currentUrl.includes('/alerts/ai-guidance')) {
+      return 'dashboard-shell.nav-ai-guidance';
     }
 
     if (currentUrl.includes('/alerts/notifications')) {
@@ -126,6 +135,10 @@ export class Layout implements OnInit {
 
     if (currentUrl.includes('/reports/compliance')) {
       return 'reports.compliance.page-title';
+    }
+
+    if (currentUrl.includes('/reports/ai-summary')) {
+      return 'dashboard-shell.nav-ai-summary';
     }
 
     if (currentUrl.includes('/reports/findings')) {
@@ -292,10 +305,11 @@ export class Layout implements OnInit {
 
   private loadShellData(): void {
     if (!this.identityAccessStore.currentUserId()) {
-      this.identityAccessStore.loadDemoSession(
-        this.demoSessionContextFromUrl(),
-        () => this.loadShellData(),
-      );
+      this.identityAccessStore.restoreSessionContext();
+    }
+
+    if (!this.identityAccessStore.currentUserId()) {
+      this.redirectToSignIn();
       return;
     }
 
@@ -303,6 +317,9 @@ export class Layout implements OnInit {
     this.identityAccessStore.loadUsers();
     this.identityAccessStore.loadOrganizations();
     this.identityAccessStore.loadRoles();
+    this.assetManagementStore.loadAssets();
+    this.assetManagementStore.loadIoTDevices();
+    this.assetManagementStore.loadGateways();
     this.alertsStore.loadIncidents({ silent: true });
   }
 
@@ -310,13 +327,9 @@ export class Layout implements OnInit {
     return this.showDashboardShell();
   }
 
-  private demoSessionContextFromUrl(): { organizationId?: number; userId?: number } {
-    const queryParams = this.router.parseUrl(this.router.url).queryParams;
-
-    return {
-      organizationId: this.positiveNumberFrom(queryParams['organizationId']),
-      userId: this.positiveNumberFrom(queryParams['userId']),
-    };
+  private redirectToSignIn(): void {
+    this.identityAccessStore.clearCurrentUser();
+    void this.router.navigate(['/identity-access/sign-in'], { replaceUrl: true });
   }
 
   private keepDashboardContextInUrl(): void {
@@ -343,21 +356,12 @@ export class Layout implements OnInit {
     });
   }
 
-  private positiveNumberFrom(value: unknown): number | undefined {
-    const numberValue = Number(value);
-
-    if (!Number.isFinite(numberValue) || numberValue <= 0) {
-      return undefined;
-    }
-
-    return numberValue;
-  }
-
   private organizationIdFromCurrentUser(): number | null {
     const userId = this.identityAccessStore.currentUserId();
 
     return (
-      this.identityAccessStore.users().find((user) => user.id === userId)?.organizationId ?? null
+      this.identityAccessStore.users().find((user) => user.id === userId)?.organizationId ??
+      this.activeOrganizationId()
     );
   }
 

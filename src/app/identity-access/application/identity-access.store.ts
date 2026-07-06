@@ -1,4 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
+import { AuthSessionStore } from '../../shared/infrastructure/auth-session.store';
 import { OrganizationScopeStore } from '../../shared/infrastructure/organization-scope.store';
 import { Organization } from '../domain/model/organization.entity';
 import { PermissionAction } from '../domain/model/permission-action.enum';
@@ -16,16 +17,6 @@ interface PermissionDefinition {
 
 interface LoadOptions {
   force?: boolean;
-}
-
-interface DemoSessionContext {
-  organizationId?: number;
-  userId?: number;
-}
-
-interface DemoOrganizationUsers {
-  organization: Organization;
-  users: User[];
 }
 
 /**
@@ -49,7 +40,6 @@ export class IdentityAccessStore {
   private organizationsRequestInFlight = false;
   private rolesLoaded = false;
   private rolesRequestInFlight = false;
-  private demoSessionRequestInFlight = false;
   readonly manageAdministratorsPermissionKey = 'roles-permissions.permissions.manage-administrators';
   readonly manageUsersPermissionKey = 'roles-permissions.permissions.manage-users';
   readonly manageAssetsPermissionKey = 'roles-permissions.permissions.manage-assets';
@@ -134,18 +124,26 @@ export class IdentityAccessStore {
   constructor(
     private identityAccessApi: IdentityAccessApi,
     private organizationScope: OrganizationScopeStore,
-  ) {}
+    private authSession: AuthSessionStore,
+  ) {
+    this.restoreSessionContext();
+  }
 
-   /**
+  /**
    * @summary Loads users data into local state.
    */
   loadUsers(options: LoadOptions = {}): void {
-    const organizationId = this.organizationScope.activeOrganizationId();
+    const organizationId =
+      this.organizationScope.activeOrganizationId() ??
+      this.authSession.user()?.organizationId ??
+      null;
 
     if (!organizationId) {
       this.usersSignal.set([]);
       return;
     }
+
+    this.organizationScope.setActiveOrganizationId(organizationId);
 
     if (
       !options.force &&
@@ -173,7 +171,7 @@ export class IdentityAccessStore {
     });
   }
 
-   /**
+  /**
    * @summary Loads organizations data into local state.
    */
   loadOrganizations(options: LoadOptions = {}): void {
@@ -195,7 +193,7 @@ export class IdentityAccessStore {
     });
   }
 
-   /**
+  /**
    * @summary Loads roles data into local state.
    */
   loadRoles(options: LoadOptions = {}): void {
@@ -219,29 +217,25 @@ export class IdentityAccessStore {
   }
 
   /**
-   * @summary Loads a seeded demo context while real authentication is not available.
-   */
-  loadDemoSession(context: DemoSessionContext = {}, onReady?: () => void): void {
-    if (this.currentUserId() || this.demoSessionRequestInFlight) {
-      return;
-    }
-
-    this.demoSessionRequestInFlight = true;
-    this.loadingSignal.set(true);
-    this.errorSignal.set(null);
-    this.identityAccessApi.getOrganizations().subscribe({
-      next: (organizations) => this.loadDemoOrganizationUsers(organizations, context, onReady),
-      error: (error) => this.handleDemoSessionError(error),
-    });
-  }
-
-  /**
    * @summary Stores the active user identifier and display name.
    */
   setCurrentUser(user: User): void {
     this.currentUserIdSignal.set(user.id);
     this.currentUserNameSignal.set(user.fullName);
     this.organizationScope.setActiveOrganizationId(user.organizationId);
+  }
+
+  /**
+   * @summary Persists the backend session and activates the authenticated user.
+   */
+  setAuthenticatedSession(token: string, user: User): void {
+    this.authSession.setSession(token, {
+      id: user.id,
+      fullName: user.fullName,
+      organizationId: user.organizationId,
+      roleId: user.roleId,
+    });
+    this.setCurrentUser(user);
   }
 
   /**
@@ -297,6 +291,7 @@ export class IdentityAccessStore {
    * @summary Clears the current user, role, and organization selection state.
    */
   clearCurrentUser(): void {
+    this.authSession.clear();
     this.currentUserIdSignal.set(null);
     this.currentUserNameSignal.set('');
     this.currentRoleLabelKeySignal.set('');
@@ -307,27 +302,43 @@ export class IdentityAccessStore {
   }
 
   /**
-   * @summary Resolves the current user with the seeded demo fallback.
+   * @summary Restores the dashboard identity context from the persisted JWT session.
+   */
+  restoreSessionContext(): boolean {
+    const user = this.authSession.user();
+
+    if (!user) {
+      return false;
+    }
+
+    this.currentUserIdSignal.set(user.id);
+    this.currentUserNameSignal.set(user.fullName);
+    this.organizationScope.setActiveOrganizationId(user.organizationId);
+
+    return true;
+  }
+
+  /**
+   * @summary Resolves the current authenticated user from loaded organization users.
    */
   currentUserFrom(users: User[]): User | undefined {
     const currentUserId = this.currentUserId();
 
-    if (currentUserId) {
-      const currentUser = users.find(user => user.id === currentUserId);
-
-      if (currentUser) {
-        return currentUser;
-      }
-    }
-
-    return users.find(user => user.id === 1) ?? users[0];
+    return currentUserId
+      ? users.find(user => user.id === currentUserId)
+      : undefined;
   }
 
   /**
    * @summary Resolves the organization id assigned to the current user.
    */
   currentOrganizationIdFrom(users: User[]): number | null {
-    return this.currentUserFrom(users)?.organizationId ?? null;
+    return (
+      this.currentUserFrom(users)?.organizationId ??
+      this.organizationScope.activeOrganizationId() ??
+      this.authSession.user()?.organizationId ??
+      null
+    );
   }
 
   /**
@@ -510,148 +521,6 @@ export class IdentityAccessStore {
       }),
       {},
     );
-  }
-
-  private loadDemoOrganizationUsers(
-    organizations: Organization[],
-    context: DemoSessionContext,
-    onReady?: () => void,
-  ): void {
-    this.organizationsSignal.set(organizations);
-    this.organizationsLoaded = true;
-    this.organizationsRequestInFlight = false;
-
-    const organization = this.demoOrganizationFrom(organizations, context.organizationId);
-
-    if (!organization) {
-      this.loadDemoUsersFromOrganizations(organizations, context, onReady);
-      return;
-    }
-
-    this.loadDemoUsersForOrganization(organization, organizations, context, onReady);
-  }
-
-  private loadDemoUsersForOrganization(
-    organization: Organization,
-    organizations: Organization[],
-    context: DemoSessionContext,
-    onReady?: () => void,
-  ): void {
-    this.setCurrentOrganization(organization);
-    this.identityAccessApi.getUsersForOrganization(organization.id).subscribe({
-      next: (users) => this.loadDemoRoles(users, organizations, context, onReady),
-      error: (error) => this.handleDemoSessionError(error),
-    });
-  }
-
-  private loadDemoUsersFromOrganizations(
-    organizations: Organization[],
-    context: DemoSessionContext,
-    onReady?: () => void,
-    index = 0,
-    fallback?: DemoOrganizationUsers,
-  ): void {
-    const organization = organizations[index];
-
-    if (!organization) {
-      if (fallback) {
-        this.setCurrentOrganization(fallback.organization);
-        this.loadDemoRoles(fallback.users, organizations, {}, onReady);
-        return;
-      }
-
-      this.finishDemoSessionLoading();
-      return;
-    }
-
-    this.identityAccessApi.getUsersForOrganization(organization.id).subscribe({
-      next: (users) => {
-        const nextFallback = fallback ?? (users.length ? { organization, users } : undefined);
-
-        if (this.requestedDemoUserFrom(users, context.userId)) {
-          this.setCurrentOrganization(organization);
-          this.loadDemoRoles(users, organizations, context, onReady);
-          return;
-        }
-
-        this.loadDemoUsersFromOrganizations(
-          organizations,
-          context,
-          onReady,
-          index + 1,
-          nextFallback,
-        );
-      },
-      error: (error) => this.handleDemoSessionError(error),
-    });
-  }
-
-  private loadDemoRoles(
-    users: User[],
-    organizations: Organization[],
-    context: DemoSessionContext,
-    onReady?: () => void,
-  ): void {
-    const organizationId = this.organizationScope.activeOrganizationId();
-    this.usersSignal.set(users);
-    this.usersLoadedForOrganizationId = organizationId;
-    this.usersRequestInFlightForOrganizationId = null;
-
-    const user = this.demoUserFrom(users, context.userId);
-
-    if (!user) {
-      this.finishDemoSessionLoading();
-      return;
-    }
-
-    this.setCurrentUser(user);
-    this.identityAccessApi.getRoles().subscribe({
-      next: (roles) => {
-        this.rolesSignal.set(roles);
-        this.rolesLoaded = true;
-        this.rolesRequestInFlight = false;
-        this.setCurrentContextFrom(users, roles, organizations);
-        this.finishDemoSessionLoading();
-
-        if (user) {
-          onReady?.();
-        }
-      },
-      error: (error) => this.handleDemoSessionError(error),
-    });
-  }
-
-  private demoOrganizationFrom(
-    organizations: Organization[],
-    organizationId?: number,
-  ): Organization | undefined {
-    if (!organizationId) {
-      return undefined;
-    }
-
-    return organizations.find(organization => organization.id === organizationId);
-  }
-
-  private demoUserFrom(users: User[], userId?: number): User | undefined {
-    if (userId) {
-      return users.find(user => user.id === userId) ?? users.find(user => user.id === 1) ?? users[0];
-    }
-
-    return users.find(user => user.id === 1) ?? users[0];
-  }
-
-  private requestedDemoUserFrom(users: User[], userId?: number): User | undefined {
-    return users.find(user => user.id === (userId ?? 1));
-  }
-
-  private handleDemoSessionError(error: Error): void {
-    this.errorSignal.set(error.message);
-    this.finishDemoSessionLoading();
-  }
-
-  private finishDemoSessionLoading(): void {
-    this.demoSessionRequestInFlight = false;
-    this.loadingSignal.set(false);
   }
 
   private permissionKeysFromRole(role: Role): string[] {

@@ -35,11 +35,12 @@ export class UsersApiEndpoint extends BaseApiEndpoint<
     return super.getAll();
   }
 
-  override create(user: User): Observable<User> {
+  override create(user: User, password = ''): Observable<User> {
     const request: CreateUserRequest = {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
+      password,
       roleId: user.roleId,
     };
 

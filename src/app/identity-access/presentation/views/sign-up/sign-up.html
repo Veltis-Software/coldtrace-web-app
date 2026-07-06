@@ -2,126 +2,205 @@
   <section class="auth-panel" aria-labelledby="sign-up-title">
     <img class="brand-logo" src="coldtrace-logo.svg" alt="ColdTrace"/>
 
-    <form class="sign-up-form" [formGroup]="signUpForm" (ngSubmit)="submit()" novalidate>
-      <h1 id="sign-up-title" class="screen-title">{{ 'sign-up.title' | translate }}</h1>
+    @if (pendingSocialCredential(); as socialCredential) {
+      <form class="sign-up-form" [formGroup]="socialSignUpForm" (ngSubmit)="submitSocialSignUp()" novalidate>
+        <h1 id="sign-up-title" class="screen-title">{{ 'sign-up.social-title' | translate }}</h1>
 
-      <div class="field-group">
-        <label for="organization-name">{{ 'sign-up.organization-name' | translate }}</label>
-        <input
-          id="organization-name"
-          type="text"
-          formControlName="organizationName"
-          [placeholder]="'sign-up.organization-name-placeholder' | translate"
-        />
-        @if (hasControlError('organizationName')) {
-          <p class="field-error">{{ 'sign-up.error.organization-name-required' | translate }}</p>
-        }
-      </div>
+        <div class="social-account">
+          <span class="account-provider">
+            {{ (socialCredential.provider === 'google' ? 'sign-up.google-account' : 'sign-up.apple-account') | translate }}
+          </span>
+          @if (socialCredential.email) {
+            <span class="account-email">{{ socialCredential.email }}</span>
+          }
+        </div>
 
-      <div class="field-group">
-        <label for="full-name">{{ 'sign-up.full-name' | translate }}</label>
-        <input
-          id="full-name"
-          type="text"
-          formControlName="fullName"
-          [placeholder]="'sign-up.full-name-placeholder' | translate"
-          autocomplete="name"
-        />
-        @if (hasControlError('fullName')) {
-          <p class="field-error">{{ 'sign-up.error.full-name-required' | translate }}</p>
-        }
-      </div>
-
-      <div class="field-group">
-        <label for="email">{{ 'sign-up.email' | translate }}</label>
-        <input
-          id="email"
-          type="email"
-          formControlName="email"
-          placeholder="example_123@email.com"
-          autocomplete="email"
-        />
-        @if (hasControlError('email')) {
-          <p class="field-error">{{ 'sign-up.error.email-invalid' | translate }}</p>
-        }
-      </div>
-
-      <div class="field-group">
-        <label for="password">{{ 'sign-up.password' | translate }}</label>
-        <div class="password-control">
+        <div class="field-group">
+          <label for="social-organization-name">{{ 'sign-up.organization-name' | translate }}</label>
           <input
-            id="password"
+            id="social-organization-name"
+            type="text"
+            formControlName="organizationName"
+            [placeholder]="'sign-up.organization-name-placeholder' | translate"
+          />
+          @if (hasSocialControlError('organizationName')) {
+            <p class="field-error">{{ 'sign-up.error.organization-name-required' | translate }}</p>
+          }
+        </div>
+
+        <div class="field-group">
+          <label for="social-full-name">{{ 'sign-up.full-name' | translate }}</label>
+          <input
+            id="social-full-name"
+            type="text"
+            formControlName="fullName"
+            [placeholder]="'sign-up.full-name-placeholder' | translate"
+            autocomplete="name"
+          />
+          @if (hasSocialControlError('fullName')) {
+            <p class="field-error">{{ 'sign-up.error.full-name-required' | translate }}</p>
+          }
+        </div>
+
+        <label class="check-row">
+          <input type="checkbox" formControlName="acceptedTerms"/>
+          <span>{{ 'sign-up.accept-terms' | translate }}</span>
+        </label>
+
+        @if (feedback() === 'duplicate-email') {
+          <p class="form-feedback error">{{ 'sign-up.error.duplicate-email' | translate }}</p>
+        }
+
+        @if (feedback() === 'social-invalid') {
+          <p class="form-feedback error">{{ 'sign-up.error.social-invalid' | translate }}</p>
+        }
+
+        @if (feedback() === 'social-unavailable') {
+          <p class="form-feedback error">{{ 'sign-up.error.social-unavailable' | translate }}</p>
+        }
+
+        @if (feedback() === 'server-error') {
+          <p class="form-feedback error">{{ 'sign-up.error.server-error' | translate }}</p>
+        }
+
+        <button class="primary-action" type="submit" [disabled]="socialCreating()">
+          {{ (socialCreating() ? 'sign-up.creating' : 'sign-up.create') | translate }}
+        </button>
+
+        <button class="secondary-action" type="button" [disabled]="socialCreating()" (click)="cancelSocialSignUp()">
+          {{ 'sign-up.use-another-method' | translate }}
+        </button>
+      </form>
+    } @else {
+      <form class="sign-up-form" [formGroup]="signUpForm" (ngSubmit)="submit()" novalidate>
+        <h1 id="sign-up-title" class="screen-title">{{ 'sign-up.title' | translate }}</h1>
+
+        <div class="field-group">
+          <label for="organization-name">{{ 'sign-up.organization-name' | translate }}</label>
+          <input
+            id="organization-name"
+            type="text"
+            formControlName="organizationName"
+            [placeholder]="'sign-up.organization-name-placeholder' | translate"
+          />
+          @if (hasControlError('organizationName')) {
+            <p class="field-error">{{ 'sign-up.error.organization-name-required' | translate }}</p>
+          }
+        </div>
+
+        <div class="field-group">
+          <label for="full-name">{{ 'sign-up.full-name' | translate }}</label>
+          <input
+            id="full-name"
+            type="text"
+            formControlName="fullName"
+            [placeholder]="'sign-up.full-name-placeholder' | translate"
+            autocomplete="name"
+          />
+          @if (hasControlError('fullName')) {
+            <p class="field-error">{{ 'sign-up.error.full-name-required' | translate }}</p>
+          }
+        </div>
+
+        <div class="field-group">
+          <label for="email">{{ 'sign-up.email' | translate }}</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="example_123@email.com"
+            autocomplete="email"
+          />
+          @if (hasControlError('email')) {
+            <p class="field-error">{{ 'sign-up.error.email-invalid' | translate }}</p>
+          }
+        </div>
+
+        <div class="field-group">
+          <label for="password">{{ 'sign-up.password' | translate }}</label>
+          <div class="password-control">
+            <input
+              id="password"
+              [type]="passwordVisible() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••••••"
+              autocomplete="new-password"
+            />
+            <button
+              type="button"
+              class="icon-button"
+              [attr.aria-label]="'sign-up.toggle-password-visibility' | translate"
+              (click)="togglePasswordVisibility()"
+            >
+              <span class="material-icons" aria-hidden="true">
+                {{ passwordVisible() ? 'visibility_off' : 'visibility' }}
+              </span>
+            </button>
+          </div>
+          @if (hasControlError('password')) {
+            <p class="field-error">{{ 'sign-up.error.password-min-length' | translate }}</p>
+          }
+        </div>
+
+        <div class="field-group">
+          <label for="confirm-password">{{ 'sign-up.confirm-password' | translate }}</label>
+          <input
+            id="confirm-password"
             [type]="passwordVisible() ? 'text' : 'password'"
-            formControlName="password"
+            formControlName="confirmPassword"
             placeholder="••••••••••••"
             autocomplete="new-password"
           />
-          <button
-            type="button"
-            class="icon-button"
-            [attr.aria-label]="'sign-up.toggle-password-visibility' | translate"
-            (click)="togglePasswordVisibility()"
-          >
-            <span class="material-icons" aria-hidden="true">
-              {{ passwordVisible() ? 'visibility_off' : 'visibility' }}
-            </span>
-          </button>
+          @if (hasControlError('confirmPassword') || passwordMismatch()) {
+            <p class="field-error">{{ 'sign-up.error.passwords-must-match' | translate }}</p>
+          }
         </div>
-        @if (hasControlError('password')) {
-          <p class="field-error">{{ 'sign-up.error.password-min-length' | translate }}</p>
+
+        <label class="check-row">
+          <input type="checkbox" formControlName="acceptedTerms"/>
+          <span>{{ 'sign-up.accept-terms' | translate }}</span>
+        </label>
+
+        @if (feedback() === 'duplicate-email') {
+          <p class="form-feedback error">{{ 'sign-up.error.duplicate-email' | translate }}</p>
         }
+
+        @if (feedback() === 'success') {
+          <p class="form-feedback success">{{ 'sign-up.success' | translate }}</p>
+        }
+
+        @if (feedback() === 'server-error') {
+          <p class="form-feedback error">{{ 'sign-up.error.server-error' | translate }}</p>
+        }
+
+        <button class="primary-action" type="submit" [disabled]="creating()">
+          {{ (creating() ? 'sign-up.creating' : 'sign-up.create') | translate }}
+        </button>
+      </form>
+
+      <div class="divider" aria-hidden="true">
+        <span>{{ 'sign-up.social-divider' | translate }}</span>
       </div>
 
-      <div class="field-group">
-        <label for="confirm-password">{{ 'sign-up.confirm-password' | translate }}</label>
-        <input
-          id="confirm-password"
-          [type]="passwordVisible() ? 'text' : 'password'"
-          formControlName="confirmPassword"
-          placeholder="••••••••••••"
-          autocomplete="new-password"
-        />
-        @if (hasControlError('confirmPassword') || passwordMismatch()) {
-          <p class="field-error">{{ 'sign-up.error.passwords-must-match' | translate }}</p>
-        }
-      </div>
-
-      <label class="check-row">
-        <input type="checkbox" formControlName="acceptedTerms"/>
-        <span>{{ 'sign-up.accept-terms' | translate }}</span>
-      </label>
-
-      @if (feedback() === 'duplicate-email') {
-        <p class="form-feedback error">{{ 'sign-up.error.duplicate-email' | translate }}</p>
-      }
-
-      @if (feedback() === 'success') {
-        <p class="form-feedback success">{{ 'sign-up.success' | translate }}</p>
-      }
-
-      @if (feedback() === 'server-error') {
-        <p class="form-feedback error">{{ 'sign-up.error.server-error' | translate }}</p>
-      }
-
-      <button class="primary-action" type="submit" [disabled]="creating()">
-        {{ (creating() ? 'sign-up.creating' : 'sign-up.create') | translate }}
+      <button class="social-action" type="button" [disabled]="creating()" (click)="signUpWithGoogle()">
+        <img class="social-icon" src="icons/google.svg" alt="" aria-hidden="true"/>
+        <span>{{ 'sign-up.continue-with-google' | translate }}</span>
       </button>
-    </form>
 
-    <div class="divider" aria-hidden="true">
-      <span>{{ 'sign-up.social-divider' | translate }}</span>
-    </div>
+      <button class="social-action" type="button" [disabled]="creating()" (click)="signUpWithApple()">
+        <img class="social-icon" src="icons/apple.svg" alt="" aria-hidden="true"/>
+        <span>{{ 'sign-up.continue-with-apple' | translate }}</span>
+      </button>
 
-    <button class="social-action" type="button">
-      <img class="social-icon" src="icons/google.svg" alt="" aria-hidden="true"/>
-      <span>{{ 'sign-up.continue-with-google' | translate }}</span>
-    </button>
+      @if (feedback() === 'social-invalid') {
+        <p class="form-feedback error">{{ 'sign-up.error.social-invalid' | translate }}</p>
+      }
 
-    <button class="social-action" type="button">
-      <img class="social-icon" src="icons/apple.svg" alt="" aria-hidden="true"/>
-      <span>{{ 'sign-up.continue-with-apple' | translate }}</span>
-    </button>
+      @if (feedback() === 'social-unavailable') {
+        <p class="form-feedback error">{{ 'sign-up.error.social-unavailable' | translate }}</p>
+      }
 
-    <a class="secondary-link" routerLink="/identity-access/sign-in">{{ 'sign-up.already-have-account' | translate }}</a>
+      <a class="secondary-link" routerLink="/identity-access/sign-in">{{ 'sign-up.already-have-account' | translate }}</a>
+    }
   </section>
 </main>

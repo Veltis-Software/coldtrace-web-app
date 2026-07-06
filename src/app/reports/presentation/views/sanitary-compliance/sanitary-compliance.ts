@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { finalize, forkJoin } from 'rxjs';
 import { AssetManagementStore } from '../../../../asset-management/application/asset-management.store';
@@ -35,6 +35,7 @@ type ComplianceFeedback = 'idle' | 'exported' | 'insufficient' | 'server-error';
     MatIcon,
     MatProgressSpinner,
     NgClass,
+    RouterLink,
     TranslatePipe,
     ListPagination,
   ],

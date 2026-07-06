@@ -70,7 +70,13 @@ Open:
 http://localhost:4200
 ```
 
-During local development and production builds, Angular calls the deployed backend directly:
+During local development, Angular calls the local Spring Boot backend:
+
+```txt
+http://localhost:8080
+```
+
+Production builds call the deployed backend:
 
 ```txt
 https://coldtrace-platform-dtbzbm7bta-uc.a.run.app

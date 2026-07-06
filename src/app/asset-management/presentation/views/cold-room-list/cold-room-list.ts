@@ -118,6 +118,9 @@ export class ColdRoomList implements OnInit {
   protected readonly locationStatuses = ['active', 'maintenance', 'inactive'];
   private readonly locationTypeFormAliases: Record<string, string> = {
     facility: 'WAREHOUSE',
+    site: 'CLIENT_SITE',
+    SITE: 'CLIENT_SITE',
+    'asset-management.locations.types.SITE': 'CLIENT_SITE',
     'transport-route': 'ROUTE',
   };
   protected readonly identityLoading = signal(false);
@@ -878,11 +881,29 @@ export class ColdRoomList implements OnInit {
   }
 
   protected pageTitleKey(): string {
-    return `asset-management.sections.${this.selectedAssetType()}.title`;
+    switch (this.selectedTab()) {
+      case 'location':
+        return 'asset-management.locations.title';
+      case 'gateway':
+        return 'asset-management.gateways.title';
+      case 'iot-device':
+        return 'asset-management.iot-devices.title';
+      default:
+        return `asset-management.sections.${this.selectedAssetType()}.title`;
+    }
   }
 
   protected pageSubtitleKey(): string {
-    return `asset-management.sections.${this.selectedAssetType()}.subtitle`;
+    switch (this.selectedTab()) {
+      case 'location':
+        return 'asset-management.locations.subtitle';
+      case 'gateway':
+        return 'asset-management.gateways.subtitle';
+      case 'iot-device':
+        return 'asset-management.iot-devices.subtitle';
+      default:
+        return `asset-management.sections.${this.selectedAssetType()}.subtitle`;
+    }
   }
 
   protected formTitleKey(): string {
@@ -1040,7 +1061,21 @@ export class ColdRoomList implements OnInit {
   }
 
   protected locationTypeLabelKey(type: string): string {
-    return `asset-management.locations.types.${type}`;
+    const keyPrefix = 'asset-management.locations.types.';
+    const rawType = (type.startsWith(keyPrefix) ? type.slice(keyPrefix.length) : type).trim();
+    const aliases: Record<string, string> = {
+      facility: 'WAREHOUSE',
+      warehouse: 'WAREHOUSE',
+      site: 'CLIENT_SITE',
+      SITE: 'CLIENT_SITE',
+      store: 'CLIENT_SITE',
+      kitchen: 'CLIENT_SITE',
+      'transport-route': 'ROUTE',
+    };
+    const normalizedType =
+      aliases[rawType] ?? aliases[rawType.toLowerCase()] ?? rawType.toUpperCase().replaceAll('-', '_');
+
+    return `asset-management.locations.types.${normalizedType}`;
   }
 
   protected locationStatusLabelKey(status: string): string {
@@ -1272,9 +1307,15 @@ export class ColdRoomList implements OnInit {
   }
 
   private locationTypeFormValue(type: string): string {
-    return this.locationTypes.includes(type)
-      ? type
-      : (this.locationTypeFormAliases[type] ?? 'WAREHOUSE');
+    const keyPrefix = 'asset-management.locations.types.';
+    const rawType = (type.startsWith(keyPrefix) ? type.slice(keyPrefix.length) : type).trim();
+    const normalizedType =
+      this.locationTypeFormAliases[type] ??
+      this.locationTypeFormAliases[rawType] ??
+      this.locationTypeFormAliases[rawType.toLowerCase()] ??
+      rawType.toUpperCase().replaceAll('-', '_');
+
+    return this.locationTypes.includes(normalizedType) ? normalizedType : 'WAREHOUSE';
   }
 
   private measurementParametersForDeviceType(deviceType: string): IoTMeasurementParameter[] {

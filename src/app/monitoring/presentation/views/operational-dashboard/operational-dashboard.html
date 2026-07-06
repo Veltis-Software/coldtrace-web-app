@@ -13,6 +13,18 @@
   </header>
 
   @if (hasOperationalData()) {
+    <app-dashboard-ai-assistant
+      [thermalCompliance]="thermalCompliancePercent()"
+      [activeIncidents]="activeIncidents().length"
+      [criticalIncidents]="activeCriticalIncidents().length"
+      [monitoredAssets]="assetSummary().monitoredAssets"
+      [activeSensors]="organizationIoTDevices().length"
+      [readingsCount]="organizationReadings().length"
+      [maintenanceCompletion]="maintenanceCompletionRate()"
+      [assetIssueCount]="assetIssueCount()"
+    >
+    </app-dashboard-ai-assistant>
+
     <div class="dashboard-board">
       <section class="primary-column">
         <div class="temp-chart-container dashboard-card-slot">

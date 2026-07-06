@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authenticatedCanMatch } from './shared/infrastructure/auth.guard';
 
 const identityAccessRoutes = () =>
   import('./identity-access/presentation/identity-access.routes').then(
@@ -18,6 +19,8 @@ const maintenanceManagementRoutes = () =>
   import('./maintenance-management/presentation/maintenance-management.routes').then(
     (m) => m.maintenanceManagementRoutes,
   );
+const billingRoutes = () =>
+  import('./billing/presentation/billing.routes').then((m) => m.billingRoutes);
 const pageNotFound = () =>
   import('./shared/presentation/views/page-not-found/page-not-found').then((m) => m.PageNotFound);
 
@@ -26,11 +29,36 @@ const pageNotFound = () =>
  */
 export const routes: Routes = [
   { path: 'identity-access', loadChildren: identityAccessRoutes },
-  { path: 'asset-management', loadChildren: assetManagementRoutes },
-  { path: 'monitoring', loadChildren: monitoringRoutes },
-  { path: 'reports', loadChildren: reportsRoutes },
-  { path: 'alerts', loadChildren: alertsRoutes },
-  { path: 'maintenance', loadChildren: maintenanceManagementRoutes },
+  {
+    path: 'asset-management',
+    canMatch: [authenticatedCanMatch],
+    loadChildren: assetManagementRoutes,
+  },
+  {
+    path: 'monitoring',
+    canMatch: [authenticatedCanMatch],
+    loadChildren: monitoringRoutes,
+  },
+  {
+    path: 'reports',
+    canMatch: [authenticatedCanMatch],
+    loadChildren: reportsRoutes,
+  },
+  {
+    path: 'alerts',
+    canMatch: [authenticatedCanMatch],
+    loadChildren: alertsRoutes,
+  },
+  {
+    path: 'maintenance',
+    canMatch: [authenticatedCanMatch],
+    loadChildren: maintenanceManagementRoutes,
+  },
+  {
+    path: 'settings',
+    canMatch: [authenticatedCanMatch],
+    loadChildren: billingRoutes,
+  },
   { path: '', redirectTo: '/identity-access/sign-in', pathMatch: 'full' },
   { path: '**', loadComponent: pageNotFound, title: 'ColdTrace - Page Not Found' },
 ];

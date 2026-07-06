@@ -1,10 +1,27 @@
+<header class="access-view-header">
+  <h1>{{ 'dashboard-shell.nav-access' | translate }}</h1>
+  <p>{{ 'roles-permissions.create-user-subtitle' | translate }}</p>
+</header>
+
+<nav class="work-tabs" aria-label="Access sections">
+  <a routerLink="/identity-access/users">
+    {{ 'dashboard-shell.nav-users' | translate }}
+  </a>
+  <a routerLink="/identity-access/roles-permissions/users/new" class="active">
+    {{ 'dashboard-shell.nav-new-user' | translate }}
+  </a>
+  <a routerLink="/identity-access/roles-permissions/permissions">
+    {{ 'dashboard-shell.nav-permissions' | translate }}
+  </a>
+</nav>
+
 <section class="form-card" aria-labelledby="create-user-title">
     <div class="table-heading">
       <div>
         <h2 id="create-user-title">{{ 'roles-permissions.create-user-title' | translate }}</h2>
         <p>{{ 'roles-permissions.create-user-subtitle' | translate }}</p>
       </div>
-      <a class="secondary-action" routerLink="/identity-access/roles-permissions">
+      <a class="secondary-action" routerLink="/identity-access/users">
         {{ 'roles-permissions.form.cancel' | translate }}
       </a>
     </div>
@@ -56,6 +73,19 @@
         </label>
 
         <label class="form-field">
+          <span>{{ 'roles-permissions.form.password' | translate }}</span>
+          <input
+            type="password"
+            formControlName="password"
+            [placeholder]="'roles-permissions.form.password-placeholder' | translate"
+            autocomplete="new-password"
+          />
+          @if (hasControlError('password')) {
+            <small>{{ 'roles-permissions.form.password-error' | translate }}</small>
+          }
+        </label>
+
+        <label class="form-field">
           <span>{{ 'roles-permissions.form.role' | translate }}</span>
           <select formControlName="roleId">
             @for (role of assignableRoles(); track role.id) {
@@ -67,8 +97,15 @@
           }
         </label>
 
+        <div class="form-guidance">
+          <div>
+            <strong>{{ 'roles-permissions.form.role-assignment-title' | translate }}</strong>
+            <span>{{ 'roles-permissions.form.role-assignment-description' | translate }}</span>
+          </div>
+        </div>
+
         <div class="form-actions">
-          <a class="secondary-action" routerLink="/identity-access/roles-permissions">
+          <a class="secondary-action" routerLink="/identity-access/users">
             {{ 'roles-permissions.form.cancel' | translate }}
           </a>
           <button type="submit" class="primary-form-action" [disabled]="creating()">

@@ -7,10 +7,21 @@
 
   <div class="page-heading">
     <div>
-      <span class="section-kicker">{{ activeOrganizationName() }}</span>
-      <h1 id="audit-title">{{ 'reports.audit.title' | translate }}</h1>
+      <h1 id="audit-title">{{ 'dashboard-shell.nav-reports' | translate }}</h1>
       <p>{{ 'reports.audit.subtitle' | translate }}</p>
     </div>
+  </div>
+
+  <div class="reports-workbar">
+  <nav class="report-tabs" aria-label="Reports navigation">
+    <a routerLink="/reports/daily-log" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-daily-log' | translate }}</a>
+    <a routerLink="/reports/monthly" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-monthly-report' | translate }}</a>
+    <a routerLink="/reports/history" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-history' | translate }}</a>
+    <a routerLink="/reports/compliance" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-compliance' | translate }}</a>
+    <a routerLink="/reports/ai-summary" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-ai-summary' | translate }}</a>
+    <a routerLink="/reports/findings" [queryParams]="{ organizationId: activeOrganizationId() }">{{ 'dashboard-shell.nav-findings' | translate }}</a>
+    <a routerLink="/reports/audit-evidence" [queryParams]="{ organizationId: activeOrganizationId() }" class="active">{{ 'dashboard-shell.nav-audit-evidence' | translate }}</a>
+  </nav>
   </div>
 
   @if (feedback() === 'exported') {
@@ -142,12 +153,14 @@
           <tbody>
             @for (item of auditEvidence().items; track trackItem($index, item)) {
               <tr>
-                <td>
+                <td [attr.data-label]="'reports.audit.table.section' | translate">
                   <strong>{{ itemLabelKey(item) | translate }}</strong>
                   <span>{{ item.quantity }} / {{ item.requiredQuantity }}</span>
                 </td>
-                <td>{{ item.messageKey | translate: item.messageParams }}</td>
-                <td>
+                <td [attr.data-label]="'reports.audit.table.evidence' | translate">
+                  {{ item.messageKey | translate: item.messageParams }}
+                </td>
+                <td [attr.data-label]="'reports.audit.table.status' | translate">
                   <span class="status-pill" [ngClass]="itemStatusClass(item)">
                     {{ itemStatusLabelKey(item) | translate }}
                   </span>

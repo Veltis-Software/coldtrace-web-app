@@ -1,46 +1,48 @@
 <div class="notification-list-view">
-  <div class="view-header">
-    <div class="header-text">
-      <h1 class="view-title">{{ 'alerts.notification-list.title' | translate }}</h1>
-      <p class="view-subtitle">{{ 'alerts.notification-list.subtitle' | translate }}</p>
+  <header class="alerts-header">
+    <div class="view-header">
+      <div class="header-text">
+        <h1 class="view-title">{{ 'alerts.notification-list.title' | translate }}</h1>
+        <p class="view-subtitle">{{ 'alerts.notification-list.subtitle' | translate }}</p>
+      </div>
     </div>
-  </div>
 
-  <div class="notification-toolbar">
-    <nav class="notification-filter-tabs" aria-label="Notification filters">
-      <button
-        type="button"
-        [class.active]="selectedNotificationFilter() === 'active'"
-        (click)="selectNotificationFilter('active')"
-      >
-        {{ 'alerts.notification-list.filter-active' | translate }}
-      </button>
-      <button
-        type="button"
-        [class.active]="selectedNotificationFilter() === 'pending'"
-        (click)="selectNotificationFilter('pending')"
-      >
-        {{ 'alerts.notification-list.filter-pending' | translate }}
-      </button>
-      <button
-        type="button"
-        [class.active]="selectedNotificationFilter() === 'failed'"
-        (click)="selectNotificationFilter('failed')"
-      >
-        {{ 'alerts.notification-list.filter-failed' | translate }}
-      </button>
-    </nav>
+    <div class="notification-toolbar notification-workbar">
+      <nav class="work-tabs notification-filter-tabs" aria-label="Notification filters">
+        <button
+          type="button"
+          [class.active]="selectedNotificationFilter() === 'active'"
+          (click)="selectNotificationFilter('active')"
+        >
+          {{ 'alerts.notification-list.filter-active' | translate }}
+        </button>
+        <button
+          type="button"
+          [class.active]="selectedNotificationFilter() === 'pending'"
+          (click)="selectNotificationFilter('pending')"
+        >
+          {{ 'alerts.notification-list.filter-pending' | translate }}
+        </button>
+        <button
+          type="button"
+          [class.active]="selectedNotificationFilter() === 'failed'"
+          (click)="selectNotificationFilter('failed')"
+        >
+          {{ 'alerts.notification-list.filter-failed' | translate }}
+        </button>
+      </nav>
 
-    <label class="search-box">
-      <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
-      <input
-        type="search"
-        [value]="searchTerm()"
-        [placeholder]="'alerts.notification-list.search-placeholder' | translate"
-        (input)="updateSearchTerm($any($event.target).value)"
-      />
-    </label>
-  </div>
+      <label class="search-box">
+        <mat-icon class="search-icon" aria-hidden="true">search</mat-icon>
+        <input
+          type="search"
+          [value]="searchTerm()"
+          [placeholder]="'alerts.notification-list.search-placeholder' | translate"
+          (input)="updateSearchTerm($any($event.target).value)"
+        />
+      </label>
+    </div>
+  </header>
 
   @if (alertsStore.loading()) {
     <div class="loading-container">
@@ -54,23 +56,6 @@
           <p class="notification-subtitle">
             {{ 'alerts.notification-list.card-subtitle' | translate }}
           </p>
-        </div>
-        <div class="notification-summary">
-          <span class="notification-count">
-            {{ notifications().length }} {{ 'alerts.notification-list.total' | translate }}
-          </span>
-          <span class="notification-count active">
-            {{ alertsStore.openIncidentsCount() }}
-            {{ 'alerts.notification-list.active-alerts' | translate }}
-          </span>
-          <span class="notification-count pending">
-            {{ alertsStore.pendingNotificationsCount() }}
-            {{ 'alerts.notification-list.pending' | translate }}
-          </span>
-          <span class="notification-count failed">
-            {{ alertsStore.failedNotificationsCount() }}
-            {{ 'alerts.notification-list.failed' | translate }}
-          </span>
         </div>
       </div>
 
@@ -94,7 +79,7 @@
 
             <div class="notification-content">
               <div class="notification-title-line">
-                <span>{{ notificationTitle(notification) }}</span>
+                <span>{{ notification.assetName }}</span>
                 <small>{{ notificationChannelLabelKey(notification) | translate }}</small>
                 @if (incidentForNotification(notification); as incident) {
                   <small
