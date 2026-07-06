@@ -16,6 +16,7 @@ interface GoogleAccountsOAuth2 {
     client_id: string;
     scope: string;
     ux_mode: 'popup';
+    redirect_uri?: string;
     include_granted_scopes?: boolean;
     callback: (response: GoogleCodeResponse) => void;
     error_callback?: () => void;
@@ -57,6 +58,7 @@ export class GoogleIdentityService {
     this.loadScript()
       .then(() => {
         const googleOAuth = window.google?.accounts?.oauth2;
+        const redirectUri = window.location.origin;
 
         if (!googleOAuth) {
           onUnavailable();
@@ -68,6 +70,7 @@ export class GoogleIdentityService {
             client_id: environment.googleOAuthClientId,
             scope: 'openid email profile',
             ux_mode: 'popup',
+            redirect_uri: redirectUri,
             include_granted_scopes: true,
             callback: (response) => {
               if (!response.code || response.error) {
@@ -76,7 +79,7 @@ export class GoogleIdentityService {
               }
               onCredential({
                 authorizationCode: response.code,
-                redirectUri: window.location.origin,
+                redirectUri,
               });
             },
             error_callback: onUnavailable,
