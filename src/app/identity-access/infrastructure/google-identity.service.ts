@@ -2,25 +2,21 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { SocialTokenExchangeRequest } from './authentication-response';
 
-interface GoogleCodeResponse {
-  code?: string;
-  error?: string;
+interface GoogleCredentialResponse {
+  credential?: string;
 }
 
-interface GoogleCodeClient {
-  requestCode(options?: { prompt?: string }): void;
+interface GooglePromptMomentNotification {
+  isNotDisplayed(): boolean;
+  isSkippedMoment(): boolean;
 }
 
-interface GoogleAccountsOAuth2 {
-  initCodeClient(configuration: {
+interface GoogleAccountsId {
+  initialize(configuration: {
     client_id: string;
-    scope: string;
-    ux_mode: 'popup';
-    redirect_uri?: string;
-    include_granted_scopes?: boolean;
-    callback: (response: GoogleCodeResponse) => void;
-    error_callback?: () => void;
-  }): GoogleCodeClient;
+    callback: (response: GoogleCredentialResponse) => void;
+  }): void;
+  prompt(callback?: (notification: GooglePromptMomentNotification) => void): void;
 }
 
 export type GoogleIdentityCredential = SocialTokenExchangeRequest;
@@ -29,14 +25,14 @@ declare global {
   interface Window {
     google?: {
       accounts?: {
-        oauth2?: GoogleAccountsOAuth2;
+        id?: GoogleAccountsId;
       };
     };
   }
 }
 
 /**
- * @summary Starts the Google authorization code popup flow.
+ * @summary Starts the Google identity token prompt flow.
  */
 @Injectable({ providedIn: 'root' })
 export class GoogleIdentityService {
@@ -57,40 +53,35 @@ export class GoogleIdentityService {
 
     this.loadScript()
       .then(() => {
-        const googleOAuth = window.google?.accounts?.oauth2;
-        const redirectUri = window.location.origin;
+        const googleIdentity = window.google?.accounts?.id;
 
-        if (!googleOAuth) {
+        if (!googleIdentity) {
           onUnavailable();
           return;
         }
 
-        googleOAuth
-          .initCodeClient({
-            client_id: environment.googleOAuthClientId,
-            scope: 'openid email profile',
-            ux_mode: 'popup',
-            redirect_uri: redirectUri,
-            include_granted_scopes: true,
-            callback: (response) => {
-              if (!response.code || response.error) {
-                onUnavailable();
-                return;
-              }
-              onCredential({
-                authorizationCode: response.code,
-                redirectUri,
-              });
-            },
-            error_callback: onUnavailable,
-          })
-          .requestCode({ prompt: 'select_account' });
+        googleIdentity.initialize({
+          client_id: environment.googleOAuthClientId,
+          callback: (response) => {
+            if (!response.credential) {
+              onUnavailable();
+              return;
+            }
+
+            onCredential({ idToken: response.credential });
+          },
+        });
+        googleIdentity.prompt((notification) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            onUnavailable();
+          }
+        });
       })
       .catch(() => onUnavailable());
   }
 
   private loadScript(): Promise<void> {
-    if (window.google?.accounts?.oauth2) {
+    if (window.google?.accounts?.id) {
       return Promise.resolve();
     }
 
