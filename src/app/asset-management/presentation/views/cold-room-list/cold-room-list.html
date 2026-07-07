@@ -46,6 +46,12 @@
   <p class="feedback error">{{ formDuplicateKey() | translate }}</p>
 }
 
+@if (feedback() === 'iot-device-location-mismatch') {
+  <p class="feedback error">
+    {{ 'asset-management.iot-devices.feedback-location-mismatch' | translate }}
+  </p>
+}
+
 @if (feedback() === 'server-error' || assetManagementStore.error()) {
   <p class="feedback error">{{ 'asset-management.feedback.server-error' | translate }}</p>
 }
@@ -99,15 +105,15 @@
       </label>
 
       <label class="form-field">
-        <span>{{ 'asset-management.form.location' | translate }}</span>
-        <select formControlName="locationId">
-          <option [ngValue]="0">{{ 'asset-management.form.select-location' | translate }}</option>
-          @for (location of organizationLocations(); track location.id) {
-            <option [ngValue]="location.id">{{ location.name }}</option>
+        <span>{{ 'asset-management.form.gateway' | translate }}</span>
+        <select formControlName="gatewayId">
+          <option [ngValue]="0">{{ 'asset-management.form.select-gateway' | translate }}</option>
+          @for (gateway of organizationGateways(); track gateway.id) {
+            <option [ngValue]="gateway.id">{{ gatewayNameById(gateway.id) }}</option>
           }
         </select>
-        @if (hasControlError('locationId')) {
-          <small>{{ 'asset-management.form.location-error' | translate }}</small>
+        @if (hasControlError('gatewayId')) {
+          <small>{{ 'asset-management.form.gateway-error' | translate }}</small>
         }
       </label>
 
@@ -130,9 +136,9 @@
 
       <div class="form-field">
         <span>{{ 'asset-management.form.location' | translate }}</span>
-        <div class="derived-field" [class.empty]="selectedLocationForForm() === 'N/A'">
-          @if (selectedLocationForForm() !== 'N/A') {
-            {{ selectedLocationForForm() }}
+        <div class="derived-field" [class.empty]="selectedGatewayLocationForForm() === 'N/A'">
+          @if (selectedGatewayLocationForForm() !== 'N/A') {
+            {{ selectedGatewayLocationForForm() }}
           } @else {
             {{ 'asset-management.form.location-derived-empty' | translate }}
           }
@@ -264,10 +270,13 @@
           <option [ngValue]="0">
             {{ 'asset-management.iot-devices.form.unassigned' | translate }}
           </option>
-          @for (asset of organizationAssets(); track asset.id) {
+          @for (asset of assignableAssetsForSelectedGateway(); track asset.id) {
             <option [ngValue]="asset.id">{{ asset.uuid }} - {{ asset.name }}</option>
           }
         </select>
+        @if (selectedIoTDeviceGatewayId() && !assignableAssetsForSelectedGateway().length) {
+          <small>{{ 'asset-management.iot-devices.form.asset-location-empty' | translate }}</small>
+        }
       </label>
 
       <label class="form-field">
