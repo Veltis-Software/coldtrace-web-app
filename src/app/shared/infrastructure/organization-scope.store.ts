@@ -25,7 +25,7 @@ export class OrganizationScopeStore {
   }
 
   endpointUrlForOrganization(organizationId: number, resourcePath: string): string {
-    return `${environment.platformProviderApiBaseUrl}/organizations/${organizationId}/${resourcePath}`;
+    return `${environment.platformProviderApiBaseUrl}/api/v1/organizations/${organizationId}/${resourcePath}`;
   }
 
   organizationUrl(): string {
@@ -35,6 +35,6 @@ export class OrganizationScopeStore {
       return '';
     }
 
-    return `${environment.platformProviderApiBaseUrl}/organizations/${organizationId}`;
+    return `${environment.platformProviderApiBaseUrl}/api/v1/organizations/${organizationId}`;
   }
 }
