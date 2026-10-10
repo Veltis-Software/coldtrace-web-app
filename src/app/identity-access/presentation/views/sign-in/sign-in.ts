@@ -1,6 +1,6 @@
 import { Component, NgZone, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { finalize, forkJoin } from 'rxjs';
 import { IdentityAccessStore } from '../../../application/identity-access.store';
@@ -38,6 +38,7 @@ export class SignIn {
   private readonly appleIdentity = inject(AppleIdentityService);
   private readonly googleIdentity = inject(GoogleIdentityService);
   private readonly router = inject(Router);
+  private readonly returnRoute = inject(ActivatedRoute);
   private readonly zone = inject(NgZone);
 
   protected readonly submitted = signal(false);
@@ -197,6 +198,8 @@ export class SignIn {
           this.identityAccessStore.setCurrentContextFrom(usersWithAuthenticated, roles, organizations);
           this.feedback.set('success');
           this.submitted.set(false);
+          const returnUrl = this.returnRoute.snapshot.queryParamMap.get('returnUrl');
+          if (returnUrl?.startsWith('/') && !returnUrl.startsWith('//')) { void this.router.navigateByUrl(returnUrl); return; }
           void this.router.navigate(['/identity-access/dashboard'], {
             queryParams: {
               organizationId: authenticated.user.organizationId,

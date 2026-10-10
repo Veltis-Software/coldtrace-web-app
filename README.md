@@ -6,9 +6,17 @@ ColdTrace is an Angular frontend application for cold-chain monitoring operation
 
 ## Description
 
-ColdTrace is the frontend web application for ICEQ, a platform focused on cold-chain monitoring for food businesses. The current implementation is an Angular application that consumes the ColdTrace Spring Boot backend during local development and the deployed backend in production builds.
+ColdTrace is the frontend web application maintained in Veltis-Software for cold-chain monitoring. It consumes the API Gateway, which routes requests to the extracted services and the remaining brownfield capabilities.
 
 The project follows the course style used in the reference applications: bounded contexts, standalone Angular components, route-level lazy loading, simple domain entities, infrastructure assemblers, and environment-based API endpoints.
+
+## Veltis migration and Sprint 1
+
+The active repository is Veltis-Software/coldtrace-web-app. Current asset states, incident detail, notification deep links, assignment with ten-second undo, corrective actions and asynchronous traceability reports use the extracted services through the API Gateway. IAM and assets still use the temporary brownfield backend.
+
+Development requests use http://127.0.0.1:18080. Production builds use same-origin API requests; configure API_UPSTREAM on the web container to point to the gateway. Configure new OAuth clients before enabling social sign-in. The previous organization deployment and Vercel preview workflow are no longer used.
+
+Use Node 22, npm ci, npm run test -- --watch=false and npm run build. Dockerfile builds the web application independently; cloud deployment remains pending the academic project.
 
 ## Current Scope
 
@@ -70,16 +78,16 @@ Open:
 http://localhost:4200
 ```
 
-During local development, Angular calls the local Spring Boot backend:
+During local development, Angular calls the API Gateway:
 
 ```txt
-http://localhost:8080
+http://127.0.0.1:18080
 ```
 
-Production builds call the deployed backend:
+Production builds call the same-origin gateway proxy configured through API_UPSTREAM:
 
 ```txt
-https://coldtrace-platform-dtbzbm7bta-uc.a.run.app
+/api/v1
 ```
 
 ## Build and Test
@@ -100,4 +108,4 @@ npm test
 
 - The application keeps the product-facing UI in English.
 - The frontend now targets the ColdTrace Spring Boot backend. The `server/` folder is retained only as legacy mock data from the previous local API phase.
-- Real JWT authentication, real email delivery, and production backend authorization are outside the current frontend scope.
+- JWT authentication and server-side organization authorization are exercised by the Sprint 1 flow. Notifications use the in-app channel; email delivery and Google Cloud deployment are pending.

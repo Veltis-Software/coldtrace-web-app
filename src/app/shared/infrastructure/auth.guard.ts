@@ -12,15 +12,15 @@ export const authenticatedCanActivate: CanActivateFn = () => {
 /**
  * @summary Prevents lazy dashboard modules from loading without a ColdTrace JWT session.
  */
-export const authenticatedCanMatch: CanMatchFn = () => {
-  return authenticatedOrSignIn();
+export const authenticatedCanMatch: CanMatchFn = (_route, segments) => {
+  return authenticatedOrSignIn('/' + segments.map(segment => segment.path).join('/'));
 };
 
-function authenticatedOrSignIn(): boolean | UrlTree {
+function authenticatedOrSignIn(returnUrl = ''): boolean | UrlTree {
   const authSession = inject(AuthSessionStore);
   const router = inject(Router);
 
   return authSession.token()
     ? true
-    : router.createUrlTree(['/identity-access/sign-in']);
+    : router.createUrlTree(['/identity-access/sign-in'], { queryParams: returnUrl ? { returnUrl } : {} });
 }

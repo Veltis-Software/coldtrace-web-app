@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  platformProviderApiBaseUrl: 'https://coldtrace-platform-dtbzbm7bta-uc.a.run.app',
+  platformProviderApiBaseUrl: 'http://127.0.0.1:18080',
   platformProviderAuthenticationEndpointPath: '/api/v1/authentication',
   platformProviderOrganizationsEndpointPath: '/api/v1/organizations',
   platformProviderRolesEndpointPath: '/api/v1/roles',
