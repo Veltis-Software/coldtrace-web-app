@@ -73,7 +73,8 @@ export class AuthSessionStore {
       return null;
     }
 
-    const storage = window.localStorage;
+    let storage: Storage;
+    try { storage = window.localStorage; } catch { return null; }
 
     return storage &&
       typeof storage.getItem === 'function' &&

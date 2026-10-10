@@ -1,0 +1,98 @@
+<section class="increment-view">
+  <a routerLink="/alerts/incidents">{{ 'increment.back-alerts' | translate }}</a>
+
+  <header>
+    <h1>{{ 'increment.alert-detail' | translate }}</h1>
+    <span>{{ (connected() ? 'increment.live' : 'increment.reconnecting') | translate }}</span>
+  </header>
+
+  @if (error()) {
+    <p role="alert" class="error">
+      {{ error() | translate }}
+      <button (click)="load()">{{ 'increment.retry' | translate }}</button>
+    </p>
+  }
+
+  @if (feedback()) {
+    <div role="status" class="feedback">
+      {{ feedback() | translate }}
+      @if (seconds() > 0) {
+        <button [disabled]="busy()" (click)="undo()">
+          {{ 'increment.undo' | translate }} ({{ seconds() }}s)
+        </button>
+      }
+    </div>
+  }
+
+  @if (detail(); as alert) {
+    <h2>{{ alert.asset.name }}</h2>
+    <p>
+      {{ alert.asset.locationName }} · {{ alert.type }} · {{ alert.severity }} · {{ alert.state }}
+    </p>
+
+    <dl>
+      <dt>{{ 'increment.detected' | translate }}</dt>
+      <dd>{{ alert.detectedAt | date: 'medium' }}</dd>
+
+      <dt>{{ 'increment.assignee' | translate }}</dt>
+      <dd>{{ alert.assignee?.fullName || ('increment.unassigned' | translate) }}</dd>
+
+      @if (alert.reading; as reading) {
+        <dt>{{ 'increment.temperature' | translate }}</dt>
+        <dd>{{ reading.temperature | number: '1.1-2' }} °C</dd>
+        <dt>{{ 'increment.humidity' | translate }}</dt>
+        <dd>{{ reading.humidity | number: '1.1-2' }} %</dd>
+        <dt>{{ 'increment.recorded' | translate }}</dt>
+        <dd>{{ reading.recordedAt | date: 'medium' }}</dd>
+      }
+
+      @if (alert.safeRange; as range) {
+        <dt>{{ 'increment.safe-range' | translate }}</dt>
+        <dd>
+          {{ range.minTemperature }}–{{ range.maxTemperature }} °C
+          @if (range.minHumidity != null) {
+            · {{ range.minHumidity }}–{{ range.maxHumidity }} %
+          }
+        </dd>
+      }
+    </dl>
+
+    @if (alert.allowedActions.includes('ACKNOWLEDGE_AND_ASSIGN')) {
+      <form (ngSubmit)="acknowledge()">
+        <label for="assignee">{{ 'increment.assignee' | translate }}</label
+        ><select id="assignee" name="assignee" [(ngModel)]="assignee">
+          @for (member of members(); track member.userId) {
+            <option [ngValue]="member.userId">{{ member.fullName }}</option>
+          }</select
+        ><button type="submit" [disabled]="busy() || !assignee">
+          {{ 'increment.acknowledge' | translate }}
+        </button>
+      </form>
+    }
+
+    <h2>{{ 'increment.corrective-actions' | translate }}</h2>
+
+    @for (action of alert.correctiveActions; track $index) {
+      <article>
+        <p>{{ action.description }}</p>
+        <small>{{ action.created_at | date: 'medium' }}</small>
+      </article>
+    } @empty {
+      <p>{{ 'increment.no-actions' | translate }}</p>
+    }
+
+    @if (alert.allowedActions.includes('REGISTER_CORRECTIVE_ACTION')) {
+      <label for="description">{{ 'increment.action-description' | translate }}</label
+      ><textarea id="description" maxlength="2000" [(ngModel)]="description"></textarea>
+      <div class="actions">
+        <button [disabled]="busy() || !description.trim()" (click)="saveAction()">
+          {{ 'increment.save-action' | translate }}</button
+        ><button [disabled]="busy() || !description.trim()" (click)="saveAction(true)">
+          {{ 'increment.resolve' | translate }}
+        </button>
+      </div>
+    }
+  } @else {
+    <p role="status">{{ 'increment.loading' | translate }}</p>
+  }
+</section>

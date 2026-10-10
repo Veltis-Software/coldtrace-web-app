@@ -5,9 +5,7 @@ const operationalDashboard = () =>
     (m) => m.OperationalDashboard,
   );
 const assetMonitoringDashboard = () =>
-  import('./views/asset-monitoring-dashboard/asset-monitoring-dashboard').then(
-    (m) => m.AssetMonitoringDashboard,
-  );
+  import('./views/current-states/current-states').then((m) => m.CurrentStates);
 
 /**
  * @summary Defines the lazy-loaded routes for the monitoring bounded context.
