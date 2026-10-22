@@ -31,7 +31,8 @@
 
         <div class="summary-pills" aria-label="Monitoring summary">
           <span
-            >{{ 'monitoring.asset-monitoring.summary-assets' | translate }}: {{ totalAssets() }}</span
+            >{{ 'monitoring.asset-monitoring.summary-assets' | translate }}:
+            {{ totalAssets() }}</span
           >
           <span
             >{{ 'monitoring.asset-monitoring.summary-readings' | translate }}:
@@ -44,6 +45,36 @@
       </div>
     }
   </header>
+
+  <div class="telemetry-filters">
+    <label
+      >{{ 'increment.state' | translate }}
+      <select [value]="statusFilter()" (change)="filterState($any($event.target).value)">
+        <option value="">{{ 'increment.all' | translate }}</option>
+        <option value="NORMAL">{{ 'increment.states.NORMAL' | translate }}</option>
+        <option value="OUT_OF_RANGE">{{ 'increment.states.OUT_OF_RANGE' | translate }}</option>
+        <option value="NO_DATA">{{ 'increment.states.NO_DATA' | translate }}</option>
+      </select>
+    </label>
+    <label
+      >{{ 'increment.location-name' | translate }}
+      <select [value]="locationFilter()" (change)="filterLocation($any($event.target).value)">
+        <option value="0">{{ 'increment.all' | translate }}</option>
+        @for (location of locations(); track location.id) {
+          <option [value]="location.id">{{ location.name }}</option>
+        }
+      </select>
+    </label>
+    <button type="button" (click)="loadStates()" [disabled]="stateLoading()">
+      <mat-icon aria-hidden="true">refresh</mat-icon>{{ 'increment.refresh' | translate }}
+    </button>
+  </div>
+  @if (stateError()) {
+    <p role="alert" class="telemetry-error">{{ 'increment.load-error' | translate }}</p>
+  }
+  @if (stateLoading() && !states().length) {
+    <p role="status">{{ 'increment.loading' | translate }}</p>
+  }
 
   @if (!canMonitorAssets() && identityDataReady()) {
     <div class="access-notice">
@@ -60,6 +91,8 @@
           [latestReading]="item.latestReading"
           [settings]="item.settings"
           [chartPoints]="item.chartPoints"
+          [telemetryState]="item.telemetryState"
+          [safeRange]="item.safeRange"
         ></app-monitoring-asset-card>
       }
 

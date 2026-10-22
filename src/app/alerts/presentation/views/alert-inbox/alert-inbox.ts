@@ -1,8 +1,12 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 
 import { DatePipe } from '@angular/common';
 
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
+import { AssetManagementApi } from '../../../../asset-management/infrastructure/asset-management-api';
+import { Asset } from '../../../../asset-management/domain/model/asset.entity';
+import { ListPagination } from '../../../../shared/presentation/components/list-pagination/list-pagination';
 
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -10,71 +14,44 @@ import { IncrementApi, AlertRow, Notice } from '../../../../shared/infrastructur
 
 @Component({
   selector: 'app-alert-inbox',
-  imports: [DatePipe, RouterLink, TranslateModule],
-  styleUrl: '../../../../shared/presentation/increment.css',
-  template: ` <section class="increment-view">
-    <header>
-      <h1>{{ 'increment.alerts' | translate }}</h1>
-      <button (click)="load()">{{ 'increment.refresh' | translate }}</button>
-    </header>
-
-    @if (error()) {
-      <p role="alert" class="error">{{ 'increment.load-error' | translate }}</p>
-    }
-
-    <h2>{{ 'increment.notifications' | translate }}</h2>
-
-    @for (notice of notices(); track notice.id) {
-      <article>
-        <a [routerLink]="notice.deep_link"
-          >{{ 'increment.open-alert' | translate }} #{{ notice.incident_id }}</a
-        >
-        <p>{{ notice.created_at | date: 'medium' }} · {{ notice.channel }}</p>
-      </article>
-    } @empty {
-      <p>{{ 'increment.no-notifications' | translate }}</p>
-    }
-
-    <h2>{{ 'increment.incidents' | translate }}</h2>
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>{{ 'increment.asset' | translate }}</th>
-            <th>{{ 'increment.type' | translate }}</th>
-            <th>{{ 'increment.state' | translate }}</th>
-            <th>{{ 'increment.detected' | translate }}</th>
-            <th>{{ 'increment.detail' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (alert of alerts(); track alert.id) {
-            <tr>
-              <td>{{ alert.asset_id }}</td>
-              <td>{{ alert.type }} · {{ alert.severity }}</td>
-              <td>{{ alert.status }}</td>
-              <td>{{ alert.detected_at | date: 'medium' }}</td>
-              <td>
-                <a [routerLink]="['/alerts', alert.id]">{{ 'increment.open-alert' | translate }}</a>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="5">{{ 'increment.no-alerts' | translate }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  </section>`,
+  imports: [DatePipe, RouterLink, TranslateModule, MatIconModule, ListPagination],
+  styleUrl: './alert-inbox.css',
+  templateUrl: './alert-inbox.html',
 })
 export class AlertInbox {
   private readonly api = inject(IncrementApi);
+  private readonly assetApi = inject(AssetManagementApi);
+  protected readonly notificationMode =
+    inject(ActivatedRoute).snapshot.routeConfig?.path === 'notifications';
+  protected readonly assets = signal<Asset[]>([]);
+  protected readonly search = signal('');
+  protected readonly status = signal('');
+  protected readonly page = signal(1);
+  protected readonly loading = signal(true);
+  protected readonly openCount = computed(
+    () => this.alerts().filter((row) => row.status === 'OPEN').length,
+  );
+  protected readonly assignedCount = computed(
+    () => this.alerts().filter((row) => row.status === 'ACKNOWLEDGED').length,
+  );
+  protected readonly filtered = computed(() =>
+    this.alerts().filter(
+      (row) =>
+        (!this.status() || row.status === this.status()) &&
+        `${this.assetName(row.asset_id)} ${row.type} ${row.status}`
+          .toLowerCase()
+          .includes(this.search().toLowerCase()),
+    ),
+  );
+  protected readonly visible = computed(() =>
+    this.filtered().slice((this.page() - 1) * 10, this.page() * 10),
+  );
   protected readonly alerts = signal<AlertRow[]>([]);
   protected readonly notices = signal<Notice[]>([]);
   protected readonly error = signal(false);
 
   constructor() {
+    this.assetApi.getAssets().subscribe({ next: (rows) => this.assets.set(rows), error: () => {} });
     this.load();
     const abort = new AbortController();
     void this.api.stream(
@@ -87,11 +64,33 @@ export class AlertInbox {
 
   protected load() {
     this.error.set(false);
-    this.api
-      .get<AlertRow[]>('/api/v1/alerts')
-      .subscribe({ next: (rows) => this.alerts.set(rows), error: () => this.error.set(true) });
+    this.api.get<AlertRow[]>('/api/v1/alerts').subscribe({
+      next: (rows) => {
+        this.alerts.set(rows);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set(true);
+        this.loading.set(false);
+      },
+    });
     this.api
       .get<Notice[]>('/api/v1/notifications')
       .subscribe({ next: (rows) => this.notices.set(rows), error: () => this.error.set(true) });
+  }
+
+  protected assetName(id: number): string {
+    return this.assets().find((asset) => asset.id === id)?.name ?? `#${id}`;
+  }
+  protected filter(value: string): void {
+    this.search.set(value);
+    this.page.set(1);
+  }
+  protected filterStatus(value: string): void {
+    this.status.set(value);
+    this.page.set(1);
+  }
+  protected utc(value: string): string {
+    return /(?:Z|[+-]\d\d:\d\d)$/.test(value) ? value : `${value.replace(' ', 'T')}Z`;
   }
 }

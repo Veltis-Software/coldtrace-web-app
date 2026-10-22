@@ -1,0 +1,140 @@
+<section class="incident-list-view">
+  <header class="alerts-header">
+    <div class="view-header">
+      <div>
+        <h1 class="view-title">{{ 'increment.alerts' | translate }}</h1>
+        <p class="view-subtitle">{{ 'increment.attention-subtitle' | translate }}</p>
+      </div>
+      <button class="refresh-action" (click)="load()">
+        <mat-icon aria-hidden="true">refresh</mat-icon>{{ 'increment.refresh' | translate }}
+      </button>
+    </div>
+    <div class="incident-workbar">
+      <nav class="incident-section-tabs" [attr.aria-label]="'increment.alerts' | translate">
+        <a routerLink="/alerts/incidents" [class.active]="!notificationMode">{{
+          'increment.incidents' | translate
+        }}</a>
+        <a routerLink="/alerts/notifications" [class.active]="notificationMode">{{
+          'increment.notifications' | translate
+        }}</a>
+      </nav>
+      @if (!notificationMode) {
+        <label class="search-box"
+          ><mat-icon aria-hidden="true">search</mat-icon>
+          <input
+            type="search"
+            [attr.aria-label]="'increment.search-alerts' | translate"
+            [placeholder]="'increment.search-alerts' | translate"
+            (input)="filter($any($event.target).value)"
+          />
+        </label>
+        <div class="incident-metrics">
+          <span class="metric-pill metric-open"
+            >{{ openCount() }} {{ 'increment.states.OPEN' | translate }}</span
+          ><span class="metric-pill metric-pending"
+            >{{ assignedCount() }} {{ 'increment.states.ACKNOWLEDGED' | translate }}</span
+          >
+        </div>
+      }
+    </div>
+  </header>
+  @if (error()) {
+    <p class="feedback-banner feedback-error" role="alert">
+      {{ 'increment.load-error' | translate }}
+    </p>
+  }
+  @if (loading()) {
+    <p role="status">{{ 'increment.loading' | translate }}</p>
+  }
+  @if (notificationMode) {
+    <section class="premium-card table-card">
+      @for (notice of notices(); track notice.id) {
+        <article class="notice-row">
+          <mat-icon aria-hidden="true">notifications_active</mat-icon>
+          <div>
+            <a [routerLink]="notice.deep_link"
+              >{{ 'increment.open-alert' | translate }} #{{ notice.incident_id }}</a
+            >
+            <p>{{ utc(notice.created_at) | date: 'medium' }} · {{ notice.channel }}</p>
+          </div>
+          <mat-icon aria-hidden="true">chevron_right</mat-icon>
+        </article>
+      } @empty {
+        <p>{{ 'increment.no-notifications' | translate }}</p>
+      }
+    </section>
+  } @else {
+    <section class="premium-card table-card">
+      <div class="list-heading">
+        <h2>{{ 'increment.incidents' | translate }}</h2>
+        <label
+          >{{ 'increment.state' | translate }}
+          <select (change)="filterStatus($any($event.target).value)">
+            <option value="">{{ 'increment.all' | translate }}</option>
+            @for (state of ['OPEN', 'ACKNOWLEDGED', 'RESOLVED']; track state) {
+              <option [value]="state">{{ 'increment.states.' + state | translate }}</option>
+            }
+          </select></label
+        >
+      </div>
+      <div class="table-container">
+        <table class="premium-table">
+          <thead>
+            <tr>
+              <th>{{ 'increment.asset' | translate }}</th>
+              <th>{{ 'increment.type' | translate }}</th>
+              <th>{{ 'increment.state' | translate }}</th>
+              <th>{{ 'increment.detected' | translate }}</th>
+              <th>{{ 'increment.detail' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (alert of visible(); track alert.id) {
+              <tr [class.recognized-row]="alert.status === 'ACKNOWLEDGED'">
+                <td class="asset-name">{{ assetName(alert.asset_id) }}</td>
+                <td>
+                  <div
+                    class="type-cell"
+                    [class.crit]="alert.severity === 'CRITICAL'"
+                    [class.warn]="alert.severity !== 'CRITICAL'"
+                  >
+                    <mat-icon aria-hidden="true">{{
+                      alert.type === 'NO_DATA' ? 'sensors_off' : 'thermostat'
+                    }}</mat-icon
+                    >{{ 'increment.types.' + alert.type | translate }}
+                  </div>
+                </td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge-open]="alert.status === 'OPEN'"
+                    [class.badge-recognized]="alert.status === 'ACKNOWLEDGED'"
+                    [class.badge-closed]="alert.status === 'RESOLVED'"
+                    >{{ 'increment.states.' + alert.status | translate }}</span
+                  >
+                </td>
+                <td>{{ utc(alert.detected_at) | date: 'medium' }}</td>
+                <td>
+                  <a class="recognize-btn" [routerLink]="['/alerts', alert.id]"
+                    >{{ 'increment.open-alert' | translate
+                    }}<mat-icon aria-hidden="true">arrow_forward</mat-icon></a
+                  >
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5">{{ 'increment.no-alerts' | translate }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-list-pagination
+        [page]="page()"
+        [total]="filtered().length"
+        [pageSize]="10"
+        (pageChange)="page.set($event)"
+      />
+    </section>
+  }
+</section>

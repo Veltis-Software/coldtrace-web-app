@@ -1620,6 +1620,36 @@
     "unassigned": "Sin asignar",
     "undo": "Deshacer",
     "undo-error": "No se puede deshacer. Puede haber vencido la ventana de diez segundos.",
-    "undone": "Reconocimiento deshecho"
+    "undone": "Reconocimiento deshecho",
+    "states": {
+      "NORMAL": "En rango",
+      "OUT_OF_RANGE": "Fuera de rango",
+      "NO_DATA": "Sin datos",
+      "UNAVAILABLE": "Sin actualizar",
+      "OPEN": "Abierta",
+      "ACKNOWLEDGED": "Asignada",
+      "RESOLVED": "Resuelta"
+    },
+    "types": {
+      "THRESHOLD_BREACHED": "Desviación del rango seguro",
+      "NO_DATA": "Interrupción de lecturas"
+    },
+    "severities": {
+      "CRITICAL": "Crítica",
+      "WARNING": "Advertencia"
+    },
+    "location-name": "Ubicación",
+    "observed-readings": "Lecturas recibidas durante esta sesión",
+    "stale-reading": "La última lectura se conserva; la fuente dejó de reportar.",
+    "attention-subtitle": "Revisa desviaciones, asigna su atención y consulta el seguimiento.",
+    "search-alerts": "Buscar por activo, tipo o estado",
+    "detail-subtitle": "Contexto del evento y seguimiento de su atención",
+    "attention": "Atención de la alerta",
+    "assignment-help": "Asigna un responsable para que el equipo sepa quién está atendiendo el caso.",
+    "undo-help": "Puedes deshacer el reconocimiento durante 10 segundos.",
+    "traceability-subtitle": "Consolida lecturas, incidencias y responsables de un periodo.",
+    "report-summary": "Resumen del reporte",
+    "incident": "Incidencia",
+    "report-empty": "Selecciona un periodo y genera el reporte para consultar sus lecturas e incidencias."
   }
 }

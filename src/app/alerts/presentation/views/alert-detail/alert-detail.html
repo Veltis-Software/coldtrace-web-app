@@ -1,97 +1,163 @@
-<section class="increment-view">
-  <a routerLink="/alerts/incidents">{{ 'increment.back-alerts' | translate }}</a>
-
-  <header>
-    <h1>{{ 'increment.alert-detail' | translate }}</h1>
-    <span>{{ (connected() ? 'increment.live' : 'increment.reconnecting') | translate }}</span>
+<section class="incident-list-view">
+  <a class="back-link" routerLink="/alerts/incidents"
+    ><mat-icon aria-hidden="true">arrow_back</mat-icon>{{ 'increment.back-alerts' | translate }}</a
+  >
+  <header class="view-header detail-heading">
+    <div>
+      <h1 class="view-title">{{ 'increment.alert-detail' | translate }}</h1>
+      <p class="view-subtitle">{{ 'increment.detail-subtitle' | translate }}</p>
+    </div>
+    <span class="live-state" [class.connected]="connected()"
+      ><span aria-hidden="true"></span
+      >{{ (connected() ? 'increment.live' : 'increment.reconnecting') | translate }}</span
+    >
   </header>
-
   @if (error()) {
-    <p role="alert" class="error">
-      {{ error() | translate }}
-      <button (click)="load()">{{ 'increment.retry' | translate }}</button>
-    </p>
+    <div class="feedback-banner feedback-error" role="alert">
+      {{ error() | translate
+      }}<button class="secondary-action" (click)="load()">
+        {{ 'increment.retry' | translate }}
+      </button>
+    </div>
   }
-
   @if (feedback()) {
-    <div role="status" class="feedback">
-      {{ feedback() | translate }}
+    <div class="feedback-banner feedback-success" role="status">
+      <mat-icon aria-hidden="true">check_circle</mat-icon>{{ feedback() | translate }}
       @if (seconds() > 0) {
-        <button [disabled]="busy()" (click)="undo()">
+        <button class="secondary-action" [disabled]="busy()" (click)="undo()">
           {{ 'increment.undo' | translate }} ({{ seconds() }}s)
         </button>
       }
     </div>
   }
-
   @if (detail(); as alert) {
-    <h2>{{ alert.asset.name }}</h2>
-    <p>
-      {{ alert.asset.locationName }} · {{ alert.type }} · {{ alert.severity }} · {{ alert.state }}
-    </p>
-
-    <dl>
-      <dt>{{ 'increment.detected' | translate }}</dt>
-      <dd>{{ alert.detectedAt | date: 'medium' }}</dd>
-
-      <dt>{{ 'increment.assignee' | translate }}</dt>
-      <dd>{{ alert.assignee?.fullName || ('increment.unassigned' | translate) }}</dd>
-
-      @if (alert.reading; as reading) {
-        <dt>{{ 'increment.temperature' | translate }}</dt>
-        <dd>{{ reading.temperature | number: '1.1-2' }} °C</dd>
-        <dt>{{ 'increment.humidity' | translate }}</dt>
-        <dd>{{ reading.humidity | number: '1.1-2' }} %</dd>
-        <dt>{{ 'increment.recorded' | translate }}</dt>
-        <dd>{{ reading.recordedAt | date: 'medium' }}</dd>
-      }
-
-      @if (alert.safeRange; as range) {
-        <dt>{{ 'increment.safe-range' | translate }}</dt>
-        <dd>
-          {{ range.minTemperature }}–{{ range.maxTemperature }} °C
-          @if (range.minHumidity != null) {
-            · {{ range.minHumidity }}–{{ range.maxHumidity }} %
+    <div class="detail-layout">
+      <section class="premium-card context-card" aria-labelledby="asset-context-title">
+        <div class="context-heading">
+          <div>
+            <h2 id="asset-context-title">{{ alert.asset.name }}</h2>
+            <p>{{ alert.asset.locationName }}</p>
+          </div>
+          <span
+            class="badge"
+            [class.badge-open]="alert.state === 'OPEN'"
+            [class.badge-recognized]="alert.state === 'ACKNOWLEDGED'"
+            [class.badge-closed]="alert.state === 'RESOLVED'"
+            >{{ 'increment.states.' + alert.state | translate }}</span
+          >
+        </div>
+        <div class="condition-line">
+          <mat-icon aria-hidden="true">{{
+            alert.type === 'NO_DATA' ? 'sensors_off' : 'thermostat'
+          }}</mat-icon
+          ><span>{{ 'increment.types.' + alert.type | translate }}</span
+          ><span class="severity" [class.critical]="alert.severity === 'CRITICAL'">{{
+            'increment.severities.' + alert.severity | translate
+          }}</span>
+        </div>
+        @if (alert.reading; as reading) {
+          <div class="measurement-row">
+            <div>
+              <span>{{ 'increment.temperature' | translate }}</span
+              ><strong
+                >{{ reading.temperature == null ? '—' : (reading.temperature | number: '1.1-2') }}
+                <small>°C</small></strong
+              >
+            </div>
+            <div>
+              <span>{{ 'increment.humidity' | translate }}</span
+              ><strong
+                >{{ reading.humidity == null ? '—' : (reading.humidity | number: '1.1-2') }}
+                <small>%</small></strong
+              >
+            </div>
+          </div>
+        }
+        <dl class="context-facts">
+          @if (alert.safeRange; as range) {
+            <dt>{{ 'increment.safe-range' | translate }}</dt>
+            <dd>
+              {{ range.minTemperature }}–{{ range.maxTemperature }} °C
+              @if (range.minHumidity != null) {
+                · {{ range.minHumidity }}–{{ range.maxHumidity }} %
+              }
+            </dd>
           }
-        </dd>
+          <dt>{{ 'increment.detected' | translate }}</dt>
+          <dd>{{ alert.detectedAt | date: 'medium' }}</dd>
+          @if (alert.reading; as reading) {
+            <dt>{{ 'increment.recorded' | translate }}</dt>
+            <dd>{{ reading.recordedAt | date: 'medium' }}</dd>
+          }
+          <dt>{{ 'increment.assignee' | translate }}</dt>
+          <dd>{{ alert.assignee?.fullName || ('increment.unassigned' | translate) }}</dd>
+        </dl>
+      </section>
+      <section class="premium-card assignment-card" aria-labelledby="assignment-title">
+        <h2 id="assignment-title">{{ 'increment.attention' | translate }}</h2>
+        <p>{{ 'increment.assignment-help' | translate }}</p>
+        @if (alert.allowedActions.includes('ACKNOWLEDGE_AND_ASSIGN')) {
+          <form (ngSubmit)="acknowledge()">
+            <label for="assignee">{{ 'increment.assignee' | translate }}</label
+            ><select id="assignee" name="assignee" [(ngModel)]="assignee">
+              @for (member of members(); track member.userId) {
+                <option [ngValue]="member.userId">{{ member.fullName }}</option>
+              }</select
+            ><button class="primary-action" type="submit" [disabled]="busy() || !assignee">
+              <mat-icon aria-hidden="true">person_add_alt</mat-icon
+              >{{ 'increment.acknowledge' | translate }}
+            </button>
+            <p class="undo-help">
+              <mat-icon aria-hidden="true">undo</mat-icon>{{ 'increment.undo-help' | translate }}
+            </p>
+          </form>
+        } @else {
+          <div class="assigned-owner">
+            <mat-icon aria-hidden="true">assignment_ind</mat-icon>
+            <div>
+              <strong>{{
+                alert.assignee?.fullName || ('increment.unassigned' | translate)
+              }}</strong>
+              <p>{{ 'increment.states.' + alert.state | translate }}</p>
+            </div>
+          </div>
+        }
+      </section>
+    </div>
+    <section class="premium-card corrective-card" aria-labelledby="corrective-title">
+      <h2 id="corrective-title">{{ 'increment.corrective-actions' | translate }}</h2>
+      @for (action of alert.correctiveActions; track $index) {
+        <article class="action-entry">
+          <mat-icon aria-hidden="true">task_alt</mat-icon>
+          <div>
+            <p>{{ action.description }}</p>
+            <small>{{ action.created_at | date: 'medium' }}</small>
+          </div>
+        </article>
+      } @empty {
+        <p class="empty-description">{{ 'increment.no-actions' | translate }}</p>
       }
-    </dl>
-
-    @if (alert.allowedActions.includes('ACKNOWLEDGE_AND_ASSIGN')) {
-      <form (ngSubmit)="acknowledge()">
-        <label for="assignee">{{ 'increment.assignee' | translate }}</label
-        ><select id="assignee" name="assignee" [(ngModel)]="assignee">
-          @for (member of members(); track member.userId) {
-            <option [ngValue]="member.userId">{{ member.fullName }}</option>
-          }</select
-        ><button type="submit" [disabled]="busy() || !assignee">
-          {{ 'increment.acknowledge' | translate }}
-        </button>
-      </form>
-    }
-
-    <h2>{{ 'increment.corrective-actions' | translate }}</h2>
-
-    @for (action of alert.correctiveActions; track $index) {
-      <article>
-        <p>{{ action.description }}</p>
-        <small>{{ action.created_at | date: 'medium' }}</small>
-      </article>
-    } @empty {
-      <p>{{ 'increment.no-actions' | translate }}</p>
-    }
-
-    @if (alert.allowedActions.includes('REGISTER_CORRECTIVE_ACTION')) {
-      <label for="description">{{ 'increment.action-description' | translate }}</label
-      ><textarea id="description" maxlength="2000" [(ngModel)]="description"></textarea>
-      <div class="actions">
-        <button [disabled]="busy() || !description.trim()" (click)="saveAction()">
-          {{ 'increment.save-action' | translate }}</button
-        ><button [disabled]="busy() || !description.trim()" (click)="saveAction(true)">
-          {{ 'increment.resolve' | translate }}
-        </button>
-      </div>
-    }
+      @if (alert.allowedActions.includes('REGISTER_CORRECTIVE_ACTION')) {
+        <label for="description">{{ 'increment.action-description' | translate }}</label
+        ><textarea id="description" maxlength="2000" [(ngModel)]="description"></textarea>
+        <div class="action-buttons">
+          <button
+            class="secondary-action"
+            [disabled]="busy() || !description.trim()"
+            (click)="saveAction()"
+          >
+            <mat-icon aria-hidden="true">save</mat-icon
+            >{{ 'increment.save-action' | translate }}</button
+          ><button
+            class="primary-action"
+            [disabled]="busy() || !description.trim()"
+            (click)="saveAction(true)"
+          >
+            <mat-icon aria-hidden="true">check</mat-icon>{{ 'increment.resolve' | translate }}
+          </button>
+        </div>
+      }
+    </section>
   } @else {
     <p role="status">{{ 'increment.loading' | translate }}</p>
   }

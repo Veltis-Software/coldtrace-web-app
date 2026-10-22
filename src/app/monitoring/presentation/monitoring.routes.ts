@@ -1,11 +1,11 @@
 import { Routes } from '@angular/router';
 
 const operationalDashboard = () =>
-  import('./views/operational-dashboard/operational-dashboard').then(
-    (m) => m.OperationalDashboard,
-  );
+  import('./views/operational-dashboard/operational-dashboard').then((m) => m.OperationalDashboard);
 const assetMonitoringDashboard = () =>
-  import('./views/current-states/current-states').then((m) => m.CurrentStates);
+  import('./views/asset-monitoring-dashboard/asset-monitoring-dashboard').then(
+    (m) => m.AssetMonitoringDashboard,
+  );
 
 /**
  * @summary Defines the lazy-loaded routes for the monitoring bounded context.
