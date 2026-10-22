@@ -89,3 +89,6 @@ a:focus-visible {
     flex-wrap: wrap;
   }
 }
+
+/* The inherited summary card already supplies its decorative icon. */
+.summary-card > mat-icon { display: none; }
