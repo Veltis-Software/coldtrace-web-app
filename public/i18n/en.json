@@ -1620,6 +1620,36 @@
     "unassigned": "Unassigned",
     "undo": "Undo",
     "undo-error": "Undo is unavailable. The ten-second window may have expired.",
-    "undone": "Undone"
+    "undone": "Undone",
+    "states": {
+      "NORMAL": "In range",
+      "OUT_OF_RANGE": "Out of range",
+      "NO_DATA": "No data",
+      "UNAVAILABLE": "Update unavailable",
+      "OPEN": "Open",
+      "ACKNOWLEDGED": "Assigned",
+      "RESOLVED": "Resolved"
+    },
+    "types": {
+      "THRESHOLD_BREACHED": "Safe range deviation",
+      "NO_DATA": "Reading interruption"
+    },
+    "severities": {
+      "CRITICAL": "Critical",
+      "WARNING": "Warning"
+    },
+    "location-name": "Location",
+    "observed-readings": "Readings received during this session",
+    "stale-reading": "The last reading is retained; the source stopped reporting.",
+    "attention-subtitle": "Review deviations, assign attention and follow up.",
+    "search-alerts": "Search by asset, type or state",
+    "detail-subtitle": "Event context and follow-up",
+    "attention": "Alert attention",
+    "assignment-help": "Assign an owner so the team knows who is handling this case.",
+    "undo-help": "You can undo acknowledgement for 10 seconds.",
+    "traceability-subtitle": "Consolidate readings, incidents and owners for a period.",
+    "report-summary": "Report summary",
+    "incident": "Incident",
+    "report-empty": "Select a period and generate a report to review its readings and incidents."
   }
 }

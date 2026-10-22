@@ -1,0 +1,95 @@
+@import '../incident-list/incident-list.css';
+
+.incident-section-tabs a {
+  padding: 10px 0;
+  text-decoration: none;
+  color: var(--color-text-muted);
+  font-weight: 700;
+  border-bottom: 2px solid transparent;
+}
+.incident-section-tabs a.active {
+  color: var(--color-primary);
+  border-color: currentColor;
+}
+.refresh-action,
+.list-heading,
+.notice-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.refresh-action,
+select {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  min-height: 40px;
+}
+.refresh-action {
+  cursor: pointer;
+  font-weight: 700;
+}
+.list-heading {
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.list-heading h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+.list-heading label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.premium-table {
+  table-layout: auto;
+  min-width: 650px;
+}
+.premium-table th,
+.premium-table td {
+  width: auto;
+}
+.recognize-btn {
+  display: inline-flex;
+  text-decoration: none;
+  width: max-content;
+  gap: 6px;
+}
+.notice-row {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.notice-row:last-child {
+  border-bottom: 0;
+}
+.notice-row > div {
+  flex: 1;
+}
+.notice-row > mat-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+.notice-row a {
+  color: var(--color-text);
+  font-weight: 700;
+  text-underline-offset: 4px;
+}
+.notice-row p {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  margin-top: 6px;
+}
+.view-subtitle {
+  color: var(--color-text-muted);
+}
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}

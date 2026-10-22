@@ -228,13 +228,21 @@
             </a>
             <a
               class="sub-menu-link"
-              routerLink="/reports/traceability"
+              routerLink="/reports/monthly"
               [queryParams]="contextQueryParams"
               routerLinkActive="active"
               (click)="closeMobileNavigationAfterNavigation()"
             >
               {{ 'dashboard-shell.nav-monthly-report' | translate }}
             </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/reports/traceability"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+              >{{ 'increment.traceability' | translate }}</a
+            >
             <a
               class="sub-menu-link"
               routerLink="/reports/history"
@@ -361,7 +369,8 @@
         [attr.aria-label]="
           (mobileNavigationOpen()
             ? 'dashboard-shell.close-navigation'
-            : 'dashboard-shell.open-navigation') | translate
+            : 'dashboard-shell.open-navigation'
+          ) | translate
         "
         [attr.aria-expanded]="mobileNavigationOpen()"
         (click)="toggleMobileNavigation()"

@@ -12,14 +12,14 @@
   overflow: hidden;
   margin-bottom: 0;
   min-height: 240px;
-  background: #FFFFFF;
+  background: #ffffff;
   border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .section-gauge {
-  border-right: 1px solid #F1F5F9;
+  border-right: 1px solid #f1f5f9;
   display: flex;
   align-items: center;
   min-width: 0;
@@ -42,8 +42,8 @@
 
 .section-status {
   padding: 24px;
-  background: #FAFBFC;
-  border-left: 1px solid #F1F5F9;
+  background: #fafbfc;
+  border-left: 1px solid #f1f5f9;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -59,7 +59,7 @@
 .status-label {
   font-size: 11px;
   font-weight: 700;
-  color: #94A3B8;
+  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -69,18 +69,18 @@
   border-radius: 8px;
   font-size: 10px;
   font-weight: 800;
-  background: #DCFCE7;
-  color: #16A34A;
+  background: #dcfce7;
+  color: #16a34a;
 }
 
 .status-badge.unack {
-  background: #FEE2E2;
-  color: #EF4444;
+  background: #fee2e2;
+  color: #ef4444;
 }
 
 .status-badge.no-data {
-  background: #EEF2F7;
-  color: #64748B;
+  background: #eef2f7;
+  color: #64748b;
 }
 
 .incident-list {
@@ -93,14 +93,14 @@
   display: flex;
   gap: 12px;
   padding: 14px;
-  background: #FFFFFF;
+  background: #ffffff;
   border-radius: 8px;
-  border: 1px solid #F1F5F9;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .incident-icon {
-  color: #F87171;
+  color: #f87171;
   font-size: 20px;
   width: 20px;
   height: 20px;
@@ -115,18 +115,18 @@
 .incident-type {
   font-size: 12px;
   font-weight: 700;
-  color: #EF4444;
+  color: #ef4444;
 }
 
 .incident-value {
   font-size: 13px;
   font-weight: 800;
-  color: #1E293B;
+  color: #1e293b;
 }
 
 .incident-date {
   font-size: 11px;
-  color: #94A3B8;
+  color: #94a3b8;
 }
 
 .no-incidents {
@@ -136,7 +136,7 @@
   justify-content: center;
   flex: 1;
   gap: 10px;
-  color: #94A3B8;
+  color: #94a3b8;
   font-size: 12px;
   font-weight: 600;
 }
@@ -145,7 +145,7 @@
   font-size: 28px;
   width: 28px;
   height: 28px;
-  color: #22C55E;
+  color: #22c55e;
 }
 
 .device-footer {
@@ -220,3 +220,12 @@
     padding: 18px;
   }
 }
+
+.observed-caption {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  padding: 0 12px 8px;
+}
+
+.status-badge.no-data { background: var(--color-warning-soft); color: #80510a; }
+.no-incidents:has(.mat-icon) { color: var(--color-text-muted); }

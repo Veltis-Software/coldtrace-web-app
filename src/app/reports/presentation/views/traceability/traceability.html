@@ -1,0 +1,156 @@
+<section class="page" aria-labelledby="traceability-title">
+  <header class="page-heading">
+    <div>
+      <h1 id="traceability-title">{{ 'increment.traceability' | translate }}</h1>
+      <p>{{ 'increment.traceability-subtitle' | translate }}</p>
+    </div>
+  </header>
+  <nav class="report-tabs" [attr.aria-label]="'dashboard-shell.nav-reports' | translate">
+    <a routerLink="/reports/monthly">{{ 'dashboard-shell.nav-monthly-report' | translate }}</a
+    ><a routerLink="/reports/traceability" class="active">{{
+      'increment.traceability' | translate
+    }}</a
+    ><a routerLink="/reports/history">{{ 'dashboard-shell.nav-history' | translate }}</a
+    ><a routerLink="/reports/audit-evidence">{{
+      'dashboard-shell.nav-audit-evidence' | translate
+    }}</a>
+  </nav>
+  <form class="filter-card traceability-filters" (ngSubmit)="generate()">
+    <label class="filter-field" for="title"
+      ><span>{{ 'increment.title' | translate }}</span
+      ><input id="title" name="title" maxlength="200" required [(ngModel)]="title"
+    /></label>
+    <label class="filter-field" for="from"
+      ><span>{{ 'increment.from' | translate }}</span
+      ><input id="from" name="from" type="datetime-local" required [(ngModel)]="from"
+    /></label>
+    <label class="filter-field" for="to"
+      ><span>{{ 'increment.to' | translate }}</span
+      ><input id="to" name="to" type="datetime-local" required [(ngModel)]="to"
+    /></label>
+    <button class="primary-action" [disabled]="busy()">
+      <mat-icon aria-hidden="true">{{ busy() ? 'hourglass_top' : 'description' }}</mat-icon
+      >{{ (busy() ? 'increment.generating' : 'increment.generate') | translate }}
+    </button>
+  </form>
+  @if (busy()) {
+    <p role="status" class="feedback">{{ 'increment.generating' | translate }}</p>
+  }
+  @if (error()) {
+    <p role="alert" class="feedback error">{{ 'increment.report-error' | translate }}</p>
+  }
+  @if (report(); as result) {
+    <div class="section-heading">
+      <div>
+        <h2>{{ result.title }}</h2>
+        <p>{{ result.generatedAt | date: 'medium' }}</p>
+      </div>
+      <button class="secondary-action" (click)="download()">
+        <mat-icon aria-hidden="true">download</mat-icon>{{ 'increment.download' | translate }} JSON
+      </button>
+    </div>
+    <section class="summary-grid" [attr.aria-label]="'increment.report-summary' | translate">
+      <article class="summary-card accent-blue">
+        <mat-icon aria-hidden="true">inventory_2</mat-icon>
+        <div>
+          <span>{{ 'increment.assets' | translate }}</span
+          ><strong>{{ result.assets.length }}</strong>
+        </div>
+      </article>
+      <article class="summary-card accent-green">
+        <mat-icon aria-hidden="true">sensors</mat-icon>
+        <div>
+          <span>{{ 'increment.readings' | translate }}</span
+          ><strong>{{ result.readingCount }}</strong>
+        </div>
+      </article>
+      <article class="summary-card accent-amber">
+        <mat-icon aria-hidden="true">warning_amber</mat-icon>
+        <div>
+          <span>{{ 'increment.incidents' | translate }}</span
+          ><strong>{{ result.incidentCount }}</strong>
+        </div>
+      </article>
+    </section>
+    <section class="table-card">
+      <div class="section-heading">
+        <h2>{{ 'increment.incidents' | translate }}</h2>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ 'increment.incident' | translate }}</th>
+              <th>{{ 'increment.state' | translate }}</th>
+              <th>{{ 'increment.assignee' | translate }}</th>
+              <th>{{ 'increment.corrective-actions' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (incident of result.incidents; track incident.id) {
+              <tr>
+                <td>
+                  <a [routerLink]="['/alerts', incident.id]">#{{ incident.id }}</a>
+                </td>
+                <td>
+                  <span class="state-label" [attr.data-state]="incident.state">{{
+                    'increment.states.' + incident.state | translate
+                  }}</span>
+                </td>
+                <td>{{ incident.assignee?.fullName || ('increment.unassigned' | translate) }}</td>
+                <td>
+                  @for (action of incident.correctiveActions; track $index) {
+                    <p>{{ action.description }}</p>
+                  } @empty {
+                    —
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4">{{ 'increment.no-alerts' | translate }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="table-card">
+      <div class="section-heading">
+        <h2>{{ 'increment.readings' | translate }}</h2>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ 'increment.asset' | translate }}</th>
+              <th>{{ 'increment.recorded' | translate }}</th>
+              <th>{{ 'increment.temperature' | translate }}</th>
+              <th>{{ 'increment.humidity' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (reading of result.readings; track $index) {
+              <tr>
+                <td>#{{ reading.assetId }}</td>
+                <td>{{ reading.recordedAt | date: 'medium' }}</td>
+                <td>{{ reading.temperature == null ? '—' : reading.temperature }} °C</td>
+                <td>{{ reading.humidity == null ? '—' : reading.humidity }} %</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4">{{ 'increment.no-readings' | translate }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  } @else if (!busy()) {
+    <section class="report-empty">
+      <mat-icon aria-hidden="true">description</mat-icon>
+      <h2>{{ 'increment.traceability' | translate }}</h2>
+      <p>{{ 'increment.report-empty' | translate }}</p>
+    </section>
+  }
+</section>

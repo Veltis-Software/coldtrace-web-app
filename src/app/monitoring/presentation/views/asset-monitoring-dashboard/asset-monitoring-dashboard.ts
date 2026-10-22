@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule } from '@ngx-translate/core';
 import { AssetManagementStore } from '../../../../asset-management/application/asset-management.store';
@@ -9,7 +9,11 @@ import { AssetType } from '../../../../asset-management/domain/model/asset-type.
 import { IoTDevice } from '../../../../asset-management/domain/model/iot-device.entity';
 import { IdentityAccessStore } from '../../../../identity-access/application/identity-access.store';
 import { ListPagination } from '../../../../shared/presentation/components/list-pagination/list-pagination';
-import { MonitoringStore } from '../../../application/monitoring.store';
+import {
+  IncrementApi,
+  CurrentState,
+  StatePage,
+} from '../../../../shared/infrastructure/increment-api';
 import { SensorReading } from '../../../domain/model/sensor-reading.entity';
 import { TemperaturePoint } from '../../../domain/model/temperature-point.entity';
 import { MonitoringAssetCard } from '../../components/monitoring-asset-card/monitoring-asset-card';
@@ -26,6 +30,8 @@ interface AssetMonitoringItem {
   latestReading: SensorReading | null;
   settings: AssetSettings | undefined;
   chartPoints: TemperaturePoint[];
+  telemetryState: string;
+  safeRange: CurrentState['safeRange'] | undefined;
 }
 
 interface TemperatureLimits {
@@ -46,7 +52,17 @@ interface TemperatureLimits {
 export class AssetMonitoringDashboard implements OnInit {
   private readonly identityStore = inject(IdentityAccessStore);
   private readonly assetStore = inject(AssetManagementStore);
-  private readonly monitoringStore = inject(MonitoringStore);
+  private readonly api = inject(IncrementApi);
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly states = signal<CurrentState[]>([]);
+  protected readonly stateError = signal(false);
+  protected readonly stateLoading = signal(true);
+  protected readonly statusFilter = signal('');
+  protected readonly locationFilter = signal(0);
+  protected readonly locations = computed(() =>
+    this.assetStore.locationsForOrganization(this.activeOrganizationId()),
+  );
+  private readonly observedReadings = signal(new Map<number, SensorReading[]>());
 
   protected readonly searchTerm = signal('');
   protected readonly pageSize = 10;
@@ -81,10 +97,12 @@ export class AssetMonitoringDashboard implements OnInit {
       .assetsForOrganization(organizationId)
       .filter((asset) => asset.type === this.activeType())
       .filter((asset) => this.matchesSearch(asset, query))
+      .filter((asset) => !this.locationFilter() || asset.locationId === this.locationFilter())
       .map((asset) => this.buildMonitoringItem(asset))
+      .filter((item) => !this.statusFilter() || item.telemetryState === this.statusFilter())
       .sort((left, right) => {
-        const leftIssue = left.latestReading?.isOutOfRange ? 1 : 0;
-        const rightIssue = right.latestReading?.isOutOfRange ? 1 : 0;
+        const leftIssue = left.telemetryState === 'NORMAL' ? 0 : 1;
+        const rightIssue = right.telemetryState === 'NORMAL' ? 0 : 1;
 
         return rightIssue - leftIssue || left.asset.name.localeCompare(right.asset.name);
       });
@@ -98,7 +116,7 @@ export class AssetMonitoringDashboard implements OnInit {
     () => this.filteredItems().filter((item) => item.latestReading !== null).length,
   );
   protected readonly assetsOutOfRange = computed(
-    () => this.filteredItems().filter((item) => item.latestReading?.isOutOfRange).length,
+    () => this.filteredItems().filter((item) => item.telemetryState === 'OUT_OF_RANGE').length,
   );
 
   /**
@@ -108,11 +126,71 @@ export class AssetMonitoringDashboard implements OnInit {
     this.identityStore.loadUsers();
     this.identityStore.loadOrganizations();
     this.identityStore.loadRoles();
-    this.assetStore.loadAssets();
-    this.assetStore.loadIoTDevices();
+    this.assetStore.loadAssets({ force: true });
+    this.assetStore.loadLocations();
+    this.assetStore.loadIoTDevices({ force: true });
     this.assetStore.loadGateways();
     this.assetStore.loadAssetSettings();
-    this.monitoringStore.loadReadings();
+    this.loadStates();
+    const timer = setInterval(() => this.loadStates(), 10000);
+    this.destroyRef.onDestroy(() => clearInterval(timer));
+  }
+
+  protected loadStates(): void {
+    this.stateLoading.set(true);
+    const loadPage = (page: number, collected: CurrentState[]) => {
+      this.api.get<StatePage>(`/api/v1/assets/states?page=${page}&size=50`).subscribe({
+        next: (result) => {
+          const items = [...collected, ...result.items];
+          if (items.length < result.total && result.items.length) {
+            loadPage(page + 1, items);
+            return;
+          }
+          this.states.set(items);
+          const history = new Map(this.observedReadings());
+          for (const state of items) {
+            if (!state.lastRecordedAt) continue;
+            const rows = history.get(state.assetId) ?? [];
+            if (rows.some((row) => row.recordedAt === state.lastRecordedAt)) continue;
+            const device = this.assetStore
+              .iotDevices()
+              .find((value) => value.assetId === state.assetId);
+            history.set(
+              state.assetId,
+              [
+                new SensorReading(
+                  Date.parse(state.lastRecordedAt),
+                  state.assetId,
+                  device?.id ?? 0,
+                  state.lastTemperature ?? null,
+                  state.lastHumidity ?? null,
+                  state.status === 'OUT_OF_RANGE',
+                  state.lastRecordedAt,
+                ),
+                ...rows,
+              ].slice(0, 24),
+            );
+          }
+          this.observedReadings.set(history);
+          this.stateError.set(false);
+          this.stateLoading.set(false);
+        },
+        error: () => {
+          this.stateError.set(true);
+          this.stateLoading.set(false);
+        },
+      });
+    };
+    loadPage(0, []);
+  }
+
+  protected filterState(value: string): void {
+    this.statusFilter.set(value);
+    this.currentPage.set(1);
+  }
+  protected filterLocation(value: string): void {
+    this.locationFilter.set(Number(value));
+    this.currentPage.set(1);
   }
 
   protected updateSearchTerm(event: Event): void {
@@ -131,13 +209,16 @@ export class AssetMonitoringDashboard implements OnInit {
   }
 
   private buildMonitoringItem(asset: Asset): AssetMonitoringItem {
-    const readings = this.monitoringStore.getReadingsByAsset(asset.id);
+    const state = this.states().find((value) => value.assetId === asset.id);
+    const readings = this.observedReadings().get(asset.id) ?? [];
     const settings = this.assetStore.settingsForAsset(this.activeOrganizationId(), asset.id);
     const chartReadings = readings
       .filter((reading) => reading.temperature !== null)
       .slice(0, 24)
       .reverse();
-    const limits = this.temperatureLimitsFor(chartReadings, settings);
+    const limits = state
+      ? { min: state.safeRange.minTemperature, max: state.safeRange.maxTemperature }
+      : this.temperatureLimitsFor(chartReadings, settings);
 
     return {
       asset,
@@ -145,6 +226,8 @@ export class AssetMonitoringDashboard implements OnInit {
       location: this.assetLocationFor(asset),
       latestReading: readings[0] ?? null,
       settings,
+      telemetryState: this.stateError() ? 'UNAVAILABLE' : (state?.status ?? 'NO_DATA'),
+      safeRange: state?.safeRange,
       chartPoints: chartReadings.map((reading, index) =>
         this.toTemperaturePoint(reading, index, limits),
       ),
