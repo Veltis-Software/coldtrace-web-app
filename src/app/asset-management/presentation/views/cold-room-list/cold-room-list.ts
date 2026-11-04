@@ -429,11 +429,17 @@ export class ColdRoomList implements OnInit {
     this.locationPage.set(1);
   }
 
+  protected openSourceConfiguration(device: IoTDevice): void {
+    this.formVisible.set(false);
+    this.sourceDevice.set(device);
+  }
+
   protected selectAssetType(tab: AssetManagementTab): void {
     if (this.selectedTab() === tab) {
       return;
     }
 
+    this.sourceDevice.set(null);
     this.selectedTab.set(tab);
     this.searchTerm.set('');
     this.assetPage.set(1);
@@ -451,6 +457,7 @@ export class ColdRoomList implements OnInit {
   }
 
   protected toggleForm(): void {
+    this.sourceDevice.set(null);
     this.feedback.set('idle');
     this.submitted.set(false);
     const willOpen = !this.formVisible();
@@ -804,6 +811,7 @@ export class ColdRoomList implements OnInit {
       return;
     }
 
+    this.sourceDevice.set(null);
     this.selectedTab.set('iot-device');
     this.feedback.set('idle');
     this.submitted.set(false);

@@ -1688,7 +1688,12 @@
     "load-error": "No se pudo consultar la configuración. Comprueba tu conexión y vuelve a intentarlo.",
     "save-error": "No se pudo guardar. Revisa que el identificador esté disponible y que el perfil y el activo sean compatibles.",
     "forbidden": "Tu usuario no tiene permiso para modificar esta configuración.",
+    "read-forbidden": "Tu usuario no tiene permiso para consultar esta configuración.",
     "conflict": "La configuración cambió o la fuente ya está asociada. Recarga los datos antes de confirmar.",
-    "validation-error": "Completa los datos y el motivo del cambio. Los tres campos de origen deben ser distintos."
+    "validation-error": "Completa los datos y el motivo del cambio. Los tres campos de origen deben ser distintos.",
+    "origin": "Origen",
+    "normalized": "Normalizadas",
+    "origin-field": "Campo de origen",
+    "canonical-field": "Campo canónico"
   }
 }
