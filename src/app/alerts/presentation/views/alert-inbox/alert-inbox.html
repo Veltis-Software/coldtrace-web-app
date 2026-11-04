@@ -5,11 +5,11 @@
         <h1 class="view-title">{{ 'increment.alerts' | translate }}</h1>
         <p class="view-subtitle">{{ 'increment.attention-subtitle' | translate }}</p>
       </div>
+    </div>
+    <div class="incident-workbar">
       <button class="refresh-action" (click)="load()">
         <mat-icon aria-hidden="true">refresh</mat-icon>{{ 'increment.refresh' | translate }}
       </button>
-    </div>
-    <div class="incident-workbar">
       <nav class="incident-section-tabs" [attr.aria-label]="'increment.alerts' | translate">
         <a routerLink="/alerts/incidents" [class.active]="!notificationMode">{{
           'increment.incidents' | translate
