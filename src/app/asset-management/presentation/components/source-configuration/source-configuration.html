@@ -8,15 +8,23 @@
       <h2 id="source-config-title">{{ 'source-config.title' | translate }}</h2>
       <p class="device-id">{{ device.uuid }}</p>
     </div>
-    <button mat-button type="button" [disabled]="saving()" (click)="closed.emit()">
+    <button
+      mat-button
+      class="secondary-action"
+      type="button"
+      [disabled]="saving()"
+      (click)="closed.emit()"
+    >
       {{ 'source-config.close' | translate }}
     </button>
   </header>
   @if (loading()) {
     <p role="status">{{ 'source-config.loading' | translate }}</p>
   } @else if (loadFailed()) {
-    <p class="error" role="alert">{{ error() | translate }}</p>
-    <button mat-stroked-button type="button" (click)="load()">
+    <p class="feedback error" role="alert">
+      <mat-icon aria-hidden="true">error_outline</mat-icon>{{ error() | translate }}
+    </p>
+    <button mat-stroked-button class="secondary-action" type="button" (click)="load()">
       {{ 'source-config.reload' | translate }}
     </button>
   } @else {
@@ -71,18 +79,22 @@
       <p>{{ 'source-config.empty' | translate }}</p>
     }
     @if (success()) {
-      <p class="success" role="status">{{ 'source-config.saved' | translate }}</p>
+      <p class="feedback success" role="status">
+        <mat-icon aria-hidden="true">check_circle</mat-icon>{{ 'source-config.saved' | translate }}
+      </p>
     }
     @if (error()) {
-      <p class="error" role="alert">{{ error() | translate }}</p>
+      <p class="feedback error" role="alert">
+        <mat-icon aria-hidden="true">error_outline</mat-icon>{{ error() | translate }}
+      </p>
       @if (error() === 'source-config.conflict') {
-        <button mat-stroked-button type="button" (click)="load()">
+        <button mat-stroked-button class="secondary-action" type="button" (click)="load()">
           {{ 'source-config.reload' | translate }}
         </button>
       }
     }
     @if (canManage && !editing()) {
-      <button mat-stroked-button type="button" (click)="edit()">
+      <button mat-stroked-button class="secondary-action" type="button" (click)="edit()">
         {{ (current() ? 'source-config.replace' : 'source-config.associate') | translate }}
       </button>
     }
@@ -142,10 +154,17 @@
         </fieldset>
         <p class="hint">{{ 'source-config.profile-help' | translate }}</p>
         <div class="actions">
-          <button mat-button type="button" [disabled]="saving()" (click)="editing.set(false)">
+          <button
+            mat-button
+            class="secondary-action"
+            type="button"
+            [disabled]="saving()"
+            (click)="editing.set(false)"
+          >
             {{ 'source-config.cancel' | translate }}</button
           ><button
             mat-flat-button
+            class="primary-action"
             type="submit"
             [disabled]="saving() || error() === 'source-config.conflict'"
           >

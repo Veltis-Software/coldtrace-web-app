@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Subscription, catchError, forkJoin, of, throwError } from 'rxjs';
 import { Asset } from '../../../domain/model/asset.entity';
@@ -24,7 +25,7 @@ import {
 
 @Component({
   selector: 'app-source-configuration',
-  imports: [DatePipe, ReactiveFormsModule, MatButton, TranslatePipe],
+  imports: [DatePipe, ReactiveFormsModule, MatButton, MatIcon, TranslatePipe],
   templateUrl: './source-configuration.html',
   styleUrl: './source-configuration.css',
 })
