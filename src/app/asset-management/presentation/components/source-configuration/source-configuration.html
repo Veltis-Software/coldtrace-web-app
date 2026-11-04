@@ -14,7 +14,7 @@
   </header>
   @if (loading()) {
     <p role="status">{{ 'source-config.loading' | translate }}</p>
-  } @else if (error() === 'source-config.load-error') {
+  } @else if (loadFailed()) {
     <p class="error" role="alert">{{ error() | translate }}</p>
     <button mat-stroked-button type="button" (click)="load()">
       {{ 'source-config.reload' | translate }}
