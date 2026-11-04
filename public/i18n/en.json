@@ -1690,6 +1690,10 @@
     "forbidden": "Your user cannot modify this configuration.",
     "read-forbidden": "Your user cannot view this configuration.",
     "conflict": "The configuration changed or the source is already associated. Reload before confirming.",
-    "validation-error": "Complete the fields and reason. All three source fields must be different."
+    "validation-error": "Complete the fields and reason. All three source fields must be different.",
+    "origin": "Source",
+    "normalized": "Normalized",
+    "origin-field": "Source field",
+    "canonical-field": "Canonical field"
   }
 }

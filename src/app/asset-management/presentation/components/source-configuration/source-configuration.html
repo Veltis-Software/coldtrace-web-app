@@ -48,7 +48,9 @@
         </div>
         <div>
           <dt>{{ 'source-config.transport' | translate }}</dt>
-          <dd>{{ configuration.profile.transport.toUpperCase() }}</dd>
+          <dd>
+            <span class="transport-badge">{{ configuration.profile.transport.toUpperCase() }}</span>
+          </dd>
         </div>
         <div>
           <dt>{{ 'source-config.version' | translate }}</dt>
@@ -64,16 +66,41 @@
         </div>
         <div>
           <dt>{{ 'source-config.units' | translate }}</dt>
-          <dd>°{{ configuration.profile.temperatureUnit }} / %RH → °C / %RH</dd>
+          <dd class="unit-pair">
+            <span
+              ><small>{{ 'source-config.origin' | translate }}</small
+              >°{{ configuration.profile.temperatureUnit }} / %RH</span
+            ><span
+              ><small>{{ 'source-config.normalized' | translate }}</small
+              >°C / %RH</span
+            >
+          </dd>
         </div>
       </dl>
       <div class="mapping">
         <h3>{{ 'source-config.mapping' | translate }}</h3>
-        <p>
-          {{ configuration.profile.fields.temperature }} → temperature ·
-          {{ configuration.profile.fields.humidity }} → humidity ·
-          {{ configuration.profile.fields.recordedAt }} → recordedAt
-        </p>
+        <table class="mapping-table">
+          <thead>
+            <tr>
+              <th>{{ 'source-config.origin-field' | translate }}</th>
+              <th>{{ 'source-config.canonical-field' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ configuration.profile.fields.temperature }}</td>
+              <td>temperature</td>
+            </tr>
+            <tr>
+              <td>{{ configuration.profile.fields.humidity }}</td>
+              <td>humidity</td>
+            </tr>
+            <tr>
+              <td>{{ configuration.profile.fields.recordedAt }}</td>
+              <td>recordedAt</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     } @else {
       <p>{{ 'source-config.empty' | translate }}</p>
@@ -94,7 +121,7 @@
       }
     }
     @if (canManage && !editing()) {
-      <button mat-stroked-button class="secondary-action" type="button" (click)="edit()">
+      <button mat-flat-button class="primary-action" type="button" (click)="edit()">
         {{ (current() ? 'source-config.replace' : 'source-config.associate') | translate }}
       </button>
     }
