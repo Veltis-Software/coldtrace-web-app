@@ -109,3 +109,10 @@ npm test
 - The application keeps the product-facing UI in English.
 - The frontend now targets the ColdTrace Spring Boot backend. The `server/` folder is retained only as legacy mock data from the previous local API phase.
 - JWT authentication and server-side organization authorization are exercised by the Sprint 1 flow. Notifications use the in-app channel; email delivery and Google Cloud deployment are pending.
+
+## Source configuration dependency pins
+
+The source configuration increment preserves Angular 21 and the existing UI.
+`package.json` overrides pin Vite 7.3.7 and Undici 7.30.1 to patched releases used
+by development/test tooling. Validate changes to these pins with `npm audit`,
+`npm test -- --watch=false` and `npm run build`.

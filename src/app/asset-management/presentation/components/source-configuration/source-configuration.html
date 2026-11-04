@@ -1,0 +1,192 @@
+<section
+  class="source-panel"
+  aria-labelledby="source-config-title"
+  [attr.aria-busy]="loading() || saving()"
+>
+  <header>
+    <div>
+      <h2 id="source-config-title">{{ 'source-config.title' | translate }}</h2>
+      <p class="device-id">{{ device.uuid }}</p>
+    </div>
+    <button mat-button type="button" [disabled]="saving()" (click)="closed.emit()">
+      {{ 'source-config.close' | translate }}
+    </button>
+  </header>
+  @if (loading()) {
+    <p role="status">{{ 'source-config.loading' | translate }}</p>
+  } @else if (error() === 'source-config.load-error') {
+    <p class="error" role="alert">{{ error() | translate }}</p>
+    <button mat-stroked-button type="button" (click)="load()">
+      {{ 'source-config.reload' | translate }}
+    </button>
+  } @else {
+    @if (current(); as configuration) {
+      <dl>
+        <div>
+          <dt>{{ 'source-config.source' | translate }}</dt>
+          <dd>{{ configuration.profile.sourceId }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'source-config.asset' | translate }}</dt>
+          <dd>{{ assetName(configuration.assetId) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'source-config.organization' | translate }}</dt>
+          <dd>{{ configuration.organizationId }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'source-config.gateway' | translate }}</dt>
+          <dd>{{ configuration.gatewayId }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'source-config.transport' | translate }}</dt>
+          <dd>{{ configuration.profile.transport.toUpperCase() }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'source-config.version' | translate }}</dt>
+          <dd>{{ configuration.configurationVersion }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'source-config.profile-version' | translate }}</dt>
+          <dd>{{ configuration.profile.profileVersion }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'source-config.contract' | translate }}</dt>
+          <dd>{{ configuration.profile.schemaVersion }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'source-config.units' | translate }}</dt>
+          <dd>°{{ configuration.profile.temperatureUnit }} / %RH → °C / %RH</dd>
+        </div>
+      </dl>
+      <div class="mapping">
+        <h3>{{ 'source-config.mapping' | translate }}</h3>
+        <p>
+          {{ configuration.profile.fields.temperature }} → temperature ·
+          {{ configuration.profile.fields.humidity }} → humidity ·
+          {{ configuration.profile.fields.recordedAt }} → recordedAt
+        </p>
+      </div>
+    } @else {
+      <p>{{ 'source-config.empty' | translate }}</p>
+    }
+    @if (success()) {
+      <p class="success" role="status">{{ 'source-config.saved' | translate }}</p>
+    }
+    @if (error()) {
+      <p class="error" role="alert">{{ error() | translate }}</p>
+      @if (error() === 'source-config.conflict') {
+        <button mat-stroked-button type="button" (click)="load()">
+          {{ 'source-config.reload' | translate }}
+        </button>
+      }
+    }
+    @if (canManage && !editing()) {
+      <button mat-stroked-button type="button" (click)="edit()">
+        {{ (current() ? 'source-config.replace' : 'source-config.associate') | translate }}
+      </button>
+    }
+    @if (canManage && editing()) {
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <fieldset [disabled]="saving()">
+          <legend>
+            {{ (current() ? 'source-config.replace' : 'source-config.associate') | translate }}
+          </legend>
+          <label
+            >{{ 'source-config.asset' | translate
+            }}<select formControlName="assetId">
+              <option [ngValue]="0">{{ 'source-config.select-asset' | translate }}</option>
+              @for (asset of assets; track asset.id) {
+                <option [ngValue]="asset.id">{{ asset.name }}</option>
+              }
+            </select></label
+          >
+          <label
+            >{{ 'source-config.source' | translate
+            }}<input formControlName="sourceId" maxlength="64" autocomplete="off"
+          /></label>
+          <label
+            >{{ 'source-config.transport' | translate
+            }}<select formControlName="transport">
+              <option value="mqtt">MQTT</option>
+              <option value="http">HTTP</option>
+            </select></label
+          >
+          <label
+            >{{ 'source-config.profile-version' | translate
+            }}<input formControlName="profileVersion" type="number" min="1" step="1"
+          /></label>
+          <label
+            >{{ 'source-config.temperature-unit' | translate
+            }}<select formControlName="temperatureUnit">
+              <option value="C">°C</option>
+              <option value="F">°F</option>
+            </select></label
+          >
+          <label
+            >{{ 'source-config.temperature-field' | translate
+            }}<input formControlName="temperatureField" maxlength="128"
+          /></label>
+          <label
+            >{{ 'source-config.humidity-field' | translate
+            }}<input formControlName="humidityField" maxlength="128"
+          /></label>
+          <label
+            >{{ 'source-config.time-field' | translate
+            }}<input formControlName="recordedAtField" maxlength="128"
+          /></label>
+          <label class="full"
+            >{{ 'source-config.reason' | translate
+            }}<textarea formControlName="reason" maxlength="500" rows="2"></textarea>
+          </label>
+        </fieldset>
+        <p class="hint">{{ 'source-config.profile-help' | translate }}</p>
+        <div class="actions">
+          <button mat-button type="button" [disabled]="saving()" (click)="editing.set(false)">
+            {{ 'source-config.cancel' | translate }}</button
+          ><button
+            mat-flat-button
+            type="submit"
+            [disabled]="saving() || error() === 'source-config.conflict'"
+          >
+            {{ (saving() ? 'source-config.saving' : 'source-config.confirm') | translate }}
+          </button>
+        </div>
+      </form>
+    }
+    @if (history().length) {
+      <h3>{{ 'source-config.history' | translate }}</h3>
+      <div class="history-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>{{ 'source-config.version' | translate }}</th>
+              <th>{{ 'source-config.source' | translate }}</th>
+              <th>{{ 'source-config.changed' | translate }}</th>
+              <th>{{ 'source-config.reason' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (revision of history(); track revision.configurationVersion) {
+              <tr>
+                <td>{{ revision.configurationVersion }}</td>
+                <td>
+                  {{ revision.profile.sourceId
+                  }}<span
+                    >{{ revision.profile.transport.toUpperCase() }} ·
+                    {{ revision.profile.profileVersion }}</span
+                  >
+                </td>
+                <td>
+                  {{ revision.changedAt | date: 'dd/MM/yyyy HH:mm'
+                  }}<span>{{ 'source-config.actor' | translate }} {{ revision.changedBy }}</span>
+                </td>
+                <td>{{ revision.reason }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</section>

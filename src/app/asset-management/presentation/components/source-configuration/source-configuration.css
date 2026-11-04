@@ -1,0 +1,151 @@
+:host {
+  display: block;
+  margin: 20px 0;
+  color: #323c4d;
+  font:
+    400 13px/1.6 Inter,
+    Arial,
+    sans-serif;
+}
+.source-panel {
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  padding: 20px 24px;
+}
+header,
+.actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+h2 {
+  font-size: 16px;
+  margin: 0;
+}
+h3,
+legend {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 24px 0 8px;
+}
+p {
+  margin: 8px 0 16px;
+}
+.device-id,
+dd,
+td {
+  overflow-wrap: anywhere;
+}
+.device-id,
+dt,
+.hint,
+td span {
+  color: #596579;
+}
+dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 24px;
+  margin: 20px 0;
+}
+dt {
+  font-size: 12px;
+}
+dd {
+  font-weight: 600;
+  margin: 2px 0 0;
+}
+.mapping p {
+  overflow-wrap: anywhere;
+}
+fieldset {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 20px;
+  border: 0;
+  padding: 0;
+  margin: 20px 0 0;
+  min-width: 0;
+}
+legend {
+  padding: 0 0 12px;
+}
+label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+  min-width: 0;
+}
+input,
+select,
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #323c4d;
+  font: inherit;
+}
+textarea {
+  resize: vertical;
+}
+:is(input, select, textarea, button):focus-visible {
+  outline: 2px solid #526da8;
+  outline-offset: 2px;
+}
+input:disabled,
+select:disabled {
+  opacity: 0.7;
+}
+.full {
+  grid-column: 1 / -1;
+}
+.actions {
+  justify-content: flex-end;
+}
+.error {
+  color: #b51313;
+}
+.success {
+  color: #176900;
+}
+.history-scroll {
+  overflow-x: auto;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+th {
+  color: #596579;
+  font-size: 12px;
+}
+th,
+td {
+  border-bottom: 1px solid #e4e7ec;
+  padding: 12px 16px 12px 0;
+  vertical-align: top;
+}
+td span {
+  display: block;
+  font-size: 12px;
+}
+@media (max-width: 700px) {
+  dl,
+  fieldset {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .source-panel {
+    padding: 16px;
+  }
+  header {
+    gap: 8px;
+  }
+}

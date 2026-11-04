@@ -29,6 +29,7 @@ import { User } from '../../../../identity-access/domain/model/user.entity';
 import { IdentityAccessStore } from '../../../../identity-access/application/identity-access.store';
 import { IdentityAccessApi } from '../../../../identity-access/infrastructure/identity-access-api';
 import { ListPagination } from '../../../../shared/presentation/components/list-pagination/list-pagination';
+import { SourceConfiguration } from '../../components/source-configuration/source-configuration';
 
 type AssetFeedback =
   | 'idle'
@@ -60,11 +61,13 @@ type AssetManagementTab = AssetType | 'location' | 'iot-device' | 'gateway';
     ReactiveFormsModule,
     TranslatePipe,
     ListPagination,
+    SourceConfiguration,
   ],
   templateUrl: './cold-room-list.html',
   styleUrl: './cold-room-list.css',
 })
 export class ColdRoomList implements OnInit {
+  protected readonly sourceDevice = signal<IoTDevice | null>(null);
   protected readonly assetStatus = AssetStatus;
   protected readonly iotDeviceStatus = IoTDeviceStatus;
   protected readonly calibrationStatus = CalibrationStatus;
@@ -259,6 +262,11 @@ export class ColdRoomList implements OnInit {
 
     return this.assets().filter((asset) => asset.organizationId === organizationId);
   });
+  protected readonly sourceAssets = computed(() => {
+    const device = this.sourceDevice();
+    const gateway = this.gateways().find((gateway) => gateway.id === device?.gatewayId);
+    return this.organizationAssets().filter((asset) => asset.locationId === gateway?.locationId);
+  });
 
   protected readonly assetIssueCount = computed(() => {
     return this.assetManagementStore.assetIssueCountFor(this.activeOrganizationId());
@@ -309,13 +317,7 @@ export class ColdRoomList implements OnInit {
     }
 
     return this.organizationLocations().filter((location) =>
-      [
-        location.name,
-        location.type,
-        location.address,
-        location.description,
-        location.status,
-      ]
+      [location.name, location.type, location.address, location.description, location.status]
         .join(' ')
         .toLowerCase()
         .includes(normalizedSearch),
@@ -561,7 +563,9 @@ export class ColdRoomList implements OnInit {
     const editingId = this.editingIoTDeviceId();
     const internalId = this.iotDeviceForm.controls.internalId.value.trim().toUpperCase();
     const duplicatedInternalId = this.organizationIoTDevices().some((iotDevice) => {
-      return iotDevice.id !== editingId && iotDevice.uuid.toLowerCase() === internalId.toLowerCase();
+      return (
+        iotDevice.id !== editingId && iotDevice.uuid.toLowerCase() === internalId.toLowerCase()
+      );
     });
 
     if (duplicatedInternalId) {
@@ -598,7 +602,8 @@ export class ColdRoomList implements OnInit {
     }
 
     const iotDevice = new IoTDevice(
-      editingId ?? Math.max(...this.iotDevices().map((currentIoTDevice) => currentIoTDevice.id), 0) + 1,
+      editingId ??
+        Math.max(...this.iotDevices().map((currentIoTDevice) => currentIoTDevice.id), 0) + 1,
       organizationId,
       gateway.id,
       internalId,
@@ -1115,7 +1120,9 @@ export class ColdRoomList implements OnInit {
       'transport-route': 'ROUTE',
     };
     const normalizedType =
-      aliases[rawType] ?? aliases[rawType.toLowerCase()] ?? rawType.toUpperCase().replaceAll('-', '_');
+      aliases[rawType] ??
+      aliases[rawType.toLowerCase()] ??
+      rawType.toUpperCase().replaceAll('-', '_');
 
     return `asset-management.locations.types.${normalizedType}`;
   }
@@ -1267,7 +1274,7 @@ export class ColdRoomList implements OnInit {
     this.locationPage.set(page);
   }
 
-  private activeOrganizationId(): number | null {
+  protected activeOrganizationId(): number | null {
     return this.identityAccessStore.currentOrganizationIdFrom(this.users());
   }
 

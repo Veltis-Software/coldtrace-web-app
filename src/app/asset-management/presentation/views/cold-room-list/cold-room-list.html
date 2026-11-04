@@ -38,6 +38,17 @@
     </div>
   </div>
 </header>
+@if (sourceDevice(); as device) {
+  @if (device.organizationId === activeOrganizationId()) {
+    <app-source-configuration
+      [device]="device"
+      [assets]="sourceAssets()"
+      [canManage]="canManageAssets()"
+      (closed)="sourceDevice.set(null)"
+      (saved)="assetManagementStore.loadIoTDevices({ force: true })"
+    />
+  }
+}
 @if (positiveFeedback()) {
   <p class="feedback success">{{ formCreatedKey() | translate }}</p>
 }
@@ -61,19 +72,12 @@
     <div class="section-heading">
       <div>
         <h2 id="cold-room-form-title">
-          {{
-            (editingAssetId()
-              ? 'asset-management.form.edit-title'
-              : formTitleKey()
-            ) | translate
-          }}
+          {{ (editingAssetId() ? 'asset-management.form.edit-title' : formTitleKey()) | translate }}
         </h2>
         <p>
           {{
-            (editingAssetId()
-              ? 'asset-management.form.edit-subtitle'
-              : formSubtitleKey()
-            ) | translate
+            (editingAssetId() ? 'asset-management.form.edit-subtitle' : formSubtitleKey())
+              | translate
           }}
         </p>
       </div>
@@ -82,11 +86,7 @@
     <form class="cold-room-form" [formGroup]="coldRoomForm" (ngSubmit)="submit()">
       <label class="form-field">
         <span>{{ 'asset-management.form.internal-id' | translate }}</span>
-        <input
-          type="text"
-          formControlName="internalId"
-          [placeholder]="internalIdPlaceholder()"
-        />
+        <input type="text" formControlName="internalId" [placeholder]="internalIdPlaceholder()" />
         @if (hasControlError('internalId')) {
           <small>{{ 'asset-management.form.internal-id-error' | translate }}</small>
         }
@@ -325,7 +325,9 @@
         <span>{{ 'asset-management.iot-devices.form.reading-frequency' | translate }}</span>
         <input type="number" min="5" max="1440" formControlName="readingFrequencyMinutes" />
         @if (hasIoTDeviceControlError('readingFrequencyMinutes')) {
-          <small>{{ 'asset-management.iot-devices.form.reading-frequency-error' | translate }}</small>
+          <small>{{
+            'asset-management.iot-devices.form.reading-frequency-error' | translate
+          }}</small>
         }
       </label>
 
@@ -666,9 +668,7 @@
           <col style="width: 9%" />
           <col style="width: 10%" />
           <col style="width: 7%" />
-          @if (canManageAssets()) {
-            <col style="width: 5%" />
-          }
+          <col style="width: 5%" />
         </colgroup>
         <thead>
           <tr>
@@ -681,9 +681,7 @@
             <th>{{ 'asset-management.iot-devices.table.status' | translate }}</th>
             <th>{{ 'asset-management.iot-devices.table.calibration' | translate }}</th>
             <th>{{ 'asset-management.iot-devices.table.next-calibration' | translate }}</th>
-            @if (canManageAssets()) {
-              <th>{{ 'asset-management.table.actions' | translate }}</th>
-            }
+            <th>{{ 'asset-management.table.actions' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -731,8 +729,16 @@
               >
                 {{ iotDevice.nextCalibrationDate }}
               </td>
-              @if (canManageAssets()) {
-                <td [attr.data-label]="'asset-management.table.actions' | translate">
+              <td [attr.data-label]="'asset-management.table.actions' | translate">
+                <button
+                  mat-stroked-button
+                  type="button"
+                  class="secondary-action"
+                  (click)="sourceDevice.set(iotDevice)"
+                >
+                  {{ 'source-config.open' | translate }}
+                </button>
+                @if (canManageAssets()) {
                   <button
                     mat-stroked-button
                     type="button"
@@ -741,12 +747,12 @@
                   >
                     {{ 'asset-management.edit' | translate }}
                   </button>
-                </td>
-              }
+                }
+              </td>
             </tr>
           } @empty {
             <tr>
-              <td class="empty-state" [attr.colspan]="canManageAssets() ? 10 : 9">
+              <td class="empty-state" colspan="10">
                 {{ 'asset-management.iot-devices.empty' | translate }}
               </td>
             </tr>
