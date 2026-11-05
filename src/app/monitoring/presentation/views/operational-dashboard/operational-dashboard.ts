@@ -225,7 +225,7 @@ export class OperationalDashboard implements OnInit {
     this.assetStore.loadAssetSettings();
     this.maintenanceStore.loadMaintenanceSchedules();
     this.maintenanceStore.loadTechnicalServiceRequests();
-    this.alertsStore.loadIncidents({ evaluateReadings: true });
+    this.alertsStore.loadIncidents({});
     this.monitoringStore.loadReadings();
     this.startReadingsUpdates();
   }

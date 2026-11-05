@@ -83,7 +83,7 @@ export class NotificationList implements OnInit {
    */
   ngOnInit(): void {
     this.alertsStore.clearFeedback();
-    this.alertsStore.loadIncidents({ evaluateReadings: true });
+    this.alertsStore.loadIncidents({});
   }
 
   protected notificationChannelIcon(notification: Notification): string {

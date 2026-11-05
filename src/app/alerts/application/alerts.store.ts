@@ -33,7 +33,6 @@ type GeneratedIncidentCandidate = {
 };
 type LoadIncidentsOptions = {
   silent?: boolean;
-  evaluateReadings?: boolean;
   force?: boolean;
 };
 
@@ -57,7 +56,6 @@ export class AlertsStore {
   private readonly feedbackSignal = signal<string | null>(null);
   private incidentsRequestInFlight = false;
   private incidentsLoadedForOrganizationId: number | null = null;
-  private incidentsEvaluatedForOrganizationId: number | null = null;
   private notificationsLoadedForOrganizationId: number | null = null;
 
   readonly incidents = computed(() => {
@@ -122,120 +120,35 @@ export class AlertsStore {
    * @summary Loads incidents data into local state.
    */
   loadIncidents(options: LoadIncidentsOptions = {}): void {
-    const showLoading = !options.silent;
-    const evaluateReadings = options.evaluateReadings ?? false;
     const organizationId = this.organizationScope.activeOrganizationId();
-
+    const showLoading = !options.silent;
     if (!organizationId) {
       this.incidentsSignal.set([]);
       this.notificationsSignal.set([]);
+      this.incidentsLoadedForOrganizationId = null;
+      this.notificationsLoadedForOrganizationId = null;
       return;
     }
-
-    if (this.incidentsRequestInFlight) {
-      return;
-    }
-
-    if (
-      !options.force &&
-      this.incidentsLoadedForOrganizationId === organizationId &&
-      this.notificationsLoadedForOrganizationId === organizationId &&
-      (!evaluateReadings || this.incidentsEvaluatedForOrganizationId === organizationId)
-    ) {
-      return;
-    }
-
+    if (this.incidentsRequestInFlight) return;
+    if (!options.force && this.incidentsLoadedForOrganizationId === organizationId &&
+        this.notificationsLoadedForOrganizationId === organizationId) return;
     this.incidentsRequestInFlight = true;
-
-    if (showLoading) {
-      this.loadingSignal.set(true);
-      this.errorSignal.set(null);
-    }
-
-    if (!evaluateReadings) {
-      forkJoin({
-        incidents: this.alertsApi.getIncidents(),
-        notifications: this.alertsApi.getNotifications().pipe(catchError(() => of([]))),
-      }).subscribe({
-        next: ({ incidents, notifications }) => {
-          this.incidentsSignal.set(incidents);
-          this.notificationsSignal.set(notifications);
-          this.incidentsLoadedForOrganizationId = organizationId;
-          this.notificationsLoadedForOrganizationId = organizationId;
-          if (showLoading) {
-            this.loadingSignal.set(false);
-          }
-          this.incidentsRequestInFlight = false;
-        },
-        error: (error) => {
-          if (showLoading) {
-            this.errorSignal.set(error.message);
-            this.loadingSignal.set(false);
-          }
-          this.incidentsRequestInFlight = false;
-        },
-      });
-      return;
-    }
-
-    forkJoin({
-      incidents: this.alertsApi.getIncidents(),
-      readings: this.monitoringApi.getSensorReadings(),
-      assets: this.assetManagementApi.getAssets(),
-      settings: this.assetManagementApi.getAssetSettings(),
-    })
-      .pipe(
-        switchMap(({ incidents, readings, assets, settings }) => {
-          const generatedIncidents = this.generatedParameterIncidentsFrom(
-            incidents,
-            readings,
-            assets,
-            settings,
-          );
-
-          const incidentsRequest = generatedIncidents.length
-            ? forkJoin(
-                generatedIncidents.map((incident) =>
-                  this.createIncidentWithRetry(incident).pipe(catchError(() => of(null))),
-                ),
-              ).pipe(
-                map((createdIncidents) => [
-                  ...incidents,
-                  ...createdIncidents.filter(
-                    (incident): incident is Incident => incident !== null,
-                  ),
-                ]),
-              )
-            : of(incidents);
-
-          return incidentsRequest.pipe(
-            switchMap((currentIncidents) => this.applyEscalationPolicies(currentIncidents)),
-            switchMap((currentIncidents) =>
-              forkJoin({
-                incidents: of(currentIncidents),
-                notifications: this.alertsApi.getNotifications().pipe(catchError(() => of([]))),
-              }),
-            ),
-          );
-        }),
-      )
+    if (showLoading) { this.loadingSignal.set(true); this.errorSignal.set(null); }
+    forkJoin({ incidents: this.alertsApi.getIncidents(), notifications: this.alertsApi.getNotifications() })
       .subscribe({
         next: ({ incidents, notifications }) => {
-          this.incidentsSignal.set(incidents);
-          this.notificationsSignal.set(notifications);
-          this.incidentsLoadedForOrganizationId = organizationId;
-          this.incidentsEvaluatedForOrganizationId = organizationId;
-          this.notificationsLoadedForOrganizationId = organizationId;
-          if (showLoading) {
-            this.loadingSignal.set(false);
+          if (this.organizationScope.activeOrganizationId() === organizationId) {
+            this.incidentsSignal.set(incidents);
+            this.notificationsSignal.set(notifications);
+            this.incidentsLoadedForOrganizationId = organizationId;
+            this.notificationsLoadedForOrganizationId = organizationId;
           }
           this.incidentsRequestInFlight = false;
+          if (showLoading) this.loadingSignal.set(false);
         },
         error: (error) => {
-          if (showLoading) {
+          if (showLoading && this.organizationScope.activeOrganizationId() === organizationId) {
             this.errorSignal.set(error.message);
-          }
-          if (showLoading) {
             this.loadingSignal.set(false);
           }
           this.incidentsRequestInFlight = false;

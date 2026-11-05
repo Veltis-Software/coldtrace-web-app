@@ -109,7 +109,7 @@ export class IncidentList implements OnInit {
       this.selectedIncidentPanel.set('closure');
     }
 
-    this.alertsStore.loadIncidents({ evaluateReadings: true });
+    this.alertsStore.loadIncidents({});
   }
 
   protected recognize(incident: Incident): void {
