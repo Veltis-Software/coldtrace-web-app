@@ -173,6 +173,10 @@ export class IncidentList implements OnInit {
    * @summary Initializes the incident list view state.
    */
   ngOnInit(): void {
+    if (this.route.snapshot.routeConfig?.path === 'history') {
+      this.selectedIncidentPanel.set('history');
+      return;
+    }
     if (this.route.snapshot.queryParamMap.get('panel') === 'closure') {
       this.selectedIncidentPanel.set('closure');
     }

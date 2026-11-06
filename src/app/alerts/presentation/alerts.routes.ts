@@ -12,6 +12,11 @@ const notificationList = () =>
  */
 export const alertsRoutes: Routes = [
   {
+    path: 'history',
+    loadComponent: () => import('./views/incident-list/incident-list').then(m => m.IncidentList),
+    title: 'ColdTrace - Incident history',
+  },
+  {
     path: 'incidents',
     loadComponent: incidentList,
     title: 'ColdTrace - Incidents',

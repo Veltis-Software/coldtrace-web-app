@@ -17,6 +17,7 @@
         <a routerLink="/alerts/notifications" [class.active]="notificationMode">{{
           'increment.notifications' | translate
         }}</a>
+        <a routerLink="/alerts/history">Historial</a>
       </nav>
       @if (!notificationMode) {
         <label class="search-box"
