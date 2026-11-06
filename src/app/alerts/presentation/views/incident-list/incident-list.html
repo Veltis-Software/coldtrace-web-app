@@ -89,7 +89,7 @@
           <p>{{ item.assignee?.fullName || 'Sin responsable' }}</p>
           @if (item.resolvedAt) {<p>Cierre {{ item.resolvedAt | date:'short':'UTC' }} · Usuario {{ item.resolvedByUserId ?? 'sin identificar' }}</p>}
           @for (action of item.correctiveActions; track $index) {
-            <p>{{ action.created_at | date:'short':'UTC' }} · {{ action.description }}</p>
+            <p>{{ action.created_at | date:'short':'UTC' }} · Usuario {{ action.author_user_id }} · {{ action.description }}</p>
           }
         </article>
       }
