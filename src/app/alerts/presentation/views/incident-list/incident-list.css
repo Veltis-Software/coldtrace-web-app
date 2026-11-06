@@ -688,3 +688,9 @@
     border-top: 1px solid #eef2f7;
   }
 }
+
+.history-panel { padding: 1rem; }
+.history-filters { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; }
+.history-filters label { display: grid; gap: .25rem; }
+.history-filters input, .history-filters select { padding: .4rem; border: 1px solid #ccd3dd; border-radius: .35rem; }
+.history-item { margin-top: .75rem; padding: .75rem; border: 1px solid #ccd3dd; border-radius: .5rem; }

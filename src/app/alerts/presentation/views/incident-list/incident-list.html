@@ -27,6 +27,8 @@
           </button>
         }
 
+        <button type="button" [class.active]="selectedIncidentPanel() === 'history'"
+          (click)="selectIncidentPanel('history')">Historial</button>
         <button type="button" (click)="openAiGuidance()">
           {{ 'dashboard-shell.nav-ai-guidance' | translate }}
         </button>
@@ -60,6 +62,39 @@
       </div>
     </div>
   </header>
+
+  @if (selectedIncidentPanel() === 'history') {
+    <section class="history-panel" aria-label="Historial de incidencias">
+      <form class="history-filters" [formGroup]="historyForm" (ngSubmit)="loadHistory()">
+        <label>Desde (UTC)<input type="date" formControlName="from"></label>
+        <label>Hasta (UTC)<input type="date" formControlName="to"></label>
+        <label>ID de activo<input type="text" inputmode="numeric" formControlName="assetId"></label>
+        <label>Estado<select formControlName="state">
+          <option value="">Todos</option><option value="OPEN">Abierta</option>
+          <option value="ACKNOWLEDGED">Reconocida</option><option value="RESOLVED">Cerrada</option>
+        </select></label>
+        <label>Severidad<input type="text" formControlName="severity"></label>
+        <label>ID de responsable<input type="text" inputmode="numeric" formControlName="assigneeUserId"></label>
+        <button type="submit" [disabled]="historyBusy()">Consultar</button>
+        <button type="button" [disabled]="!history().length"
+          (click)="exportHistory()">Exportar CSV</button>
+      </form>
+      @if (historyBusy()) { <p role="status">Consultando historial�</p> }
+      @if (historyError()) { <p role="alert">{{ historyError() }}</p> }
+      @if (historyLoaded() && !history().length) { <p>No hay incidencias para estos filtros.</p> }
+      @for (item of history(); track item.id) {
+        <article class="history-item">
+          <a [routerLink]="['/alerts', item.id]">{{ item.asset.name }} � #{{ item.id }}</a>
+          <p>{{ item.state }} � {{ item.severity }} � {{ item.detectedAt | date:'short':'UTC' }}</p>
+          <p>{{ item.assignee?.fullName || 'Sin responsable' }}</p>
+          @if (item.resolvedAt) {<p>Cierre {{ item.resolvedAt | date:'short':'UTC' }} · Usuario {{ item.resolvedByUserId ?? 'sin identificar' }}</p>}
+          @for (action of item.correctiveActions; track $index) {
+            <p>{{ action.created_at | date:'short':'UTC' }} � {{ action.description }}</p>
+          }
+        </article>
+      }
+    </section>
+  }
 
   @if (alertsStore.feedback()) {
     <div

@@ -24,7 +24,9 @@ export interface AlertDetail {
   assignee?: UserRef;
   suggestedAssignee: UserRef;
   allowedActions: string[];
-  correctiveActions: { description: string; created_at: string }[];
+  correctiveActions: { description: string; created_at: string; author_user_id: number }[];
+  resolvedByUserId?: number;
+  resolvedAt?: string;
 }
 export interface CurrentState {
   assetId: number;
