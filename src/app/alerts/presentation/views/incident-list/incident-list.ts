@@ -33,7 +33,7 @@ type IncidentPanel = 'incidents' | 'closure' | 'history';
     RouterLink,
   ],
   templateUrl: './incident-list.html',
-  styleUrl: './incident-list.css',
+  styleUrls: ['./incident-list.css', './incident-history.css'],
 })
 export class IncidentList implements OnInit {
   protected readonly alertsStore = inject(AlertsStore);
