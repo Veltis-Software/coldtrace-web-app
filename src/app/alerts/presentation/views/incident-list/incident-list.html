@@ -75,21 +75,21 @@
         </select></label>
         <label>Severidad<input type="text" formControlName="severity"></label>
         <label>ID de responsable<input type="text" inputmode="numeric" formControlName="assigneeUserId"></label>
-        <button type="submit" [disabled]="historyBusy()">Consultar</button>
-        <button type="button" [disabled]="!history().length"
+        <button class="primary-action" type="submit" [disabled]="historyBusy()">Consultar</button>
+        <button class="secondary-action" type="button" [disabled]="!history().length"
           (click)="exportHistory()">Exportar CSV</button>
       </form>
-      @if (historyBusy()) { <p role="status">Consultando historial�</p> }
+      @if (historyBusy()) { <p role="status">Consultando historial·</p> }
       @if (historyError()) { <p role="alert">{{ historyError() }}</p> }
       @if (historyLoaded() && !history().length) { <p>No hay incidencias para estos filtros.</p> }
       @for (item of history(); track item.id) {
         <article class="history-item">
-          <a [routerLink]="['/alerts', item.id]">{{ item.asset.name }} � #{{ item.id }}</a>
-          <p>{{ item.state }} � {{ item.severity }} � {{ item.detectedAt | date:'short':'UTC' }}</p>
+          <a [routerLink]="['/alerts', item.id]">{{ item.asset.name }} · #{{ item.id }}</a>
+          <p>{{ item.state }} · {{ item.severity }} · {{ item.detectedAt | date:'short':'UTC' }}</p>
           <p>{{ item.assignee?.fullName || 'Sin responsable' }}</p>
           @if (item.resolvedAt) {<p>Cierre {{ item.resolvedAt | date:'short':'UTC' }} · Usuario {{ item.resolvedByUserId ?? 'sin identificar' }}</p>}
           @for (action of item.correctiveActions; track $index) {
-            <p>{{ action.created_at | date:'short':'UTC' }} � {{ action.description }}</p>
+            <p>{{ action.created_at | date:'short':'UTC' }} · {{ action.description }}</p>
           }
         </article>
       }
