@@ -39,7 +39,7 @@
   </div>
 </header>
 @if (sourceDevice(); as device) {
-  @if (device.organizationId === activeOrganizationId()) {
+  @if (selectedTab() === 'iot-device' && device.organizationId === activeOrganizationId()) {
     <app-source-configuration
       [device]="device"
       [assets]="sourceAssets()"
@@ -734,7 +734,7 @@
                   mat-stroked-button
                   type="button"
                   class="secondary-action"
-                  (click)="sourceDevice.set(iotDevice)"
+                  (click)="openSourceConfiguration(iotDevice)"
                 >
                   {{ 'source-config.open' | translate }}
                 </button>

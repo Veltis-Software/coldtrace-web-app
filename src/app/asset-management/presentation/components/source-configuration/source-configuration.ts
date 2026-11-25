@@ -9,9 +9,11 @@ import {
   Output,
   inject,
   signal,
+  SimpleChanges,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Subscription, catchError, forkJoin, of, throwError } from 'rxjs';
 import { Asset } from '../../../domain/model/asset.entity';
@@ -23,7 +25,7 @@ import {
 
 @Component({
   selector: 'app-source-configuration',
-  imports: [DatePipe, ReactiveFormsModule, MatButton, TranslatePipe],
+  imports: [DatePipe, ReactiveFormsModule, MatButton, MatIcon, TranslatePipe],
   templateUrl: './source-configuration.html',
   styleUrl: './source-configuration.css',
 })
@@ -43,6 +45,7 @@ export class SourceConfiguration implements OnChanges, OnDestroy {
   readonly editing = signal(false);
   readonly error = signal('');
   readonly success = signal(false);
+  readonly loadFailed = signal(false);
   readonly form = this.fb.nonNullable.group({
     assetId: [0, [Validators.min(1)]],
     sourceId: ['', [Validators.required, Validators.pattern('[A-Za-z0-9_-]{1,64}')]],
@@ -55,9 +58,13 @@ export class SourceConfiguration implements OnChanges, OnDestroy {
     reason: ['', [Validators.required, Validators.maxLength(500)]],
   });
 
-  ngOnChanges(): void {
-    this.success.set(false);
-    this.load();
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['device']) {
+      this.success.set(false);
+      this.load();
+    } else if (changes['canManage'] && !this.canManage) {
+      this.editing.set(false);
+    }
   }
   ngOnDestroy(): void {
     this.requests.unsubscribe();
@@ -69,6 +76,7 @@ export class SourceConfiguration implements OnChanges, OnDestroy {
     this.loading.set(true);
     this.saving.set(false);
     this.error.set('');
+    this.loadFailed.set(false);
     this.editing.set(false);
     this.current.set(null);
     this.history.set([]);
@@ -88,8 +96,11 @@ export class SourceConfiguration implements OnChanges, OnDestroy {
           this.history.set(history);
           this.loading.set(false);
         },
-        error: () => {
-          this.error.set('source-config.load-error');
+        error: (error: HttpErrorResponse) => {
+          this.error.set(
+            error.status === 403 ? 'source-config.read-forbidden' : 'source-config.load-error',
+          );
+          this.loadFailed.set(true);
           this.loading.set(false);
         },
       }),
@@ -97,6 +108,7 @@ export class SourceConfiguration implements OnChanges, OnDestroy {
   }
 
   edit(): void {
+    if (!this.canManage || this.loading() || this.loadFailed()) return;
     const current = this.current();
     const profile = current?.profile;
     this.form.reset({
@@ -118,7 +130,14 @@ export class SourceConfiguration implements OnChanges, OnDestroy {
   }
 
   submit(): void {
-    if (!this.canManage || this.saving() || this.loading() || this.error() === 'source-config.conflict') return;
+    if (
+      !this.canManage ||
+      this.saving() ||
+      this.loading() ||
+      this.loadFailed() ||
+      this.error() === 'source-config.conflict'
+    )
+      return;
     this.form.markAllAsTouched();
     const value = this.form.getRawValue();
     const fields = [value.temperatureField, value.humidityField, value.recordedAtField].map(
