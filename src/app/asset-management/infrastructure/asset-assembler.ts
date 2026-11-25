@@ -1,5 +1,6 @@
 import { BaseAssembler } from '../../shared/infrastructure/base-assembler';
 import { ConnectivityStatus } from '../domain/model/connectivity-status.enum';
+import { AssetType } from '../domain/model/asset-type.enum';
 import { Asset } from '../domain/model/asset.entity';
 import { AssetResource, AssetsResponse } from './assets-response';
 
@@ -22,7 +23,7 @@ export class AssetAssembler implements BaseAssembler<Asset, AssetResource, Asset
       Number(resource.id),
       resource.organizationId,
       resource.uuid,
-      resource.type,
+      String(resource.type).toLowerCase().replaceAll('_', '-') as AssetType,
       resource.locationId,
       resource.name,
       resource.capacity,

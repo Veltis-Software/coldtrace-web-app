@@ -3,7 +3,8 @@ import { signal } from '@angular/core';
 import { provideTranslateService } from '@ngx-translate/core';
 import { AssetManagementStore } from '../../../../asset-management/application/asset-management.store';
 import { IdentityAccessStore } from '../../../../identity-access/application/identity-access.store';
-import { MonitoringStore } from '../../../application/monitoring.store';
+import { IncrementApi } from '../../../../shared/infrastructure/increment-api';
+import { of } from 'rxjs';
 import { AssetMonitoringDashboard } from './asset-monitoring-dashboard';
 
 class IdentityAccessStoreStub {
@@ -22,6 +23,11 @@ class IdentityAccessStoreStub {
 }
 
 class AssetManagementStoreStub {
+  iotDevices = signal([]);
+  loadLocations(): void {}
+  locationsForOrganization(): unknown[] {
+    return [];
+  }
   loadAssets(): void {}
   loadIoTDevices(): void {}
   loadGateways(): void {}
@@ -58,7 +64,7 @@ describe('AssetMonitoringDashboard', () => {
         provideTranslateService(),
         { provide: IdentityAccessStore, useClass: IdentityAccessStoreStub },
         { provide: AssetManagementStore, useClass: AssetManagementStoreStub },
-        { provide: MonitoringStore, useClass: MonitoringStoreStub },
+        { provide: IncrementApi, useValue: { get: () => of({ items: [], total: 0 }) } },
       ],
     }).compileComponents();
 

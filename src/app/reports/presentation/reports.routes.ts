@@ -20,6 +20,7 @@ const auditEvidence = () =>
  * @summary Defines the lazy-loaded routes for the reports bounded context.
  */
 export const reportsRoutes: Routes = [
+  { path: 'traceability', loadComponent: () => import('./views/traceability/traceability').then(m => m.Traceability), title: 'ColdTrace - Traceability' },
   {
     path: 'daily-log',
     loadComponent: dailyLog,
