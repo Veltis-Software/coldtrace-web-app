@@ -7,6 +7,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { TranslateModule } from '@ngx-translate/core';
+import { MatIconModule } from '@angular/material/icon';
 
 import {
   IncrementApi,
@@ -16,7 +17,7 @@ import {
 
 @Component({
   selector: 'app-alert-detail',
-  imports: [DatePipe, DecimalPipe, RouterLink, FormsModule, TranslateModule],
+  imports: [DatePipe, DecimalPipe, RouterLink, FormsModule, TranslateModule, MatIconModule],
   templateUrl: './alert-detail.html',
   styleUrl: './alert-detail.css',
 })
@@ -42,12 +43,10 @@ export class AlertDetailView {
 
   constructor() {
     this.load();
-    this.api
-      .get<UserRef[]>('/api/v1/alerts/assignees')
-      .subscribe({
-        next: (users) => this.members.set(users),
-        error: () => this.error.set('increment.load-error'),
-      });
+    this.api.get<UserRef[]>('/api/v1/alerts/assignees').subscribe({
+      next: (users) => this.members.set(users),
+      error: () => this.error.set('increment.load-error'),
+    });
 
     const abort = new AbortController();
     void this.api.stream(

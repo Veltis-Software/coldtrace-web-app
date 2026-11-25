@@ -13,6 +13,9 @@
   </div>
 
   <div class="section-chart">
+    @if (telemetryState !== null) {
+      <p class="observed-caption">{{ 'increment.observed-readings' | translate }}</p>
+    }
     <app-temperature-chart
       [title]="'monitoring.asset-monitoring.trend-title' | translate"
       [subtitle]="''"
@@ -24,7 +27,13 @@
   <div class="section-status">
     <div class="status-header">
       <span class="status-label">{{ 'monitoring.operational.col-status' | translate }}</span>
-      <div class="status-badge" [class.unack]="hasIncident" [class.no-data]="!latestReading">
+      <div
+        class="status-badge"
+        [class.unack]="hasIncident"
+        [class.no-data]="
+          !latestReading || telemetryState === 'NO_DATA' || telemetryState === 'UNAVAILABLE'
+        "
+      >
         {{ statusKey | translate }}
       </div>
     </div>
@@ -42,12 +51,20 @@
       </div>
     } @else {
       <div class="no-incidents">
-        <mat-icon>{{ latestReading ? 'check_circle' : 'sensors_off' }}</mat-icon>
+        <mat-icon>{{
+          latestReading && (!telemetryState || telemetryState === 'NORMAL')
+            ? 'check_circle'
+            : 'sensors_off'
+        }}</mat-icon>
         <span>
           {{
-            (latestReading
-              ? 'monitoring.asset-monitoring.status.normal'
-              : 'monitoring.asset-monitoring.status.no-readings'
+            (telemetryState === 'NO_DATA'
+              ? 'increment.stale-reading'
+              : telemetryState === 'UNAVAILABLE'
+                ? 'increment.load-error'
+                : latestReading
+                  ? 'monitoring.asset-monitoring.status.normal'
+                  : 'monitoring.asset-monitoring.status.no-readings'
             ) | translate
           }}
         </span>

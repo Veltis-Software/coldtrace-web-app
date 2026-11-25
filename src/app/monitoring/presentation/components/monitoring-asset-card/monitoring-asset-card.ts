@@ -21,6 +21,8 @@ import { TemperatureChart } from '../temperature-chart/temperature-chart';
   styleUrl: './monitoring-asset-card.css',
 })
 export class MonitoringAssetCard {
+  @Input() telemetryState: string | null = null;
+  @Input() safeRange?: { minTemperature: number; maxTemperature: number };
   @Input() asset!: Asset;
   @Input() device: IoTDevice | null = null;
   @Input() location = 'N/A';
@@ -29,7 +31,9 @@ export class MonitoringAssetCard {
   @Input() chartPoints: TemperaturePoint[] = [];
 
   get temperature(): number | null {
-    return this.latestReading?.temperature ?? this.parseAssetTemperature();
+    return this.telemetryState !== null
+      ? (this.latestReading?.temperature ?? null)
+      : (this.latestReading?.temperature ?? this.parseAssetTemperature());
   }
 
   get humidity(): number | null {
@@ -54,18 +58,20 @@ export class MonitoringAssetCard {
   }
 
   get minimumTemperature(): number | null {
-    return this.settings?.minimumTemperature ?? null;
+    return this.safeRange?.minTemperature ?? this.settings?.minimumTemperature ?? null;
   }
 
   get maximumTemperature(): number | null {
-    return this.settings?.maximumTemperature ?? null;
+    return this.safeRange?.maxTemperature ?? this.settings?.maximumTemperature ?? null;
   }
 
   get hasIncident(): boolean {
+    if (this.telemetryState !== null) return this.telemetryState === 'OUT_OF_RANGE';
     return this.latestReading?.isOutOfRange === true || this.hasAssetIncident();
   }
 
   get statusKey(): string {
+    if (this.telemetryState !== null) return `increment.states.${this.telemetryState}`;
     if (!this.latestReading) {
       return 'monitoring.asset-monitoring.status.no-data';
     }
