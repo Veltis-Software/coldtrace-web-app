@@ -1,5 +1,5 @@
-import { HttpClient } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { map, Observable, retry, switchMap, throwError, timer } from 'rxjs';
 import { BaseApiEndpoint } from '../../shared/infrastructure/base-api-endpoint';
 import { OrganizationScopeStore } from '../../shared/infrastructure/organization-scope.store';
 import { Report } from '../domain/model/report.entity';
@@ -38,8 +38,18 @@ export class ReportsApiEndpoint extends BaseApiEndpoint<
 
     this.useActiveOrganizationEndpoint();
 
-    return this.http.post<ReportResource>(this.endpointUrl, request)
-      .pipe(map((created) => this.assembler.toEntityFromResource(created)));
+    const endpoint = this.endpointUrl;
+    return this.http.post<{ id: number }>(endpoint, request).pipe(
+      switchMap((job) => this.http.get<ReportResource>(`${endpoint}/${job.id}`).pipe(
+        retry({
+          count: 20,
+          delay: (error: unknown) => error instanceof HttpErrorResponse && error.status === 404
+            ? timer(750)
+            : throwError(() => error),
+        }),
+      )),
+      map((created) => this.assembler.toEntityFromResource(created)),
+    );
   }
 
   private backendReportTypeFrom(type: Report['type']): string {

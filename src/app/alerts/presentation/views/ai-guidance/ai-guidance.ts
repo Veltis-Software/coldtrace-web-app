@@ -116,7 +116,7 @@ export class AiGuidance implements OnInit {
       this.selectedIncidentId.set(incidentId);
     }
 
-    this.alertsStore.loadIncidents({ evaluateReadings: true });
+    this.alertsStore.loadIncidents({});
     this.loadSubscription();
   }
 
@@ -198,7 +198,7 @@ export class AiGuidance implements OnInit {
         next: (updatedPlan) => {
           this.upsertPlan(updatedPlan);
           this.approveSubmitted.set(false);
-          this.alertsStore.loadIncidents({ evaluateReadings: true, force: true, silent: true });
+          this.alertsStore.loadIncidents({ force: true, silent: true });
           this.feedback.set({ key: 'alerts.ai-guidance.feedback-approved', kind: 'success' });
         },
         error: (error) =>
