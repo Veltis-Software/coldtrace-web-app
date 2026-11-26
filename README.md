@@ -1,45 +1,42 @@
-# ColdTrace Frontend
+# ColdTrace Web Application
 
 ## Application Information
 
-ColdTrace is an Angular frontend application for cold-chain monitoring operations. It helps food businesses review refrigerated assets, IoT devices, alerts, maintenance work, access control, and compliance reports from a single dashboard experience.
+ColdTrace is an Angular web application for cold-chain monitoring operations. It helps food businesses review refrigerated assets, IoT devices, alerts, maintenance work, access control, subscriptions and traceability reports from a single dashboard experience.
 
 ## Description
 
-ColdTrace is the frontend web application maintained in Veltis-Software for cold-chain monitoring. It consumes the API Gateway, which routes requests to the extracted services and the remaining brownfield capabilities.
+The application consumes the ColdTrace API Gateway, which routes each request to the microservice that owns it: Identity, Asset, Monitoring, Alert, Report, Subscription, Maintenance and AI Assistance.
 
-The project follows the course style used in the reference applications: bounded contexts, standalone Angular components, route-level lazy loading, simple domain entities, infrastructure assemblers, and environment-based API endpoints.
+The project follows bounded contexts, standalone Angular components, route-level lazy loading, simple domain entities, infrastructure assemblers and environment-based API endpoints.
 
-## Veltis migration and Sprint 1
+## Scope
 
-The active repository is Veltis-Software/coldtrace-web-app. Current asset states, incident detail, notification deep links, assignment with ten-second undo, corrective actions and asynchronous traceability reports use the extracted services through the API Gateway. IAM and assets still use the temporary brownfield backend.
-
-Development requests use http://127.0.0.1:18080. Production builds use same-origin API requests; configure API_UPSTREAM on the web container to point to the gateway. Configure new OAuth clients before enabling social sign-in. The previous organization deployment and Vercel preview workflow are no longer used.
-
-Use Node 22, npm ci, npm run test -- --watch=false and npm run build. Dockerfile builds the web application independently; cloud deployment remains pending the academic project.
-
-## Current Scope
-
-- Identity and access management: account creation, sign in, password recovery, users, roles, and permissions.
-- Asset management: locations, cold rooms, transport units, IoT devices, gateways, calibration, connectivity, and asset settings.
-- Operational monitoring: dashboard KPIs, current readings, alerts, connectivity state, offline sync, charts, and maintenance widgets.
-- Reports and audit support: daily log, operational history, sanitary compliance CSV, monthly report CSV, findings, and audit evidence.
-- Local API consumption through the ColdTrace Spring Boot backend.
+- Identity and access management: organization sign-up, sign in, password recovery, users, roles and permissions.
+- Asset management: locations, cold rooms, transport units, IoT devices, gateways, source configuration and asset settings.
+- Operational monitoring: dashboard KPIs, current readings, asset states, connectivity, charts and maintenance widgets.
+- Alerts and incidents: real-time notifications, assignment with undo, corrective actions, closure, history and CSV export.
+- Reports: asynchronous traceability reports and AI-assisted interpretation and resolution plans.
+- Subscriptions: plans, limits and billing.
 
 ## Project Structure
 
 ```txt
 src/app/
   identity-access/       Account, users, roles, permissions
-  asset-management/      Assets, locations, devices, gateways, calibration
-  monitoring/            Dashboard, readings, alerts, offline sync
-  reports/               Daily log, history, compliance, audit evidence
+  asset-management/      Assets, locations, devices, gateways, settings
+  monitoring/            Dashboard, readings, asset states
+  alerts/                Incidents, notifications, corrective actions
+  reports/               Traceability reports and history
+  billing/               Plans, subscription and billing
+  maintenance-management/ Preventive maintenance and service requests
   shared/                Layout, shell, language switcher, infrastructure base classes
 docs/
   user-stories.md        User stories and acceptance criteria
   class-diagram.puml     PlantUML class diagram
   frontend-architecture.md
   local-api.md
+deployment/              Nginx template and Cloud Run proxy
 ```
 
 Each bounded context keeps the same internal structure:
@@ -53,49 +50,27 @@ presentation/            Routes, views, and presentation components
 
 ## Development
 
-Install dependencies:
+Use Node 22. Start the services with `coldtrace-infrastructure`, then:
 
 ```bash
-npm install
-```
-
-Run the Spring Boot backend:
-
-```bash
-cd ../coldtrace-platform
-./mvnw spring-boot:run
-```
-
-Run the Angular application:
-
-```bash
+npm ci
 npm start
 ```
 
-Open:
-
-```txt
-http://localhost:4200
-```
-
-During local development, Angular calls the API Gateway:
-
-```txt
-http://127.0.0.1:18080
-```
-
-Production builds call the same-origin gateway proxy configured through API_UPSTREAM:
-
-```txt
-/api/v1
-```
+Open `http://localhost:4200`. In development the application calls the gateway configured in `src/environments/environment.development.ts`.
 
 ## Build and Test
 
 ```bash
+npm test -- --watch=false
 npm run build
-npm test
 ```
+
+`package.json` overrides pin Vite 7.3.7 and Undici 7.30.1 to patched releases used by development and test tooling. Validate changes to these pins with `npm audit`, the tests and the build.
+
+## Deployment
+
+Production builds call `/api/v1` on the same origin. The Docker image serves the application with Nginx and proxies API requests to `API_UPSTREAM`. In Google Cloud Run the service `coldtrace-web` is the only public service; the `deployment/cloud-run-gateway-proxy.mjs` sidecar forwards API requests to the private gateway with a Cloud Run identity token.
 
 ## Documentation
 
@@ -103,16 +78,3 @@ npm test
 - [Class Diagram](docs/class-diagram.puml)
 - [Frontend Architecture](docs/frontend-architecture.md)
 - [Local API](docs/local-api.md)
-
-## Notes
-
-- The application keeps the product-facing UI in English.
-- The frontend now targets the ColdTrace Spring Boot backend. The `server/` folder is retained only as legacy mock data from the previous local API phase.
-- JWT authentication and server-side organization authorization are exercised by the Sprint 1 flow. Notifications use the in-app channel; email delivery and Google Cloud deployment are pending.
-
-## Source configuration dependency pins
-
-The source configuration increment preserves Angular 21 and the existing UI.
-`package.json` overrides pin Vite 7.3.7 and Undici 7.30.1 to patched releases used
-by development/test tooling. Validate changes to these pins with `npm audit`,
-`npm test -- --watch=false` and `npm run build`.
