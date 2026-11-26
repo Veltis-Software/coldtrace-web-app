@@ -1,0 +1,250 @@
+:host {
+  display: block;
+  margin: 20px 0;
+  color: var(--color-text);
+  font:
+    400 13px/1.6 Inter,
+    Arial,
+    sans-serif;
+}
+.source-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 20px 24px;
+}
+header,
+.actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+h2 {
+  font:
+    800 14px/20px Inter,
+    Arial,
+    sans-serif;
+  margin: 0;
+}
+h3,
+legend {
+  font-size: 14px;
+  font-weight: 800;
+  margin: 24px 0 8px;
+}
+p {
+  margin: 8px 0 16px;
+}
+.device-id,
+dd,
+td {
+  overflow-wrap: anywhere;
+}
+.device-id,
+dt,
+.hint,
+td span {
+  color: var(--color-text-muted);
+}
+dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 24px;
+  margin: 20px 0;
+}
+dt {
+  font-size: 12px;
+  font-weight: 700;
+}
+dd {
+  font-weight: 600;
+  margin: 2px 0 0;
+}
+.mapping p {
+  overflow-wrap: anywhere;
+}
+fieldset {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 20px;
+  border: 0;
+  padding: 0;
+  margin: 20px 0 0;
+  min-width: 0;
+}
+legend {
+  padding: 0 0 12px;
+}
+label {
+  display: grid;
+  gap: 6px;
+  font:
+    800 12px/20px Inter,
+    Arial,
+    sans-serif;
+  min-width: 0;
+}
+input,
+select,
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+  min-height: 38px;
+  font:
+    400 13px/18px Inter,
+    Arial,
+    sans-serif;
+}
+textarea {
+  resize: vertical;
+}
+:is(input, select, textarea, button):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+input:disabled,
+select:disabled {
+  opacity: 0.7;
+}
+.full {
+  grid-column: 1 / -1;
+}
+.actions {
+  justify-content: flex-end;
+}
+.primary-action,
+.secondary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 6px 12px;
+  border-radius: var(--radius-control);
+  font:
+    800 12px/20px Inter,
+    Arial,
+    sans-serif;
+  cursor: pointer;
+}
+.primary-action {
+  background: var(--color-primary) !important;
+  border: 1px solid var(--color-primary) !important;
+  color: var(--color-surface) !important;
+}
+.secondary-action {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text-muted) !important;
+}
+.primary-action:not(:disabled):hover {
+  filter: brightness(0.94);
+}
+.secondary-action:not(:disabled):hover {
+  background: var(--color-surface-muted) !important;
+  border-color: var(--color-border-strong) !important;
+}
+:is(.primary-action, .secondary-action):disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+.feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  border-radius: var(--radius-control);
+  padding: 10px 14px;
+  font:
+    800 12px/20px Inter,
+    Arial,
+    sans-serif;
+}
+.feedback mat-icon {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+.feedback.error {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+.feedback.success {
+  color: var(--color-success);
+  background: var(--color-success-soft);
+}
+.history-scroll {
+  overflow-x: auto;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+th {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+th,
+td {
+  border-bottom: 1px solid var(--color-border);
+  padding: 12px 16px 12px 0;
+  vertical-align: top;
+}
+td span {
+  display: block;
+  font-size: 12px;
+}
+@media (max-width: 700px) {
+  dl,
+  fieldset {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .source-panel {
+    padding: 16px;
+  }
+  header {
+    gap: 8px;
+  }
+  .actions {
+    flex-wrap: wrap;
+  }
+}
+.transport-badge {
+  display: inline-flex;
+  padding: 2px 10px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  border-radius: var(--radius-control);
+  font-size: 12px;
+  font-weight: 800;
+}
+.unit-pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+.unit-pair small {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+.mapping-table {
+  max-width: 680px;
+  margin-bottom: 20px;
+}
+.mapping-table th {
+  background: var(--color-surface-muted);
+}
+.mapping-table th,
+.mapping-table td {
+  padding: 8px 12px;
+}

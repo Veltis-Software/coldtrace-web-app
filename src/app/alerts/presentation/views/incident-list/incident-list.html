@@ -27,6 +27,8 @@
           </button>
         }
 
+        <button type="button" [class.active]="selectedIncidentPanel() === 'history'"
+          (click)="selectIncidentPanel('history')">Historial</button>
         <button type="button" (click)="openAiGuidance()">
           {{ 'dashboard-shell.nav-ai-guidance' | translate }}
         </button>
@@ -60,6 +62,63 @@
       </div>
     </div>
   </header>
+
+  @if (selectedIncidentPanel() === 'history') {
+    <section class="history-panel" aria-label="Historial de incidencias">
+      <div class="history-heading">
+        <mat-icon aria-hidden="true">history</mat-icon>
+        <div><h2>Historial de incidencias</h2><p>Consulta el seguimiento y las acciones por período.</p></div>
+      </div>
+      <form class="history-filters" [formGroup]="historyForm" (ngSubmit)="loadHistory()">
+        <label>Desde (UTC)<input type="date" formControlName="from"></label>
+        <label>Hasta (UTC)<input type="date" formControlName="to"></label>
+        <label>ID de activo<input type="text" inputmode="numeric" formControlName="assetId"></label>
+        <label>Estado<select formControlName="state">
+          <option value="">Todos</option><option value="OPEN">Abierta</option>
+          <option value="ACKNOWLEDGED">Reconocida</option><option value="RESOLVED">Cerrada</option>
+        </select></label>
+        <label>Severidad<input type="text" formControlName="severity"></label>
+        <label>ID de responsable<input type="text" inputmode="numeric" formControlName="assigneeUserId"></label>
+        <button class="primary-action" type="submit" [disabled]="historyBusy()"><mat-icon aria-hidden="true">search</mat-icon>Consultar</button>
+        <button class="secondary-action" type="button" [disabled]="!history().length"
+          (click)="exportHistory()"><mat-icon aria-hidden="true">download</mat-icon>Exportar CSV</button>
+      </form>
+      @if (historyBusy()) { <p role="status">Consultando historial·</p> }
+      @if (historyError()) { <p role="alert">{{ historyError() }}</p> }
+      @if (historyLoaded() && !history().length) { <p>No hay incidencias para estos filtros.</p> }
+      @for (item of history(); track item.id) {
+        <article class="history-item">
+          <header class="history-card-header">
+            <div>
+              <p class="history-meta">Incidencia #{{ item.id }} · {{ item.detectedAt | date:'dd/MM/yyyy HH:mm':'UTC' }} UTC</p>
+              <h3><a [routerLink]="['/alerts', item.id]">{{ item.asset.name }}</a></h3>
+            </div>
+            <div class="history-badges">
+              <span class="history-badge" [class.history-resolved]="item.state === 'RESOLVED'">{{ 'increment.states.' + item.state | translate }}</span>
+              <span class="history-badge" [class.history-critical]="item.severity === 'CRITICAL'">{{ item.severity }}</span>
+            </div>
+          </header>
+          <dl class="history-ownership">
+            <div><dt>Responsable</dt><dd>{{ item.assignee?.fullName || 'Sin responsable' }}</dd></div>
+            @if (item.resolvedAt) {
+              <div><dt>Cierre</dt><dd>{{ item.resolvedAt | date:'dd/MM/yyyy HH:mm':'UTC' }} UTC · Usuario {{ item.resolvedByUserId ?? 'sin identificar' }}</dd></div>
+            }
+          </dl>
+          @if (item.correctiveActions.length) {
+            <h4>Acciones correctivas</h4>
+            <ol class="history-timeline">
+              @for (action of item.correctiveActions; track $index) {
+                <li><mat-icon aria-hidden="true">task_alt</mat-icon><div>
+                  <p>{{ action.description }}</p>
+                  <span class="history-meta">{{ action.created_at | date:'dd/MM/yyyy HH:mm':'UTC' }} UTC · Usuario {{ action.author_user_id }}</span>
+                </div></li>
+              }
+            </ol>
+          }
+        </article>
+      }
+    </section>
+  }
 
   @if (alertsStore.feedback()) {
     <div

@@ -1,7 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { AssetManagementStore } from '../../asset-management/application/asset-management.store';
-import { IoTDeviceStatus } from '../../asset-management/domain/model/iot-device-status.enum';
 import { OfflineReading } from '../domain/model/offline-reading.entity';
 import { SensorReading } from '../domain/model/sensor-reading.entity';
 import { SyncStatus } from '../domain/model/sync-status.enum';
@@ -54,11 +52,9 @@ export class MonitoringStore {
     () => this.offlineReadings().filter((reading) => reading.isFailed).length,
   );
 
-  private readonly seededOrganizationIds = new Set<number>();
 
   constructor(
     private monitoringApi: MonitoringApi,
-    private assetManagementStore: AssetManagementStore,
     private organizationScope: OrganizationScopeStore,
   ) {}
 
@@ -70,22 +66,30 @@ export class MonitoringStore {
 
     if (!organizationId) {
       this.readingsSignal.set([]);
+      this.offlineReadingsSignal.set([]);
+      this.readingsLoadedForOrganizationId = null;
+      this.readingsRequestInFlightForOrganizationId = null;
+      this.loadingSignal.set(false);
       return;
     }
 
     if (
-      !options.force &&
-      (this.readingsLoadedForOrganizationId === organizationId ||
-        this.readingsRequestInFlightForOrganizationId === organizationId)
+      this.readingsRequestInFlightForOrganizationId === organizationId ||
+      (!options.force && this.readingsLoadedForOrganizationId === organizationId)
     ) {
       return;
     }
 
+    if (this.readingsLoadedForOrganizationId !== organizationId) {
+      this.readingsSignal.set([]);
+      this.offlineReadingsSignal.set([]);
+    }
     this.readingsRequestInFlightForOrganizationId = organizationId;
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
     this.monitoringApi.getSensorReadings().subscribe({
       next: (readings) => {
+        if (this.organizationScope.activeOrganizationId() !== organizationId) return;
         this.readingsSignal.set(readings);
         this.readingsLoadedForOrganizationId = organizationId;
         this.readingsRequestInFlightForOrganizationId = null;
@@ -93,6 +97,7 @@ export class MonitoringStore {
         this.initOfflineReadings(readings);
       },
       error: (error) => {
+        if (this.organizationScope.activeOrganizationId() !== organizationId) return;
         this.errorSignal.set(this.formatError(error, 'Failed to load sensor readings'));
         this.readingsRequestInFlightForOrganizationId = null;
         this.loadingSignal.set(false);
@@ -228,78 +233,10 @@ export class MonitoringStore {
     );
   }
 
-  /**
-   * @summary Requests backend-owned telemetry updates for one organization.
-   */
+  /** Refreshes received telemetry; opening the dashboard never creates measurements. */
   updateOrganizationTelemetry(organizationId: number | null): void {
-    if (!organizationId) {
-      return;
-    }
-
-    const assets = this.assetManagementStore.assetsForOrganization(organizationId);
-    const monitoredAssets = assets.filter((asset) =>
-      this.assetManagementStore
-        .iotDevicesForAsset(asset.id)
-        .some((device) => device.status !== IoTDeviceStatus.Offline),
-    );
-
-    if (!monitoredAssets.length) {
-      return;
-    }
-
-    const seededInitialReadings = this.ensureRecentReadingsForOrganization(
-      organizationId,
-      monitoredAssets.map((asset) => asset.id),
-    );
-
-    if (seededInitialReadings) {
-      return;
-    }
-
-    this.generateDemoReadings({ count: 1 });
-  }
-
-  private ensureRecentReadingsForOrganization(
-    organizationId: number,
-    assetIds: number[],
-  ): boolean {
-    if (this.seededOrganizationIds.has(organizationId)) {
-      return false;
-    }
-
-    const since = new Date();
-    since.setHours(since.getHours() - 24);
-
-    if (this.readingsForAssetIdsSince(assetIds, since).length) {
-      this.seededOrganizationIds.add(organizationId);
-      return false;
-    }
-
-    this.generateDemoReadings({ count: 8 });
-    this.seededOrganizationIds.add(organizationId);
-    return true;
-  }
-
-  private generateDemoReadings(request: { assetId?: number; count: number }): void {
-    this.monitoringApi.generateDemoSensorReadings(request).subscribe({
-      next: (readings) => this.mergeReadings(readings),
-      error: () => undefined,
-    });
-  }
-
-  private mergeReadings(readings: SensorReading[]): void {
-    if (!readings.length) {
-      return;
-    }
-
-    this.readingsSignal.update((currentReadings) => {
-      const readingsById = new Map(currentReadings.map((reading) => [reading.id, reading]));
-      readings.forEach((reading) => readingsById.set(reading.id, reading));
-      this.readingsLoadedForOrganizationId = this.organizationScope.activeOrganizationId();
-      return [...readingsById.values()].sort(
-        (a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime(),
-      );
-    });
+    if (!organizationId || organizationId !== this.organizationScope.activeOrganizationId()) return;
+    this.loadReadings({ force: true });
   }
 
   private initOfflineReadings(readings: SensorReading[]): void {
