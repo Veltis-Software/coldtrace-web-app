@@ -60,6 +60,30 @@ export class DashboardShell {
 
   protected accessDropdownOpen = false;
   protected alertsDropdownOpen = false;
+  private readonly openGroups = new Map<string, boolean>();
+
+  protected isGroupOpen(name: string, route: string): boolean {
+    return this.openGroups.get(name) ?? this.currentUrl().startsWith(route);
+  }
+
+  protected toggleGroup(name: string, route: string): void {
+    this.openGroups.set(name, !this.isGroupOpen(name, route));
+  }
+
+  protected tabParams(key: string, value: string): Record<string, string | number> {
+    return { ...this.contextQueryParams, [key]: value };
+  }
+
+  protected isTabActive(route: string, key: string, value: string): boolean {
+    const url = this.currentUrl();
+    if (!url.startsWith(route)) return false;
+    const current = new URLSearchParams(url.split('?')[1] ?? '').get(key);
+    return current === value || (!current && ['cold-room', 'active'].includes(value));
+  }
+
+  private currentUrl(): string {
+    return this.router.url;
+  }
   protected alertsDropdownTouched = false;
 
   protected isAlertsDropdownOpen(): boolean {
