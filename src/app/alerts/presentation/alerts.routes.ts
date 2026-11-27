@@ -5,7 +5,7 @@ const incidentList = () =>
 const aiGuidance = () =>
   import('./views/ai-guidance/ai-guidance').then((m) => m.AiGuidance);
 const notificationList = () =>
-  import('./views/alert-inbox/alert-inbox').then((m) => m.AlertInbox);
+  import('./views/notification-list/notification-list').then((m) => m.NotificationList);
 
 /**
  * @summary Defines the lazy-loaded routes for the alerts bounded context.
@@ -13,7 +13,7 @@ const notificationList = () =>
 export const alertsRoutes: Routes = [
   {
     path: 'history',
-    loadComponent: () => import('./views/incident-list/incident-list').then(m => m.IncidentList),
+    loadComponent: incidentList,
     title: 'ColdTrace - Incident history',
   },
   {

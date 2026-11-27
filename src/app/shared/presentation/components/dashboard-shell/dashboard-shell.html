@@ -57,20 +57,55 @@
           </a>
         }
 
-        <a
-          class="menu-item"
-          routerLink="/alerts/incidents"
-          [queryParams]="contextQueryParams"
-          routerLinkActive="active"
-          [class.alerts-active]="isAlertsRoute()"
-          (click)="closeMobileNavigationAfterNavigation()"
-        >
-          <mat-icon class="menu-icon">warning</mat-icon>
-          <span class="menu-label">{{ 'dashboard-shell.nav-alerts' | translate }}</span>
-          @if (pendingAlertsCount > 0) {
-            <span class="counter badge-red">{{ pendingAlertsCount }}</span>
-          }
-        </a>
+        <div class="menu-group" [class.open]="isAlertsDropdownOpen()">
+          <button
+            class="menu-item menu-trigger"
+            type="button"
+            [class.alerts-active]="isAlertsRoute()"
+            [attr.aria-expanded]="isAlertsDropdownOpen()"
+            (click)="toggleAlertsDropdown()"
+          >
+            <mat-icon class="menu-icon">warning</mat-icon>
+            <span class="menu-label">{{ 'dashboard-shell.nav-alerts' | translate }}</span>
+            @if (pendingAlertsCount > 0) {
+              <span class="counter badge-red">{{ pendingAlertsCount }}</span>
+            }
+            <mat-icon class="dropdown-icon">expand_more</mat-icon>
+          </button>
+          <div
+            class="sub-menu"
+            [attr.aria-label]="'dashboard-shell.nav-alerts' | translate"
+            [attr.aria-hidden]="!isAlertsDropdownOpen()"
+          >
+            <a
+              class="sub-menu-link"
+              routerLink="/alerts/incidents"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'increment.incidents' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/alerts/history"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'increment.history' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/alerts/ai-guidance"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-ai-guidance' | translate }}
+            </a>
+          </div>
+        </div>
 
         <div
           class="menu-group"

@@ -2,7 +2,7 @@
   <header class="alerts-header">
     <div class="view-header">
       <div>
-        <h1 class="view-title">{{ 'increment.alerts' | translate }}</h1>
+        <h1 class="view-title">{{ (notificationMode ? 'increment.notifications' : 'increment.alerts') | translate }}</h1>
         <p class="view-subtitle">{{ 'increment.attention-subtitle' | translate }}</p>
       </div>
     </div>
@@ -10,16 +10,15 @@
       <button class="refresh-action" (click)="load()">
         <mat-icon aria-hidden="true">refresh</mat-icon>{{ 'increment.refresh' | translate }}
       </button>
+      @if (!notificationMode) {
       <nav class="incident-section-tabs" [attr.aria-label]="'increment.alerts' | translate">
-        <a routerLink="/alerts/incidents" [class.active]="!notificationMode">{{
+        <a routerLink="/alerts/incidents" [class.active]="incidentMode">{{
           'increment.incidents' | translate
         }}</a>
-        <a routerLink="/alerts/notifications" [class.active]="notificationMode">{{
-          'increment.notifications' | translate
-        }}</a>
-        <a routerLink="/alerts/history">Historial</a>
+        <a routerLink="/alerts/history" [class.active]="historyMode">{{ 'increment.history' | translate }}</a>
       </nav>
-      @if (!notificationMode) {
+      }
+      @if (incidentMode) {
         <label class="search-box"
           ><mat-icon aria-hidden="true">search</mat-icon>
           <input
@@ -47,7 +46,9 @@
   @if (loading()) {
     <p role="status">{{ 'increment.loading' | translate }}</p>
   }
-  @if (notificationMode) {
+  @if (historyMode) {
+    <app-incident-history />
+  } @else if (notificationMode) {
     <section class="premium-card table-card">
       @for (notice of notices(); track notice.id) {
         <article class="notice-row">

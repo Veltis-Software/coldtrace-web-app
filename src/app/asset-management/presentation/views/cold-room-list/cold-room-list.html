@@ -688,7 +688,7 @@
           @for (iotDevice of paginatedIoTDevices(); track iotDevice.id) {
             <tr>
               <td [attr.data-label]="'asset-management.iot-devices.table.id' | translate">
-                {{ iotDevice.uuid }}
+                <span class="short-id" [title]="iotDevice.uuid">{{ shortId(iotDevice.uuid) }}</span>
               </td>
               <td [attr.data-label]="'asset-management.iot-devices.table.type' | translate">
                 {{ deviceTypeLabelKey(iotDevice.deviceType) | translate }}
@@ -813,7 +813,7 @@
           @for (gateway of paginatedGateways(); track gateway.id) {
             <tr>
               <td [attr.data-label]="'asset-management.gateways.table.id' | translate">
-                {{ gateway.uuid }}
+                <span class="short-id" [title]="gateway.uuid">{{ shortId(gateway.uuid) }}</span>
               </td>
               <td [attr.data-label]="'asset-management.gateways.table.name' | translate">
                 {{ gateway.name }}
@@ -921,7 +921,7 @@
             @for (asset of paginatedAssets(); track asset.id) {
               <tr>
                 <td [attr.data-label]="'asset-management.table.id' | translate">
-                  {{ asset.uuid }}
+                  <span class="short-id" [title]="asset.uuid">{{ shortId(asset.uuid) }}</span>
                 </td>
                 <td [attr.data-label]="'asset-management.table.name' | translate">
                   {{ asset.name }}
