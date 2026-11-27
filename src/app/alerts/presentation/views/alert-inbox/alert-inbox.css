@@ -180,3 +180,7 @@ input:focus-visible {
   font: 600 11px/16px Inter, Arial, sans-serif;
   margin: 2px 0 0;
 }
+.incident-list-view > .premium-card,
+.incident-list-view > section.premium-card {
+  margin-top: 18px;
+}
