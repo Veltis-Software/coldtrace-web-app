@@ -104,7 +104,14 @@ export class AssetMonitoringDashboard implements OnInit {
         const leftIssue = left.telemetryState === 'NORMAL' ? 0 : 1;
         const rightIssue = right.telemetryState === 'NORMAL' ? 0 : 1;
 
-        return rightIssue - leftIssue || left.asset.name.localeCompare(right.asset.name);
+        const leftData = left.latestReading === null ? 1 : 0;
+        const rightData = right.latestReading === null ? 1 : 0;
+
+        return (
+          leftData - rightData ||
+          rightIssue - leftIssue ||
+          left.asset.name.localeCompare(right.asset.name)
+        );
       });
   });
   protected readonly paginatedItems = computed(() =>
