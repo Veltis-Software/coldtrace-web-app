@@ -501,3 +501,10 @@ button:disabled {
     gap: 12px;
   }
 }
+
+.alerts-tabs { align-items: center; display: flex; gap: 26px; min-height: 42px; }
+.alerts-tabs a {
+  align-items: center; border-bottom: 2px solid transparent; color: #98a2b3; display: inline-flex;
+  font: 800 12px/20px Inter, Arial, sans-serif; min-height: 42px; text-decoration: none; white-space: nowrap;
+}
+.alerts-tabs a.active, .alerts-tabs a:hover { border-bottom-color: #2563eb; color: #2563eb; }

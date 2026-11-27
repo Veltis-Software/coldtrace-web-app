@@ -1,3 +1,4 @@
+import { RouterLink } from '@angular/router';
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -24,7 +25,7 @@ interface AiGuidanceFeedback {
 @Component({
   selector: 'app-ai-guidance',
   standalone: true,
-  imports: [MatIcon, MatProgressSpinnerModule, ReactiveFormsModule, TranslateModule],
+  imports: [RouterLink, MatIcon, MatProgressSpinnerModule, ReactiveFormsModule, TranslateModule],
   templateUrl: './ai-guidance.html',
   styleUrl: './ai-guidance.css',
 })
