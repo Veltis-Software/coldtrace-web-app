@@ -30,31 +30,102 @@
           <span class="menu-label">{{ 'dashboard-shell.nav-main' | translate }}</span>
         </a>
 
-        <a
-          class="menu-item"
-          routerLink="/asset-management/assets"
-          [queryParams]="contextQueryParams"
-          routerLinkActive="active"
-          (click)="closeMobileNavigationAfterNavigation()"
-        >
-          <mat-icon class="menu-icon">inventory_2</mat-icon>
-          <span class="menu-label">{{ 'dashboard-shell.nav-assets' | translate }}</span>
-          @if (assetIssuesCount > 0) {
-            <span class="counter badge-red">{{ assetIssuesCount }}</span>
-          }
-        </a>
+        <div class="menu-group" [class.open]="isGroupOpen('assets', '/asset-management/assets')">
+          <button
+            class="menu-item menu-trigger"
+            type="button"
+            [attr.aria-expanded]="isGroupOpen('assets', '/asset-management/assets')"
+            (click)="toggleGroup('assets', '/asset-management/assets')"
+          >
+            <mat-icon class="menu-icon">inventory_2</mat-icon>
+            <span class="menu-label">{{ 'dashboard-shell.nav-assets' | translate }}</span>
+            @if (assetIssuesCount > 0) {
+              <span class="counter badge-red">{{ assetIssuesCount }}</span>
+            }
+            <mat-icon class="dropdown-icon">expand_more</mat-icon>
+          </button>
+          <div class="sub-menu" [attr.aria-hidden]="!isGroupOpen('assets', '/asset-management/assets')">
+            <a
+              class="sub-menu-link"
+              routerLink="/asset-management/assets"
+              [queryParams]="tabParams('tab', 'cold-room')"
+              [class.active]="isTabActive('/asset-management/assets', 'tab', 'cold-room')"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'asset-management.tabs.cold-room' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/asset-management/assets"
+              [queryParams]="tabParams('tab', 'transport')"
+              [class.active]="isTabActive('/asset-management/assets', 'tab', 'transport')"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'asset-management.tabs.transport' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/asset-management/assets"
+              [queryParams]="tabParams('tab', 'location')"
+              [class.active]="isTabActive('/asset-management/assets', 'tab', 'location')"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'asset-management.tabs.location' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/asset-management/assets"
+              [queryParams]="tabParams('tab', 'gateway')"
+              [class.active]="isTabActive('/asset-management/assets', 'tab', 'gateway')"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'asset-management.tabs.gateway' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/asset-management/assets"
+              [queryParams]="tabParams('tab', 'iot-device')"
+              [class.active]="isTabActive('/asset-management/assets', 'tab', 'iot-device')"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'asset-management.tabs.iot-device' | translate }}
+            </a>
+          </div>
+        </div>
 
         @if (canMonitorAssets) {
-          <a
-            class="menu-item"
-            routerLink="/monitoring/assets"
-            [queryParams]="contextQueryParams"
-            routerLinkActive="active"
-            (click)="closeMobileNavigationAfterNavigation()"
+          <div class="menu-group" [class.open]="isGroupOpen('monitoring', '/monitoring/assets')">
+          <button
+            class="menu-item menu-trigger"
+            type="button"
+            [attr.aria-expanded]="isGroupOpen('monitoring', '/monitoring/assets')"
+            (click)="toggleGroup('monitoring', '/monitoring/assets')"
           >
             <mat-icon class="menu-icon">sensors</mat-icon>
             <span class="menu-label">{{ 'dashboard-shell.nav-monitoring' | translate }}</span>
-          </a>
+            <mat-icon class="dropdown-icon">expand_more</mat-icon>
+          </button>
+          <div class="sub-menu" [attr.aria-hidden]="!isGroupOpen('monitoring', '/monitoring/assets')">
+            <a
+              class="sub-menu-link"
+              routerLink="/monitoring/assets"
+              [queryParams]="tabParams('tab', 'cold-room')"
+              [class.active]="isTabActive('/monitoring/assets', 'tab', 'cold-room')"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'monitoring.asset-monitoring.tabs.cold-room' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/monitoring/assets"
+              [queryParams]="tabParams('tab', 'transport')"
+              [class.active]="isTabActive('/monitoring/assets', 'tab', 'transport')"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'monitoring.asset-monitoring.tabs.transport' | translate }}
+            </a>
+          </div>
+        </div>
         }
 
         <div class="menu-group" [class.open]="isAlertsDropdownOpen()">
@@ -326,19 +397,50 @@
           </div>
         </div>
 
-        <a
-          class="menu-item"
-          routerLink="/alerts/notifications"
-          [queryParams]="contextQueryParams"
-          routerLinkActive="active"
-          (click)="closeMobileNavigationAfterNavigation()"
-        >
-          <mat-icon class="menu-icon">notifications</mat-icon>
-          <span class="menu-label">{{ 'dashboard-shell.nav-notifications' | translate }}</span>
-          @if (pendingAlertsCount > 0) {
-            <span class="counter badge-red">{{ pendingAlertsCount }}</span>
-          }
-        </a>
+        <div class="menu-group" [class.open]="isGroupOpen('notifications', '/alerts/notifications')">
+          <button
+            class="menu-item menu-trigger"
+            type="button"
+            [attr.aria-expanded]="isGroupOpen('notifications', '/alerts/notifications')"
+            (click)="toggleGroup('notifications', '/alerts/notifications')"
+          >
+            <mat-icon class="menu-icon">notifications</mat-icon>
+            <span class="menu-label">{{ 'dashboard-shell.nav-notifications' | translate }}</span>
+            @if (pendingAlertsCount > 0) {
+              <span class="counter badge-red">{{ pendingAlertsCount }}</span>
+            }
+            <mat-icon class="dropdown-icon">expand_more</mat-icon>
+          </button>
+          <div class="sub-menu" [attr.aria-hidden]="!isGroupOpen('notifications', '/alerts/notifications')">
+            <a
+              class="sub-menu-link"
+              routerLink="/alerts/notifications"
+              [queryParams]="tabParams('filter', 'active')"
+              [class.active]="isTabActive('/alerts/notifications', 'filter', 'active')"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'alerts.notification-list.filter-active' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/alerts/notifications"
+              [queryParams]="tabParams('filter', 'pending')"
+              [class.active]="isTabActive('/alerts/notifications', 'filter', 'pending')"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'alerts.notification-list.filter-pending' | translate }}
+            </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/alerts/notifications"
+              [queryParams]="tabParams('filter', 'failed')"
+              [class.active]="isTabActive('/alerts/notifications', 'filter', 'failed')"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'alerts.notification-list.filter-failed' | translate }}
+            </a>
+          </div>
+        </div>
       </nav>
 
       @if (organizationMembers.length) {
