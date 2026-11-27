@@ -888,7 +888,7 @@ export class ColdRoomList implements OnInit {
 
   protected assetNameForIoTDevice(iotDevice: IoTDevice): string {
     const asset = this.assets().find((currentAsset) => currentAsset.id === iotDevice.assetId);
-    return asset ? `${asset.uuid} - ${asset.name}` : 'asset-management.iot-devices.unassigned';
+    return asset ? asset.name : 'asset-management.iot-devices.unassigned';
   }
 
   protected displayedAssetStatus(asset: Asset): AssetStatus {
@@ -1429,6 +1429,10 @@ export class ColdRoomList implements OnInit {
     });
   }
 
+  protected shortId(uuid: string | null | undefined): string {
+    return uuid ? uuid.slice(0, 8) : '';
+  }
+
   protected gatewayNameById(gatewayId: number | null): string {
     const gateway = this.gatewayById(gatewayId);
     return gateway ? this.gatewayDisplayName(gateway) : 'asset-management.gateways.unassigned';
@@ -1481,7 +1485,7 @@ export class ColdRoomList implements OnInit {
   }
 
   private gatewayDisplayName(gateway: Gateway): string {
-    return `${gateway.uuid} - ${this.gatewayLocationFor(gateway)}`;
+    return `Gateway ${gateway.uuid.slice(0, 8)} - ${this.gatewayLocationFor(gateway)}`;
   }
 
   private generatedAssetUuid(assetType: AssetType): string {

@@ -1,15 +1,59 @@
 @import '../incident-list/incident-list.css';
 
-.incident-section-tabs a {
-  padding: 10px 0;
-  text-decoration: none;
-  color: var(--color-text-muted);
-  font-weight: 700;
-  border-bottom: 2px solid transparent;
+.alerts-header {
+  display: grid;
+  gap: 14px;
+  margin: 0;
 }
-.incident-section-tabs a.active {
-  color: var(--color-primary);
-  border-color: currentColor;
+.alerts-header .view-title {
+  color: #263348;
+  font: 800 24px/30px Inter, Arial, sans-serif;
+  margin: 0;
+}
+.alerts-header .view-subtitle {
+  color: #98a2b3;
+  font: 800 13px/20px Inter, Arial, sans-serif;
+  margin: 6px 0 0;
+}
+.incident-workbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  min-height: 42px;
+}
+.incident-section-tabs {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 26px;
+  min-height: 42px;
+  order: -1;
+}
+.incident-section-tabs a {
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  color: #98a2b3;
+  display: inline-flex;
+  font: 800 12px/20px Inter, Arial, sans-serif;
+  min-height: 42px;
+  padding: 0;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.incident-section-tabs a.active,
+.incident-section-tabs a:hover {
+  border-bottom-color: #2563eb;
+  color: #2563eb;
+}
+.incident-workbar .search-box {
+  flex: 1 1 260px;
+  max-width: 400px;
+}
+.incident-workbar .refresh-action {
+  font: 700 13px/20px Inter, Arial, sans-serif;
+  min-height: 38px;
+  margin-left: auto;
 }
 .refresh-action,
 .list-heading,
@@ -106,3 +150,6 @@ input:focus-visible {
 .incident-workbar .search-box {
   flex: 1 1 240px;
 }
+.incident-workbar .search-box { order: 1; }
+.incident-workbar .incident-metrics { order: 2; }
+.incident-workbar .refresh-action { order: 3; }

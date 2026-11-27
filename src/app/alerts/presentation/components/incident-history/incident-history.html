@@ -1,0 +1,50 @@
+<section class="history-panel" [attr.aria-label]="'increment.history' | translate">
+      <form class="premium-card history-filters" [formGroup]="historyForm" (ngSubmit)="loadHistory()">
+        <label>{{ 'increment.history-panel.from' | translate }}<input type="date" formControlName="from"></label>
+        <label>{{ 'increment.history-panel.to' | translate }}<input type="date" formControlName="to"></label>
+        <label>{{ 'increment.history-panel.asset' | translate }}<input type="text" inputmode="numeric" formControlName="assetId"></label>
+        <label>{{ 'increment.history-panel.state' | translate }}<select formControlName="state">
+          <option value="">{{ 'increment.history-panel.all' | translate }}</option><option value="OPEN">{{ 'increment.history-panel.open' | translate }}</option>
+          <option value="ACKNOWLEDGED">{{ 'increment.history-panel.ack' | translate }}</option><option value="RESOLVED">{{ 'increment.history-panel.closed' | translate }}</option>
+        </select></label>
+        <label>{{ 'increment.history-panel.severity' | translate }}<input type="text" formControlName="severity"></label>
+        <label>{{ 'increment.history-panel.assignee' | translate }}<input type="text" inputmode="numeric" formControlName="assigneeUserId"></label>
+        <button class="primary-action" type="submit" [disabled]="historyBusy()"><mat-icon aria-hidden="true">search</mat-icon>{{ 'increment.history-panel.search' | translate }}</button>
+        <button class="secondary-action" type="button" [disabled]="!history().length"
+          (click)="exportHistory()"><mat-icon aria-hidden="true">download</mat-icon>{{ 'increment.history-panel.export' | translate }}</button>
+      </form>
+      @if (historyBusy()) { <p role="status">{{ 'increment.history-panel.loading' | translate }}</p> }
+      @if (historyError()) { <p role="alert">{{ historyError() | translate }}</p> }
+      @if (historyLoaded() && !history().length) { <p>{{ 'increment.history-panel.empty' | translate }}</p> }
+      @for (item of history(); track item.id) {
+        <article class="history-item">
+          <header class="history-card-header">
+            <div>
+              <p class="history-meta">{{ 'increment.history-panel.incident' | translate }} #{{ item.id }} · {{ item.detectedAt | date:'dd/MM/yyyy HH:mm':'UTC' }} UTC</p>
+              <h3><a [routerLink]="['/alerts', item.id]">{{ item.asset.name }}</a></h3>
+            </div>
+            <div class="history-badges">
+              <span class="history-badge" [class.history-resolved]="item.state === 'RESOLVED'">{{ 'increment.states.' + item.state | translate }}</span>
+              <span class="history-badge" [class.history-critical]="item.severity === 'CRITICAL'">{{ item.severity }}</span>
+            </div>
+          </header>
+          <dl class="history-ownership">
+            <div><dt>{{ 'increment.history-panel.owner' | translate }}</dt><dd>{{ item.assignee?.fullName || ('increment.history-panel.none' | translate) }}</dd></div>
+            @if (item.resolvedAt) {
+              <div><dt>{{ 'increment.history-panel.closure' | translate }}</dt><dd>{{ item.resolvedAt | date:'dd/MM/yyyy HH:mm':'UTC' }} UTC · {{ 'increment.history-panel.user' | translate }} {{ item.resolvedByUserId ?? ('increment.history-panel.unknown' | translate) }}</dd></div>
+            }
+          </dl>
+          @if (item.correctiveActions.length) {
+            <h4>{{ 'increment.history-panel.actions' | translate }}</h4>
+            <ol class="history-timeline">
+              @for (action of item.correctiveActions; track $index) {
+                <li><mat-icon aria-hidden="true">task_alt</mat-icon><div>
+                  <p>{{ action.description }}</p>
+                  <span class="history-meta">{{ action.created_at | date:'dd/MM/yyyy HH:mm':'UTC' }} UTC · {{ 'increment.history-panel.user' | translate }} {{ action.author_user_id }}</span>
+                </div></li>
+              }
+            </ol>
+          }
+        </article>
+      }
+    </section>

@@ -589,3 +589,12 @@
     font-weight: 800;
   }
 }
+
+.short-id {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.iot-device-table .status-pill {
+  white-space: nowrap;
+}
