@@ -10,16 +10,10 @@
     </div>
 
     <div class="incident-workbar">
-      <nav class="incident-section-tabs" aria-label="Incident workflow sections">
-        <button type="button" (click)="openIncidents()">
-          {{ 'dashboard-shell.nav-incidents' | translate }}
-        </button>
-        <button type="button" (click)="openIncidents('closure')">
-          {{ 'alerts.incident-list.closure-title' | translate }}
-        </button>
-        <button type="button" class="active">
-          {{ 'dashboard-shell.nav-ai-guidance' | translate }}
-        </button>
+      <nav class="incident-section-tabs alerts-tabs" aria-label="Incident workflow sections">
+        <a routerLink="/alerts/incidents">{{ 'increment.incidents' | translate }}</a>
+        <a routerLink="/alerts/history">{{ 'increment.history' | translate }}</a>
+        <a routerLink="/alerts/ai-guidance" class="active">{{ 'dashboard-shell.nav-ai-guidance' | translate }}</a>
       </nav>
 
       <div class="incident-toolbar">
@@ -30,7 +24,7 @@
             (change)="selectIncident($any($event.target).value)"
           >
             @for (incident of activeIncidents(); track incident.id) {
-              <option [value]="incident.id">INC-{{ incident.id }} · {{ incident.assetName }}</option>
+              <option [value]="incident.id">INC-{{ incident.id }} - {{ incident.assetName }}</option>
             }
           </select>
         </label>
