@@ -541,3 +541,14 @@
     width: 100% !important;
   }
 }
+
+.notification-link {
+  color: #2563eb;
+  display: inline-block;
+  font: 700 13px/20px Inter, Arial, sans-serif;
+  margin: 4px 0;
+  text-decoration: none;
+}
+.notification-link:hover {
+  text-decoration: underline;
+}

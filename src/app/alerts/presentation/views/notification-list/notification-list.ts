@@ -1,3 +1,4 @@
+import { RouterLink } from '@angular/router';
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,6 +19,7 @@ type NotificationFilter = 'active' | 'pending' | 'failed';
   selector: 'app-notification-list',
   standalone: true,
   imports: [
+    RouterLink,
     TranslateModule,
     MatButtonModule,
     MatIconModule,

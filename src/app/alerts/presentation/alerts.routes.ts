@@ -5,7 +5,7 @@ const incidentList = () =>
 const aiGuidance = () =>
   import('./views/ai-guidance/ai-guidance').then((m) => m.AiGuidance);
 const notificationList = () =>
-  import('./views/alert-inbox/alert-inbox').then((m) => m.AlertInbox);
+  import('./views/notification-list/notification-list').then((m) => m.NotificationList);
 
 /**
  * @summary Defines the lazy-loaded routes for the alerts bounded context.

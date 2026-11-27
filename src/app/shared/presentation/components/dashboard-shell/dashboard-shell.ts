@@ -59,6 +59,17 @@ export class DashboardShell {
   @Output() monthlyReportRequested = new EventEmitter<void>();
 
   protected accessDropdownOpen = false;
+  protected alertsDropdownOpen = false;
+  protected alertsDropdownTouched = false;
+
+  protected isAlertsDropdownOpen(): boolean {
+    return this.alertsDropdownTouched ? this.alertsDropdownOpen : this.isAlertsRoute();
+  }
+
+  protected toggleAlertsDropdown(): void {
+    this.alertsDropdownOpen = !this.isAlertsDropdownOpen();
+    this.alertsDropdownTouched = true;
+  }
   protected accessDropdownTouched = false;
   protected reportsDropdownOpen = false;
   protected reportsDropdownTouched = false;
