@@ -84,10 +84,10 @@ export class NotificationList implements OnInit {
   /**
    * @summary Initializes the notification list view state.
    */
-  private readonly tabRoute = inject(TabRoute);
+  private readonly tabRoute = inject(TabRoute, { optional: true });
 
   ngOnInit(): void {
-    this.tabRoute.queryParamMap.subscribe((params) => {
+    this.tabRoute?.queryParamMap.subscribe((params) => {
       const filter = params.get('filter');
       if (filter === 'active' || filter === 'pending' || filter === 'failed') this.selectNotificationFilter(filter);
     });

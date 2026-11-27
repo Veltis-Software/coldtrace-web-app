@@ -385,10 +385,10 @@ export class ColdRoomList implements OnInit {
   /**
    * @summary Initializes the cold room list view state.
    */
-  private readonly tabRoute = inject(TabRoute);
+  private readonly tabRoute = inject(TabRoute, { optional: true });
 
   ngOnInit(): void {
-    this.tabRoute.queryParamMap.subscribe((params) => {
+    this.tabRoute?.queryParamMap.subscribe((params) => {
       const tab = params.get('tab');
       if (tab && ['cold-room', 'transport', 'location', 'gateway', 'iot-device'].includes(tab)) {
         this.selectAssetType(tab as AssetManagementTab);

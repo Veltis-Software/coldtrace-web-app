@@ -130,10 +130,10 @@ export class AssetMonitoringDashboard implements OnInit {
   /**
    * @summary Initializes the asset monitoring dashboard view state.
    */
-  private readonly tabRoute = inject(TabRoute);
+  private readonly tabRoute = inject(TabRoute, { optional: true });
 
   ngOnInit(): void {
-    this.tabRoute.queryParamMap.subscribe((params) => {
+    this.tabRoute?.queryParamMap.subscribe((params) => {
       const tab = params.get('tab');
       if (tab === AssetType.ColdRoom || tab === AssetType.Transport) this.selectAssetType(tab);
     });
@@ -241,6 +241,7 @@ export class AssetMonitoringDashboard implements OnInit {
       .subscribe({
         next: (rows) => {
           const history = new Map(this.observedReadings());
+          if (!Array.isArray(rows)) return;
           const sorted = [...rows].sort((a, b) => Date.parse(b.recordedAt) - Date.parse(a.recordedAt));
           for (const row of sorted) {
             const list = history.get(row.assetId) ?? [];

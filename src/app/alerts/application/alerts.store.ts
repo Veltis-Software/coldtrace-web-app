@@ -137,7 +137,7 @@ export class AlertsStore {
     forkJoin({
       incidents: this.alertsApi.getIncidents(),
       notifications: this.alertsApi.getNotifications(),
-      assets: this.assetManagementApi.getAssets().pipe(catchError(() => of([] as Asset[]))),
+      assets: (this.assetManagementApi.getAssets?.() ?? of([] as Asset[])).pipe(catchError(() => of([] as Asset[]))),
     })
       .subscribe({
         next: ({ incidents, notifications, assets }) => {
