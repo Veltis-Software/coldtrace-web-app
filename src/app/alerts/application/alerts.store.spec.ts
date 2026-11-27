@@ -10,7 +10,7 @@ describe('AlertsStore server-owned detection', () => {
   it('reads incidents without creating browser-side incidents or escalation writes', () => {
     const api = { getIncidents: vi.fn(() => of([])), getNotifications: vi.fn(() => of([])), createIncident: vi.fn(), updateIncident: vi.fn() };
     const monitoring = { getSensorReadings: vi.fn() };
-    const assets = { getAssets: vi.fn(), getAssetSettings: vi.fn() };
+    const assets = { getAssets: vi.fn(() => of([])), getAssetSettings: vi.fn() };
     const scope = new OrganizationScopeStore();
     scope.setActiveOrganizationId(1);
     const store = new AlertsStore(api as unknown as AlertsApi, {} as IdentityAccessStore,
@@ -20,7 +20,7 @@ describe('AlertsStore server-owned detection', () => {
     expect(api.createIncident).not.toHaveBeenCalled();
     expect(api.updateIncident).not.toHaveBeenCalled();
     expect(monitoring.getSensorReadings).not.toHaveBeenCalled();
-    expect(assets.getAssets).not.toHaveBeenCalled();
+    expect(assets.getAssets).toHaveBeenCalledOnce(); // read only to show asset names
   });
 
   it('shows an owner failure without inventing a replacement incident list', () => {

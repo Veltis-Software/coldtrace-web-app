@@ -1,3 +1,4 @@
+import { ActivatedRoute as TabRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
@@ -129,7 +130,14 @@ export class AssetMonitoringDashboard implements OnInit {
   /**
    * @summary Initializes the asset monitoring dashboard view state.
    */
+  private readonly tabRoute = inject(TabRoute, { optional: true });
+
   ngOnInit(): void {
+    this.tabRoute?.queryParamMap.subscribe((params) => {
+      const tab = params.get('tab');
+      if (tab === AssetType.ColdRoom || tab === AssetType.Transport) this.selectAssetType(tab);
+    });
+    this.preloadRecentReadings();
     this.identityStore.loadUsers();
     this.identityStore.loadOrganizations();
     this.identityStore.loadRoles();
@@ -213,6 +221,48 @@ export class AssetMonitoringDashboard implements OnInit {
 
   protected updatePage(page: number): void {
     this.currentPage.set(page);
+  }
+
+  private preloadRecentReadings(): void {
+    const organizationId = this.activeOrganizationId();
+    if (!organizationId) return;
+    this.api
+      .get<
+        Array<{
+          id: number;
+          assetId: number;
+          iotDeviceId: number;
+          temperature: number | null;
+          humidity: number | null;
+          isOutOfRange: boolean;
+          recordedAt: string;
+        }>
+      >(`/api/v1/organizations/${organizationId}/sensor-readings`)
+      .subscribe({
+        next: (rows) => {
+          const history = new Map(this.observedReadings());
+          if (!Array.isArray(rows)) return;
+          const sorted = [...rows].sort((a, b) => Date.parse(b.recordedAt) - Date.parse(a.recordedAt));
+          for (const row of sorted) {
+            const list = history.get(row.assetId) ?? [];
+            if (list.length >= 24 || list.some((item) => item.recordedAt === row.recordedAt)) continue;
+            list.push(
+              new SensorReading(
+                row.id,
+                row.assetId,
+                row.iotDeviceId,
+                row.temperature,
+                row.humidity,
+                row.isOutOfRange,
+                row.recordedAt,
+              ),
+            );
+            history.set(row.assetId, list);
+          }
+          this.observedReadings.set(history);
+        },
+        error: () => {},
+      });
   }
 
   private buildMonitoringItem(asset: Asset): AssetMonitoringItem {

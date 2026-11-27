@@ -1,3 +1,4 @@
+import { ActivatedRoute as TabRoute } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -384,7 +385,15 @@ export class ColdRoomList implements OnInit {
   /**
    * @summary Initializes the cold room list view state.
    */
+  private readonly tabRoute = inject(TabRoute, { optional: true });
+
   ngOnInit(): void {
+    this.tabRoute?.queryParamMap.subscribe((params) => {
+      const tab = params.get('tab');
+      if (tab && ['cold-room', 'transport', 'location', 'gateway', 'iot-device'].includes(tab)) {
+        this.selectAssetType(tab as AssetManagementTab);
+      }
+    });
     this.coldRoomForm.controls.gatewayId.valueChanges.subscribe((gatewayId) => {
       this.selectedAssetGatewayId.set(Number(gatewayId) || 0);
       this.updateAssetLocationFromGateway(Number(gatewayId) || 0);

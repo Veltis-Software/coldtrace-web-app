@@ -1,4 +1,4 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { catchError, forkJoin, map, Observable, of, retry, switchMap, tap, throwError } from 'rxjs';
 import { AssetSettings } from '../../asset-management/domain/model/asset-settings.entity';
 import { Asset } from '../../asset-management/domain/model/asset.entity';
@@ -134,9 +134,25 @@ export class AlertsStore {
         this.notificationsLoadedForOrganizationId === organizationId) return;
     this.incidentsRequestInFlight = true;
     if (showLoading) { this.loadingSignal.set(true); this.errorSignal.set(null); }
-    forkJoin({ incidents: this.alertsApi.getIncidents(), notifications: this.alertsApi.getNotifications() })
+    forkJoin({
+      incidents: this.alertsApi.getIncidents(),
+      notifications: this.alertsApi.getNotifications(),
+      assets: (this.assetManagementApi.getAssets?.() ?? of([] as Asset[])).pipe(catchError(() => of([] as Asset[]))),
+    })
       .subscribe({
-        next: ({ incidents, notifications }) => {
+        next: ({ incidents, notifications, assets }) => {
+          const names = new Map(assets.map((asset) => [asset.id, asset.name]));
+          for (const incident of incidents) {
+            if (!incident.assetName && names.has(incident.assetId)) {
+              (incident as unknown as { _assetName: string })._assetName = names.get(incident.assetId)!;
+            }
+          }
+          const byIncident = new Map(incidents.map((incident) => [incident.id, incident.assetName]));
+          for (const notification of notifications) {
+            if (!notification.assetName && byIncident.get(notification.incidentId)) {
+              (notification as unknown as { _assetName: string })._assetName = byIncident.get(notification.incidentId)!;
+            }
+          }
           if (this.organizationScope.activeOrganizationId() === organizationId) {
             this.incidentsSignal.set(incidents);
             this.notificationsSignal.set(notifications);
