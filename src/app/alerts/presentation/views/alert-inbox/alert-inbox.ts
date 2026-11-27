@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { AssetManagementApi } from '../../../../asset-management/infrastructure/asset-management-api';
 import { Asset } from '../../../../asset-management/domain/model/asset.entity';
 import { ListPagination } from '../../../../shared/presentation/components/list-pagination/list-pagination';
+import { IncidentHistory } from '../../components/incident-history/incident-history';
 
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -14,15 +15,17 @@ import { IncrementApi, AlertRow, Notice } from '../../../../shared/infrastructur
 
 @Component({
   selector: 'app-alert-inbox',
-  imports: [DatePipe, RouterLink, TranslateModule, MatIconModule, ListPagination],
+  imports: [DatePipe, RouterLink, TranslateModule, MatIconModule, ListPagination, IncidentHistory],
   styleUrl: './alert-inbox.css',
   templateUrl: './alert-inbox.html',
 })
 export class AlertInbox {
   private readonly api = inject(IncrementApi);
   private readonly assetApi = inject(AssetManagementApi);
-  protected readonly notificationMode =
-    inject(ActivatedRoute).snapshot.routeConfig?.path === 'notifications';
+  private readonly section = inject(ActivatedRoute).snapshot.routeConfig?.path;
+  protected readonly notificationMode = this.section === 'notifications';
+  protected readonly historyMode = this.section === 'history';
+  protected readonly incidentMode = !this.notificationMode && !this.historyMode;
   protected readonly assets = signal<Asset[]>([]);
   protected readonly search = signal('');
   protected readonly status = signal('');
