@@ -79,7 +79,7 @@
 
             <div class="notification-content">
               <div class="notification-title-line">
-                <span>{{ notification.assetName }}</span>
+                <span>{{ notification.assetName || incidentForNotification(notification)?.assetName }}</span>
                 <small>{{ notificationChannelLabelKey(notification) | translate }}</small>
                 @if (incidentForNotification(notification); as incident) {
                   <small
@@ -105,7 +105,13 @@
                   }
                 }
               </div>
-              <p>{{ notification.message }}</p>
+              @if (notification.message.startsWith('/alerts/')) {
+                <a class="notification-link" [routerLink]="notification.message">
+                  {{ 'increment.open-alert' | translate }} #{{ notification.message.split('/').pop() }}
+                </a>
+              } @else {
+                <p>{{ notification.message }}</p>
+              }
               <small>
                 {{ 'alerts.notification-list.recipient' | translate }} {{ notification.recipient }}
               </small>

@@ -95,6 +95,15 @@
             >
               {{ 'increment.history' | translate }}
             </a>
+            <a
+              class="sub-menu-link"
+              routerLink="/alerts/ai-guidance"
+              [queryParams]="contextQueryParams"
+              routerLinkActive="active"
+              (click)="closeMobileNavigationAfterNavigation()"
+            >
+              {{ 'dashboard-shell.nav-ai-guidance' | translate }}
+            </a>
           </div>
         </div>
 
